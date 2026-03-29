@@ -223,7 +223,7 @@ const Index = () => {
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         ) : (
-          <LeadTable leads={leads} />
+          <LeadTable leads={leads} onDeleteLeads={handleDeleteLeads} />
         )}
       </main>
 
