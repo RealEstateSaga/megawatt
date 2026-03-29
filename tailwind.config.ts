@@ -64,6 +64,9 @@ export default {
           bad: "hsl(var(--lead-bad))",
           "bad-foreground": "hsl(var(--lead-bad-foreground))",
           "bad-border": "hsl(var(--lead-bad-border))",
+          pending: "hsl(var(--lead-pending))",
+          "pending-foreground": "hsl(var(--lead-pending-foreground))",
+          "pending-border": "hsl(var(--lead-pending-border))",
         },
       },
       borderRadius: {
