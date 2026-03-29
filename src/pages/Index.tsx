@@ -35,6 +35,9 @@ const Index = () => {
   const [queue, setQueue] = useState<FileQueueItem[]>([]);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
   const processingRef = useRef(false);
+  const queueRef = useRef<FileQueueItem[]>([]);
+  // Dedup guard: track file names + sizes already queued this session
+  const processedFilesRef = useRef(new Set<string>());
 
   const isProcessing = queue.some(q => q.status === "processing" || q.status === "queued");
 
@@ -57,6 +60,11 @@ const Index = () => {
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+
+  const reloadLeads = async () => {
+    const { data: allRows } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
+    if (allRows) setLeads(allRows.map(mapRowToLead));
+  };
 
   const mergeAndPersist = async (newLeads: LeadRecord[]) => {
     const { data: existingRows } = await supabase.from("leads").select("*");
@@ -119,74 +127,84 @@ const Index = () => {
     const { error } = await supabase.from("leads").upsert(upsertRows, { onConflict: "address_key" });
     if (error) console.error("Failed to persist leads:", error);
 
-    const { data: allRows } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
-    if (allRows) setLeads(allRows.map(mapRowToLead));
-
+    await reloadLeads();
     return newLeads.length;
   };
 
-  const processQueue = useCallback(async (items: FileQueueItem[]) => {
+  const processNext = useCallback(async () => {
     if (processingRef.current) return;
+
+    const nextItem = queueRef.current.find(q => q.status === "queued");
+    if (!nextItem) return;
+
     processingRef.current = true;
+    const itemId = nextItem.id;
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.status !== "queued") continue;
+    // Update status to processing
+    queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "processing" as const } : q);
+    setQueue([...queueRef.current]);
 
-      setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "processing" as const } : q));
+    try {
+      const base64 = await fileToBase64(nextItem.file);
+      const { data, error } = await supabase.functions.invoke("process-leads", {
+        body: { files: [{ name: nextItem.file.name, base64 }] },
+      });
 
-      try {
-        const base64 = await fileToBase64(item.file);
-        const { data, error } = await supabase.functions.invoke("process-leads", {
-          body: { files: [{ name: item.file.name, base64 }] },
-        });
-
-        if (error) {
-          const msg = error.message?.includes("429") ? "Rate limit reached" :
-            error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
-          setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "failed" as const, error: msg } : q));
-          setFailedUploads(prev => [...prev, { id: item.id, fileName: item.file.name, reason: msg, timestamp: new Date() }]);
-          continue;
-        }
-
-        if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
-          const count = await mergeAndPersist(data.leads);
-          setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "done" as const, leadsFound: count } : q));
-        } else if (data?.error) {
-          setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "failed" as const, error: data.error } : q));
-          setFailedUploads(prev => [...prev, { id: item.id, fileName: item.file.name, reason: data.error || "No data extracted", timestamp: new Date() }]);
-        } else {
-          setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "failed" as const, error: "No address found" } : q));
-          setFailedUploads(prev => [...prev, { id: item.id, fileName: item.file.name, reason: "No readable address or data found in PDF", timestamp: new Date() }]);
-        }
-      } catch (err) {
-        const reason = err instanceof Error ? err.message : "Unexpected error";
-        setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "failed" as const, error: reason } : q));
-        setFailedUploads(prev => [...prev, { id: item.id, fileName: item.file.name, reason, timestamp: new Date() }]);
+      if (error) {
+        const msg = error.message?.includes("429") ? "Rate limit reached" :
+          error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
+        queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: msg } : q);
+        setQueue([...queueRef.current]);
+        setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() }]);
+      } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
+        const count = await mergeAndPersist(data.leads);
+        queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "done" as const, leadsFound: count } : q);
+        setQueue([...queueRef.current]);
+      } else {
+        const reason = data?.error || "No readable address or data found in PDF";
+        queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
+        setQueue([...queueRef.current]);
+        setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
       }
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : "Unexpected error";
+      queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
+      setQueue([...queueRef.current]);
+      setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
     }
 
     processingRef.current = false;
-    // Clear done items after 5 seconds
+
+    // Auto-clear done items after 3s
     setTimeout(() => {
-      setQueue(prev => prev.filter(q => q.status !== "done"));
-    }, 5000);
+      queueRef.current = queueRef.current.filter(q => q.status !== "done");
+      setQueue([...queueRef.current]);
+    }, 3000);
+
+    // Process next in queue
+    processNext();
   }, []);
 
-  const handleFilesSelected = (files: File[]) => {
-    const newItems: FileQueueItem[] = files.map(file => ({
-      id: crypto.randomUUID(),
-      file,
-      status: "queued",
-    }));
-    setQueue(prev => {
-      const updated = [...prev, ...newItems];
-      // Kick off processing
-      setTimeout(() => processQueue(updated), 0);
-      return updated;
-    });
-    toast.info(`Queued ${files.length} PDF(s) for sequential processing.`);
-  };
+  const handleFilesSelected = useCallback((files: File[]) => {
+    const newItems: FileQueueItem[] = [];
+    for (const file of files) {
+      const fileKey = `${file.name}__${file.size}`;
+      if (processedFilesRef.current.has(fileKey)) {
+        toast.warning(`"${file.name}" already uploaded this session — skipped.`);
+        continue;
+      }
+      processedFilesRef.current.add(fileKey);
+      newItems.push({ id: crypto.randomUUID(), file, status: "queued" });
+    }
+
+    if (newItems.length === 0) return;
+
+    queueRef.current = [...queueRef.current, ...newItems];
+    setQueue([...queueRef.current]);
+
+    // Kick off processing immediately
+    processNext();
+  }, [processNext]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
