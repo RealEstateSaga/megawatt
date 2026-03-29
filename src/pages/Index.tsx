@@ -138,6 +138,8 @@ const Index = () => {
       };
 
       const newLeads: LeadRecord[] = [];
+      const seenMailingAddresses = new Set<string>();
+
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCSVRow(lines[i]);
         if (cols.length < 3) continue;
@@ -146,6 +148,11 @@ const Index = () => {
         // If no Property Address column exists, label as "CSV" to indicate it came from CSV import
         const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || "CSV") : "CSV";
         if (!mailAddress && address === "CSV") continue;
+
+        // Deduplicate by mailing address — skip if we've already seen this address
+        const mailKey = normalizeAddressKey(mailAddress);
+        if (mailKey && seenMailingAddresses.has(mailKey)) continue;
+        if (mailKey) seenMailingAddresses.add(mailKey);
 
         const lastName = lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "";
         const statusRaw = statusIdx >= 0 ? (cols[statusIdx] || "").toUpperCase() : "GOOD";
@@ -193,14 +200,32 @@ const Index = () => {
 
   const mergeAndPersist = async (newLeads: LeadRecord[]) => {
     const { data: existingRows } = await supabase.from("leads").select("*");
-    const existingMap = new Map<string, any>();
-    for (const row of existingRows || []) existingMap.set(row.address_key, row);
+    const existingByKey = new Map<string, any>();
+    const existingByMail = new Map<string, any>();
+    for (const row of existingRows || []) {
+      existingByKey.set(row.address_key, row);
+      if (row.mailing_address_1) {
+        existingByMail.set(normalizeAddressKey(row.mailing_address_1), row);
+      }
+    }
 
     const upsertMap = new Map<string, any>();
+    const seenMailKeys = new Set<string>();
 
     for (const lead of newLeads) {
-      const key = normalizeAddressKey(lead.address);
-      const existing = existingMap.get(key);
+      const key = lead.addressKey || normalizeAddressKey(lead.address);
+
+      // Skip if this mailing address already exists in the DB or in this batch
+      const mailKey = lead.mailingAddress1 ? normalizeAddressKey(lead.mailingAddress1) : "";
+      if (mailKey) {
+        if (seenMailKeys.has(mailKey)) continue;
+        seenMailKeys.add(mailKey);
+        // If mailing address already in DB under a different address_key, skip
+        const existingByMailRow = existingByMail.get(mailKey);
+        if (existingByMailRow && existingByMailRow.address_key !== key) continue;
+      }
+
+      const existing = existingByKey.get(key);
 
       if (existing) {
         const hasTax = existing.has_tax_data || lead.hasTaxData;
