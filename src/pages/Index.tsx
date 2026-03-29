@@ -157,8 +157,9 @@ const Index = () => {
         setQueue([...queueRef.current]);
         setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() }]);
       } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
-        const count = await mergeAndPersist(data.leads);
-        queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "done" as const, leadsFound: count } : q);
+        await mergeAndPersist(data.leads);
+        // Auto-clear completed file from queue immediately
+        queueRef.current = queueRef.current.filter(q => q.id !== itemId);
         setQueue([...queueRef.current]);
       } else {
         const reason = data?.error || "No readable address or data found in PDF";
@@ -174,12 +175,6 @@ const Index = () => {
     }
 
     processingRef.current = false;
-
-    // Auto-clear done items after 3s
-    setTimeout(() => {
-      queueRef.current = queueRef.current.filter(q => q.status !== "done");
-      setQueue([...queueRef.current]);
-    }, 3000);
 
     // Process next in queue
     processNext();
