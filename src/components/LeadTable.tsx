@@ -152,12 +152,8 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
   };
 
   if (leads.length === 0) return (
-    <div className="flex items-center gap-2">
-      <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCSVInput} />
-      <Button variant="outline" size="sm" className="h-8" onClick={() => csvInputRef.current?.click()}>
-        <Upload className="mr-1.5 h-3.5 w-3.5" />
-        Import CSV
-      </Button>
+    <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
+      No leads yet — drop PDFs or CSVs above to get started.
     </div>
   );
 
@@ -253,11 +249,6 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
               className="pl-8 h-8 w-56 text-sm"
             />
           </div>
-          <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCSVInput} />
-          <Button variant="outline" size="sm" className="h-8" onClick={() => csvInputRef.current?.click()}>
-            <Upload className="mr-1.5 h-3.5 w-3.5" />
-            Import CSV
-          </Button>
           {goodCount > 0 && (
             <Button onClick={downloadCSV} variant="default" size="sm" className="h-8">
               <Download className="mr-1.5 h-3.5 w-3.5" />

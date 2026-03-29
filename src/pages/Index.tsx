@@ -196,7 +196,7 @@ const Index = () => {
     const existingMap = new Map<string, any>();
     for (const row of existingRows || []) existingMap.set(row.address_key, row);
 
-    const upsertRows: any[] = [];
+    const upsertMap = new Map<string, any>();
 
     for (const lead of newLeads) {
       const key = normalizeAddressKey(lead.address);
@@ -212,7 +212,6 @@ const Index = () => {
         const saleDate = lead.saleDate || existing.sale_date || null;
         const lastRecordingDate = lead.lastRecordingDate || existing.last_recording_date || null;
 
-        // If CSV import marked as GOOD/BAD, respect that status
         let status: "GOOD" | "BAD" | "PENDING" = lead.status !== "PENDING" ? lead.status : "PENDING";
         let analysisReason = lead.analysisReason;
 
@@ -229,7 +228,7 @@ const Index = () => {
           }
         }
 
-        upsertRows.push({
+        upsertMap.set(key, {
           id: existing.id, address: lead.address || existing.address, address_key: key,
           owner_last_name: ownerLastName, mailing_address_1: mailingAddress1, mailing_address_2: mailingAddress2,
           status, analysis_reason: analysisReason, off_market_date: offMarketDate,
@@ -237,8 +236,8 @@ const Index = () => {
           has_tax_data: hasTax, has_history_data: hasHistory, updated_at: new Date().toISOString(),
         });
       } else {
-        upsertRows.push({
-          id: lead.id, address: lead.address, address_key: key,
+        upsertMap.set(key, {
+          id: upsertMap.get(key)?.id || lead.id, address: lead.address, address_key: key,
           owner_last_name: lead.ownerLastName, mailing_address_1: lead.mailingAddress1,
           mailing_address_2: lead.mailingAddress2, status: lead.status,
           analysis_reason: lead.analysisReason, off_market_date: lead.offMarketDate,
@@ -249,6 +248,7 @@ const Index = () => {
       }
     }
 
+    const upsertRows = Array.from(upsertMap.values());
     const { error } = await supabase.from("leads").upsert(upsertRows, { onConflict: "address_key" });
     if (error) console.error("Failed to persist leads:", error);
 
@@ -323,22 +323,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card flex-shrink-0">
-        <div className="px-6 py-3 flex items-center justify-between">
+        <div className="px-6 py-2.5 flex items-center justify-between">
+          <h1 className="text-lg font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Lead Pro
+          </h1>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Lead Pro
-            </h1>
-            <span className="text-xs text-muted-foreground font-medium">Real-time lead validation</span>
+            <FileUploader onFilesSelected={handleFilesSelected} onCSVSelected={handleImportCSV} isProcessing={isProcessing} />
+            <FileQueue items={queue} />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col px-6 py-4 gap-4 min-h-0">
-        <div className="flex items-start gap-4 flex-wrap flex-shrink-0">
-          <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-          <FileQueue items={queue} />
-        </div>
-
+      <main className="flex-1 flex flex-col px-6 py-3 gap-0 min-h-0">
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         ) : (
