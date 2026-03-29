@@ -39,15 +39,53 @@ const mapRowToLead = (row: any): LeadRecord => ({
   hasHistoryData: row.has_history_data,
 });
 
+  // --- SHA-256 content hashing for true deduplication ---
+  const hashFile = async (file: File): Promise<string> => {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  };
+
+  // Load persisted hashes from localStorage (cross-session dedup)
+  const loadPersistedHashes = (): Set<string> => {
+    try {
+      const stored = localStorage.getItem("lp_file_hashes");
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  };
+
+  const persistHash = (hash: string) => {
+    const hashes = loadPersistedHashes();
+    hashes.add(hash);
+    // Keep max 2000 hashes to avoid localStorage bloat
+    const arr = Array.from(hashes);
+    if (arr.length > 2000) arr.splice(0, arr.length - 2000);
+    localStorage.setItem("lp_file_hashes", JSON.stringify(arr));
+  };
+
+  // Load persisted failed uploads from localStorage
+  const loadPersistedFailures = (): FailedUpload[] => {
+    try {
+      const stored = localStorage.getItem("lp_failed_uploads");
+      if (!stored) return [];
+      return JSON.parse(stored).map((f: any) => ({ ...f, timestamp: new Date(f.timestamp) }));
+    } catch { return []; }
+  };
+
+  const persistFailures = (failures: FailedUpload[]) => {
+    localStorage.setItem("lp_failed_uploads", JSON.stringify(failures));
+  };
+
 const Index = () => {
   const [authed, setAuthed] = useState(() => localStorage.getItem("lp_auth") === "1");
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [queue, setQueue] = useState<FileQueueItem[]>([]);
-  const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
+  const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
   const processingRef = useRef(false);
   const queueRef = useRef<FileQueueItem[]>([]);
-  const processedFilesRef = useRef(new Set<string>());
+  const processedHashesRef = useRef<Set<string>>(loadPersistedHashes());
 
   const isProcessing = queue.some(q => q.status === "processing" || q.status === "queued");
 
