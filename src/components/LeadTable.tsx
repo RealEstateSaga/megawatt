@@ -1,21 +1,25 @@
 import { useState, useMemo, useRef } from "react";
-import { Download, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Download, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { LeadRecord, SortField, SortDirection } from "@/lib/types";
 
 interface LeadTableProps {
   leads: LeadRecord[];
+  onDeleteLeads?: (ids: string[]) => Promise<void>;
 }
 
 const ROW_HEIGHT = 40;
 
-const LeadTable = ({ leads }: LeadTableProps) => {
+const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("status");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
 
   const toggleSort = (field: SortField) => {
@@ -62,6 +66,33 @@ const LeadTable = ({ leads }: LeadTableProps) => {
 
   const goodCount = leads.filter(l => l.status === "GOOD").length;
   const pendingCount = leads.filter(l => l.status === "PENDING").length;
+
+  const allFilteredSelected = sorted.length > 0 && sorted.every(l => selectedIds.has(l.id));
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sorted.map(l => l.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!onDeleteLeads || selectedIds.size === 0) return;
+    setIsDeleting(true);
+    await onDeleteLeads(Array.from(selectedIds));
+    setSelectedIds(new Set());
+    setIsDeleting(false);
+  };
 
   const downloadCSV = () => {
     const good = leads.filter(l => l.status === "GOOD");
@@ -129,6 +160,18 @@ const LeadTable = ({ leads }: LeadTableProps) => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              onClick={handleDelete}
+              variant="destructive"
+              size="sm"
+              className="h-8"
+              disabled={isDeleting}
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              Delete {selectedIds.size} row{selectedIds.size > 1 ? "s" : ""}
+            </Button>
+          )}
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
@@ -151,6 +194,13 @@ const LeadTable = ({ leads }: LeadTableProps) => {
         {/* Sticky header */}
         <div className="bg-muted border-b border-border flex-shrink-0">
           <div className="flex">
+            <div className="w-10 flex-shrink-0 px-3 py-2 flex items-center">
+              <Checkbox
+                checked={allFilteredSelected}
+                onCheckedChange={toggleSelectAll}
+                aria-label="Select all"
+              />
+            </div>
             {columns.map(col => (
               <div
                 key={col.field}
@@ -177,15 +227,23 @@ const LeadTable = ({ leads }: LeadTableProps) => {
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const lead = sorted[virtualRow.index];
                 const isEven = virtualRow.index % 2 === 0;
+                const isSelected = selectedIds.has(lead.id);
                 return (
                   <div
                     key={lead.id}
-                    className={`absolute top-0 left-0 w-full flex items-center ${isEven ? "bg-card" : "bg-muted/30"} hover:bg-muted/50 transition-colors`}
+                    className={`absolute top-0 left-0 w-full flex items-center ${isSelected ? "bg-primary/10" : isEven ? "bg-card" : "bg-muted/30"} hover:bg-muted/50 transition-colors`}
                     style={{
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
+                    <div className="w-10 flex-shrink-0 px-3 flex items-center">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleSelect(lead.id)}
+                        aria-label={`Select ${lead.address}`}
+                      />
+                    </div>
                     {columns.map(col => (
                       <div key={col.field} className={`${col.width} flex-shrink-0 px-3 truncate`}>
                         {getCellValue(lead, col.field)}
