@@ -28,7 +28,7 @@ const mapRowToLead = (row: any): LeadRecord => ({
   addressKey: row.address_key,
   ownerLastName: row.owner_last_name || "",
   mailingAddress1: row.mailing_address_1 || "",
-  mailingAddress2: row.mailing_address_2 || "",
+  mailingAddress2: fixStateCasing(row.mailing_address_2 || ""),
   status: row.status as "GOOD" | "BAD" | "PENDING",
   analysisReason: row.analysis_reason || "",
   offMarketDate: row.off_market_date || null,
