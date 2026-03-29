@@ -347,6 +347,8 @@ const Index = () => {
     processNext();
   }, [processNext]);
 
+  if (!authed) return <PasswordGate onUnlock={() => setAuthed(true)} />;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card flex-shrink-0">
