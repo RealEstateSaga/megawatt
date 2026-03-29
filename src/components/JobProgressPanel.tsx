@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,10 @@ interface JobProgressPanelProps {
   job: Job;
   files: JobFile[];
   onDismiss: () => void;
+  onRetryFailed?: () => void;
 }
 
-const JobProgressPanel = ({ job, files, onDismiss }: JobProgressPanelProps) => {
+const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed }: JobProgressPanelProps) => {
   const [expanded, setExpanded] = useState(false);
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
 
@@ -34,7 +35,6 @@ const JobProgressPanel = ({ job, files, onDismiss }: JobProgressPanelProps) => {
 
   return (
     <div className="relative">
-      {/* Compact header */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs hover:bg-muted/50 transition-colors"
@@ -56,18 +56,25 @@ const JobProgressPanel = ({ job, files, onDismiss }: JobProgressPanelProps) => {
         {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
       </button>
 
-      {/* Expanded panel */}
       {expanded && (
         <div className="absolute right-0 top-full mt-1 z-50 w-96 max-h-80 overflow-auto rounded-lg border border-border bg-card shadow-lg">
           <div className="p-3 border-b border-border flex items-center justify-between">
             <span className="text-xs font-semibold text-foreground">
               Job Progress
             </span>
-            {isDone && (
-              <Button onClick={onDismiss} variant="ghost" size="sm" className="h-6 text-xs">
-                Dismiss
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {failed > 0 && onRetryFailed && (
+                <Button onClick={onRetryFailed} variant="outline" size="sm" className="h-6 text-xs gap-1">
+                  <RotateCcw className="h-3 w-3" />
+                  Retry {failed} Failed
+                </Button>
+              )}
+              {isDone && (
+                <Button onClick={onDismiss} variant="ghost" size="sm" className="h-6 text-xs">
+                  Dismiss
+                </Button>
+              )}
+            </div>
           </div>
           <div className="divide-y divide-border">
             {files.map((file) => (

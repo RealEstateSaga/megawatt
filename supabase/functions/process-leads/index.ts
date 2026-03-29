@@ -185,9 +185,15 @@ serve(async (req) => {
 
       const existing = mergedByAddress.get(key);
       if (existing) {
-        existing.ownerLastName = existing.ownerLastName || lead.ownerLastName;
-        existing.mailingAddress1 = existing.mailingAddress1 || lead.mailingAddress1;
-        existing.mailingAddress2 = existing.mailingAddress2 || lead.mailingAddress2;
+        // Pick the longest/most-complete value for each field to avoid data loss
+        const pickBest = (a: string, b: string) => {
+          if (!a) return b;
+          if (!b) return a;
+          return a.length >= b.length ? a : b;
+        };
+        existing.ownerLastName = pickBest(existing.ownerLastName, lead.ownerLastName);
+        existing.mailingAddress1 = pickBest(existing.mailingAddress1, lead.mailingAddress1);
+        existing.mailingAddress2 = pickBest(existing.mailingAddress2, lead.mailingAddress2);
         existing.offMarketDate = existing.offMarketDate || lead.offMarketDate;
         existing.saleDate = existing.saleDate || lead.saleDate;
         existing.lastRecordingDate = existing.lastRecordingDate || lead.lastRecordingDate;

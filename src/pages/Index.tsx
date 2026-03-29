@@ -432,12 +432,22 @@ const Index = () => {
         }
       }
 
-      // Register hash in DB for cross-device dedup
-      await supabase.from("file_hashes").upsert({
-        sha256: hash,
-        file_name: file.name,
-        file_size: file.size,
-      }, { onConflict: "sha256" });
+      // Only register hash on successful processing (not on failure)
+      if (fileQueueRef.current.length > 0 || true) {
+        const { data: fileStatus } = await supabase
+          .from("job_files")
+          .select("status")
+          .eq("id", jobFileId)
+          .maybeSingle();
+
+        if (fileStatus?.status === "completed") {
+          await supabase.from("file_hashes").upsert({
+            sha256: hash,
+            file_name: file.name,
+            file_size: file.size,
+          }, { onConflict: "sha256" });
+        }
+      }
 
       // Update job progress
       if (activeJob) {
@@ -558,6 +568,24 @@ const Index = () => {
     setJobFiles([]);
   }, []);
 
+  // Retry failed files: user must re-drop them since File objects don't survive refresh
+  const handleRetryFailed = useCallback(() => {
+    const failedFiles = jobFiles.filter(f => f.status === "failed");
+    if (failedFiles.length === 0) return;
+    toast.info(
+      `${failedFiles.length} file${failedFiles.length > 1 ? "s" : ""} failed. Please re-drop them to retry — the system will re-process only these files.`,
+      { duration: 6000 }
+    );
+    // Reset their hashes from file_hashes so re-drop won't be blocked
+    const hashes = failedFiles.map(f => f.file_hash);
+    supabase.from("file_hashes").delete().in("sha256", hashes).then(() => {
+      // Mark them as skipped so they don't block the job
+      for (const f of failedFiles) {
+        supabase.from("job_files").update({ status: "skipped", error_message: "Awaiting re-upload" }).eq("id", f.id);
+      }
+    });
+  }, [jobFiles]);
+
   if (!authed) return <PasswordGate onUnlock={() => setAuthed(true)} />;
 
   return (
@@ -580,6 +608,7 @@ const Index = () => {
                   job={activeJob}
                   files={jobFiles}
                   onDismiss={dismissJob}
+                  onRetryFailed={handleRetryFailed}
                 />
               )}
             </div>
