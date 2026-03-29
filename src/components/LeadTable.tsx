@@ -262,6 +262,7 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
         {/* Sticky header */}
         <div className="bg-muted border-b border-border flex-shrink-0">
           <div className="flex">
+            <div className="w-10 flex-shrink-0 px-2 py-2 text-[10px] font-semibold text-muted-foreground text-center">#</div>
             <div className="w-10 flex-shrink-0 px-3 py-2 flex items-center">
               <Checkbox
                 checked={allFilteredSelected}
@@ -305,6 +306,9 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
+                    <div className="w-10 flex-shrink-0 px-2 text-[10px] text-muted-foreground text-center tabular-nums">
+                      {virtualRow.index + 1}
+                    </div>
                     <div
                       className="w-10 flex-shrink-0 px-3 flex items-center"
                       onClick={(e) => {
