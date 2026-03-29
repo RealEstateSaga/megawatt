@@ -27,58 +27,85 @@ serve(async (req) => {
 
     contentParts.unshift({
       type: "text",
-      text: `You are a real estate lead validation AI. You will receive MLS Listing History PDFs and/or County Tax Information PDFs.
+      text: `You are a precise real estate document parser. You will receive ONE PDF at a time — either an MLS Listing History sheet or a County Tax Information sheet.
 
-ADDRESS MAPPING:
-- Identify the Property Address at the top of every file.
-- Use fuzzy matching to link Tax and History sheets for the same property (e.g. "Rd" = "Road", "St" = "Street", "Ave" = "Avenue").
-- If multiple entries resolve to the same property, keep only the most recent data (deduplicate).
+YOUR #1 PRIORITY: Extract every data field ACCURATELY. Read the document carefully, character by character. Do not guess, hallucinate, or infer data that is not explicitly printed on the page.
 
-FOR EACH PROPERTY, determine which document types are present:
-- has_tax_data: true if a Tax/County sheet was found for this property
-- has_history_data: true if an MLS History sheet was found for this property
+STEP 1 — IDENTIFY DOCUMENT TYPE:
+- TAX SHEET indicators: Contains "Owner Name", "Tax Billing", "Mailing Address", "Assessed Value", "Tax Amount", county/parcel info.
+- HISTORY SHEET indicators: Contains "Listing History", "MLS#", "Status" columns with dates, "Sale History from Public Records", "Cancelled", "Expired".
 
-TAX SHEET EXTRACTION (only if tax sheet present):
-- owner_last_name: Locate "Owner Name:" field. Extract ONLY the very first word (e.g. "Baron William T Trust" → "Baron").
-- mail_address: Extract the "Tax Billing Street" / "Mailing Address" field.
-- mail_city_state_zip: Combine "Tax Billing City & State" and "Tax Billing Zip" into one string (e.g. "Tavernier FL 33070" or "Wayzata MN 55391").
+STEP 2 — LOCATE THE PROPERTY ADDRESS:
+- The Property Address is typically at the TOP of the document, often in a header or title area.
+- It is the PHYSICAL SITE address of the property (not the mailing/billing address).
+- Copy it EXACTLY as printed, including unit numbers, directional prefixes (N, S, E, W), etc.
+- Examples: "239 Byrondale Ave", "17950 Breezy Point Dr", "1420 W Lake St Unit 204"
 
-HISTORY SHEET EXTRACTION (only if history sheet present):
-- off_market_date: The most recent Cancelled or Expired date from MLS listing history (format YYYY-MM-DD or null).
-- last_sale_date: The most recent "Sale Date" from the "Sale History from Public Records" section (format YYYY-MM-DD or null).
-- last_recording_date: The most recent "Rec. Date" from the "Sale History from Public Records" section (format YYYY-MM-DD or null).
+STEP 3A — TAX SHEET EXTRACTION (if this is a Tax sheet):
+Set has_tax_data = true, has_history_data = false.
 
-STATUS DETERMINATION:
-- If BOTH tax and history data are present for a property, apply the Golden Rule:
-  - If last_recording_date > off_market_date → status = "BAD"
-  - If last_sale_date > off_market_date → status = "BAD"
-  - Otherwise → status = "GOOD"
-- If only ONE document type is present (tax only or history only), set status = "PENDING"
+- owner_last_name: Find the "Owner Name:" field. Extract ONLY the very first word before any space.
+  Examples:
+    "Baron William T Trust" → "Baron"
+    "Hajas Robert J & Mary" → "Hajas"
+    "Smith-Jones Patricia" → "Smith-Jones"
+    "The Johnson Family LLC" → "The" (extract first word literally)
+  
+- mail_address: Find "Tax Billing Street" or "Mailing Address" — this is the STREET address where tax bills are sent.
+  Copy EXACTLY as printed. This is often DIFFERENT from the property address.
 
-IMPORTANT EXAMPLES:
-- 239 Byrondale: off_market 2026-02-24, recording 2026-03-17 → BAD (recording is after off-market)
-- 17950 Breezy Point: off_market 2026-02-19, last sale 1998-08-14, recording 1998-09-29 → GOOD (decades older)
-- A property with only a tax sheet and no history → PENDING
+- mail_city_state_zip: Combine the billing City, State, and Zip into a single string.
+  Format: "City ST ZIPCODE" (e.g., "Wayzata MN 55391", "Tavernier FL 33070")
+  If City/State/Zip are in separate fields, combine them. If already combined, copy as-is.
 
-Provide a brief analysis_reason:
-- For GOOD/BAD: explain why based on the Golden Rule
-- For PENDING: use "Awaiting additional documentation for 360-degree view."
+STEP 3B — HISTORY SHEET EXTRACTION (if this is a History sheet):
+Set has_tax_data = false, has_history_data = true.
+Leave owner_last_name, mail_address, mail_city_state_zip as empty strings.
 
-Respond with ONLY valid JSON (no markdown):
+- off_market_date: Look in the MLS Listing History table for rows with status "Cancelled", "Canceled", or "Expired".
+  Take the MOST RECENT such date. Format as YYYY-MM-DD.
+  Common date formats on sheets: "02/24/2026" → "2026-02-24", "Feb 24, 2026" → "2026-02-24"
+  If no cancelled/expired listing exists, set to null.
+
+- last_sale_date: Look in "Sale History from Public Records" section for the "Sale Date" column.
+  Take the MOST RECENT sale date. Format as YYYY-MM-DD. If none found, set to null.
+
+- last_recording_date: Look in "Sale History from Public Records" section for the "Rec. Date" or "Recording Date" column.
+  Take the MOST RECENT recording date. Format as YYYY-MM-DD. If none found, set to null.
+
+STEP 4 — STATUS DETERMINATION:
+- If BOTH has_tax_data AND has_history_data are true (rare for single PDF, but possible):
+  Apply the Golden Rule:
+    BAD if last_recording_date > off_market_date
+    BAD if last_sale_date > off_market_date
+    GOOD otherwise
+- If only ONE document type: status = "PENDING"
+
+STEP 5 — ANALYSIS REASON:
+- GOOD: "No sale/recording after off-market date [off_market_date]"
+- BAD: "Recording [last_recording_date] or sale [last_sale_date] occurred after off-market [off_market_date]"
+- PENDING: "Awaiting additional documentation for 360-degree view."
+
+CRITICAL RULES:
+- NEVER fabricate an address. If you cannot find a clear property address, return an empty leads array.
+- NEVER confuse the mailing/billing address with the property address.
+- Dates MUST be in YYYY-MM-DD format. Convert from any format you see on the document.
+- Return ONLY valid JSON with NO markdown formatting, NO backticks, NO explanation text.
+
 {
   "leads": [
     {
-      "address": "123 Main St",
-      "owner_last_name": "Smith",
+      "address": "239 Byrondale Ave",
+      "owner_last_name": "Baron",
       "mail_address": "456 Oak Ave",
-      "mail_city_state_zip": "Minneapolis MN 55401",
-      "off_market_date": "2024-03-15",
+      "mail_city_state_zip": "Wayzata MN 55391",
+      "off_market_date": null,
       "last_sale_date": null,
       "last_recording_date": null,
-      "status": "GOOD",
-      "analysis_reason": "No sale record found after off-market date",
+      "status": "PENDING",
+      "analysis_reason": "Awaiting additional documentation for 360-degree view.",
       "has_tax_data": true,
-      "has_history_data": true
+      "has_history_data": false
     }
   ]
 }`,
@@ -91,7 +118,7 @@ Respond with ONLY valid JSON (no markdown):
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [{ role: "user", content: contentParts }],
       }),
     });
