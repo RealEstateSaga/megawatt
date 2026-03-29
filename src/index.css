@@ -42,6 +42,9 @@
     --lead-bad: 0 55% 95%;
     --lead-bad-foreground: 0 60% 38%;
     --lead-bad-border: 0 55% 78%;
+    --lead-pending: 220 14% 95%;
+    --lead-pending-foreground: 220 10% 44%;
+    --lead-pending-border: 220 14% 80%;
 
     --sidebar-background: 215 25% 18%;
     --sidebar-foreground: 210 20% 95%;

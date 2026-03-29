@@ -27,34 +27,42 @@ serve(async (req) => {
 
     contentParts.unshift({
       type: "text",
-      text: `You are a real estate lead validation AI. You will receive MLS Listing History PDFs and County Tax Information PDFs.
+      text: `You are a real estate lead validation AI. You will receive MLS Listing History PDFs and/or County Tax Information PDFs.
 
 ADDRESS MAPPING:
 - Identify the Property Address at the top of every file.
 - Use fuzzy matching to link Tax and History sheets for the same property (e.g. "Rd" = "Road", "St" = "Street", "Ave" = "Avenue").
 - If multiple entries resolve to the same property, keep only the most recent data (deduplicate).
 
-TAX SHEET EXTRACTION:
+FOR EACH PROPERTY, determine which document types are present:
+- has_tax_data: true if a Tax/County sheet was found for this property
+- has_history_data: true if an MLS History sheet was found for this property
+
+TAX SHEET EXTRACTION (only if tax sheet present):
 - owner_last_name: Locate "Owner Name:" field. Extract ONLY the very first word (e.g. "Baron William T Trust" → "Baron").
 - mail_address: Extract the "Tax Billing Street" / "Mailing Address" field.
 - mail_city_state_zip: Combine "Tax Billing City & State" and "Tax Billing Zip" into one string (e.g. "Tavernier FL 33070" or "Wayzata MN 55391").
 
-HISTORY SHEET EXTRACTION:
+HISTORY SHEET EXTRACTION (only if history sheet present):
 - off_market_date: The most recent Cancelled or Expired date from MLS listing history (format YYYY-MM-DD or null).
 - last_sale_date: The most recent "Sale Date" from the "Sale History from Public Records" section (format YYYY-MM-DD or null).
 - last_recording_date: The most recent "Rec. Date" from the "Sale History from Public Records" section (format YYYY-MM-DD or null).
 
-THE GOLDEN RULE:
-- Compare off_market_date against BOTH last_sale_date and last_recording_date.
-- If last_recording_date > off_market_date → status = "BAD"
-- If last_sale_date > off_market_date → status = "BAD"
-- Otherwise (both dates are older than off_market_date, or no recent sale found) → status = "GOOD"
+STATUS DETERMINATION:
+- If BOTH tax and history data are present for a property, apply the Golden Rule:
+  - If last_recording_date > off_market_date → status = "BAD"
+  - If last_sale_date > off_market_date → status = "BAD"
+  - Otherwise → status = "GOOD"
+- If only ONE document type is present (tax only or history only), set status = "PENDING"
 
 IMPORTANT EXAMPLES:
 - 239 Byrondale: off_market 2026-02-24, recording 2026-03-17 → BAD (recording is after off-market)
 - 17950 Breezy Point: off_market 2026-02-19, last sale 1998-08-14, recording 1998-09-29 → GOOD (decades older)
+- A property with only a tax sheet and no history → PENDING
 
-Provide a brief analysis_reason explaining the determination.
+Provide a brief analysis_reason:
+- For GOOD/BAD: explain why based on the Golden Rule
+- For PENDING: use "Awaiting additional documentation for 360-degree view."
 
 Respond with ONLY valid JSON (no markdown):
 {
@@ -68,7 +76,9 @@ Respond with ONLY valid JSON (no markdown):
       "last_sale_date": null,
       "last_recording_date": null,
       "status": "GOOD",
-      "analysis_reason": "No sale record found after off-market date"
+      "analysis_reason": "No sale record found after off-market date",
+      "has_tax_data": true,
+      "has_history_data": true
     }
   ]
 }`,
@@ -120,18 +130,32 @@ Respond with ONLY valid JSON (no markdown):
       });
     }
 
-    const leads = (parsed.leads || []).map((l: any) => ({
-      id: crypto.randomUUID(),
-      address: l.address || "Unknown",
-      ownerLastName: l.owner_last_name || "Unknown",
-      mailingAddress1: l.mail_address || "",
-      mailingAddress2: l.mail_city_state_zip || "",
-      status: l.status === "BAD" ? "BAD" : "GOOD",
-      analysisReason: l.analysis_reason || "",
-      offMarketDate: l.off_market_date || null,
-      saleDate: l.last_sale_date || null,
-      lastRecordingDate: l.last_recording_date || null,
-    }));
+    const leads = (parsed.leads || []).map((l: any) => {
+      const hasTax = l.has_tax_data === true;
+      const hasHistory = l.has_history_data === true;
+      let status: string;
+      if (hasTax && hasHistory) {
+        status = l.status === "BAD" ? "BAD" : "GOOD";
+      } else {
+        status = "PENDING";
+      }
+      return {
+        id: crypto.randomUUID(),
+        address: l.address || "Unknown",
+        ownerLastName: l.owner_last_name || "",
+        mailingAddress1: l.mail_address || "",
+        mailingAddress2: l.mail_city_state_zip || "",
+        status,
+        analysisReason: status === "PENDING" 
+          ? "Awaiting additional documentation for 360-degree view." 
+          : (l.analysis_reason || ""),
+        offMarketDate: l.off_market_date || null,
+        saleDate: l.last_sale_date || null,
+        lastRecordingDate: l.last_recording_date || null,
+        hasTaxData: hasTax,
+        hasHistoryData: hasHistory,
+      };
+    });
 
     return new Response(JSON.stringify({ leads }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
