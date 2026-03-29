@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Shield } from "lucide-react";
 import FileUploader from "@/components/FileUploader";
 import LeadTable from "@/components/LeadTable";
 import type { LeadRecord } from "@/lib/types";
@@ -50,8 +49,17 @@ const Index = () => {
       }
 
       if (data?.leads && Array.isArray(data.leads)) {
-        setLeads((prev) => [...prev, ...data.leads]);
-        const goodCount = data.leads.filter((l: LeadRecord) => l.status === "GOOD - PROSPECT").length;
+        setLeads((prev) => {
+          const combined = [...prev, ...data.leads];
+          // Deduplicate by address, keeping the latest entry
+          const map = new Map<string, LeadRecord>();
+          for (const lead of combined) {
+            const key = lead.address.toLowerCase().replace(/\s+/g, " ").trim();
+            map.set(key, lead);
+          }
+          return Array.from(map.values());
+        });
+        const goodCount = data.leads.filter((l: LeadRecord) => l.status === "GOOD").length;
         toast.success(`Processed ${data.leads.length} properties — ${goodCount} prospects found!`);
       } else {
         toast.warning("No lead data could be extracted from these files.");
@@ -67,22 +75,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
-            <Shield className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">The MLS Lead Master</h1>
-            <p className="text-xs text-muted-foreground">Real-time lead validation for property marketing</p>
+        <div className="max-w-full mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Lead Pro
+            </h1>
+            <span className="text-xs text-muted-foreground font-medium">Real-time lead validation</span>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        <div className="max-w-xl">
-          <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-        </div>
-
+      <main className="max-w-full mx-auto px-6 py-5 space-y-5">
+        <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
         <LeadTable leads={leads} />
       </main>
     </div>

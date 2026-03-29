@@ -32,19 +32,27 @@ serve(async (req) => {
 ADDRESS MAPPING:
 - Identify the Property Address at the top of every file.
 - Use fuzzy matching to link Tax and History sheets for the same property (e.g. "Rd" = "Road", "St" = "Street", "Ave" = "Avenue").
+- If multiple entries resolve to the same property, keep only the most recent data (deduplicate).
 
 TAX SHEET EXTRACTION:
 - owner_last_name: Locate "Owner Name:" field. Extract ONLY the very first word (e.g. "Baron William T Trust" → "Baron").
-- mailing_address_1: Extract the "Tax Billing Street" address.
-- mailing_address_2: Combine "Tax Billing City & State" and "Tax Billing Zip" into one string (e.g. "Wayzata MN 55391").
+- mail_address: Extract the "Tax Billing Street" / "Mailing Address" field.
+- mail_city_state_zip: Combine "Tax Billing City & State" and "Tax Billing Zip" into one string (e.g. "Tavernier FL 33070" or "Wayzata MN 55391").
 
 HISTORY SHEET EXTRACTION:
 - off_market_date: The most recent Cancelled or Expired date from MLS listing history (format YYYY-MM-DD or null).
-- sale_date: The most recent "Public Record Sale/Rec" date from the Sale History section (format YYYY-MM-DD or null).
+- last_sale_date: The most recent "Sale Date" from the "Sale History from Public Records" section (format YYYY-MM-DD or null).
+- last_recording_date: The most recent "Rec. Date" from the "Sale History from Public Records" section (format YYYY-MM-DD or null).
 
 THE GOLDEN RULE:
-- If sale_date exists AND sale_date > off_market_date → status = "BAD - SOLD"
-- If sale_date <= off_market_date OR no sale found → status = "GOOD - PROSPECT"
+- Compare off_market_date against BOTH last_sale_date and last_recording_date.
+- If last_recording_date > off_market_date → status = "BAD"
+- If last_sale_date > off_market_date → status = "BAD"
+- Otherwise (both dates are older than off_market_date, or no recent sale found) → status = "GOOD"
+
+IMPORTANT EXAMPLES:
+- 239 Byrondale: off_market 2026-02-24, recording 2026-03-17 → BAD (recording is after off-market)
+- 17950 Breezy Point: off_market 2026-02-19, last sale 1998-08-14, recording 1998-09-29 → GOOD (decades older)
 
 Provide a brief analysis_reason explaining the determination.
 
@@ -54,11 +62,12 @@ Respond with ONLY valid JSON (no markdown):
     {
       "address": "123 Main St",
       "owner_last_name": "Smith",
-      "mailing_address_1": "456 Oak Ave",
-      "mailing_address_2": "Minneapolis MN 55401",
+      "mail_address": "456 Oak Ave",
+      "mail_city_state_zip": "Minneapolis MN 55401",
       "off_market_date": "2024-03-15",
-      "sale_date": null,
-      "status": "GOOD - PROSPECT",
+      "last_sale_date": null,
+      "last_recording_date": null,
+      "status": "GOOD",
       "analysis_reason": "No sale record found after off-market date"
     }
   ]
@@ -72,7 +81,7 @@ Respond with ONLY valid JSON (no markdown):
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [{ role: "user", content: contentParts }],
       }),
     });
@@ -115,12 +124,13 @@ Respond with ONLY valid JSON (no markdown):
       id: crypto.randomUUID(),
       address: l.address || "Unknown",
       ownerLastName: l.owner_last_name || "Unknown",
-      mailingAddress1: l.mailing_address_1 || "",
-      mailingAddress2: l.mailing_address_2 || "",
-      status: l.status === "BAD - SOLD" ? "BAD - SOLD" : "GOOD - PROSPECT",
+      mailingAddress1: l.mail_address || "",
+      mailingAddress2: l.mail_city_state_zip || "",
+      status: l.status === "BAD" ? "BAD" : "GOOD",
       analysisReason: l.analysis_reason || "",
       offMarketDate: l.off_market_date || null,
-      saleDate: l.sale_date || null,
+      saleDate: l.last_sale_date || null,
+      lastRecordingDate: l.last_recording_date || null,
     }));
 
     return new Response(JSON.stringify({ leads }), {
