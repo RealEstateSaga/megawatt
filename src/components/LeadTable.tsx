@@ -20,6 +20,7 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
+  const lastCheckedIndexRef = useRef<number | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
 
   const toggleSort = (field: SortField) => {
