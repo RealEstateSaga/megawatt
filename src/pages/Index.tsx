@@ -39,15 +39,60 @@ const mapRowToLead = (row: any): LeadRecord => ({
   hasHistoryData: row.has_history_data,
 });
 
+// --- SHA-256 content hashing for true deduplication ---
+const hashFile = async (file: File): Promise<string> => {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+};
+
+// Load persisted hashes from localStorage (cross-session dedup)
+const loadPersistedHashes = (): Set<string> => {
+  try {
+    const stored = localStorage.getItem("lp_file_hashes");
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch { return new Set(); }
+};
+
+const persistHash = (hash: string) => {
+  const hashes = loadPersistedHashes();
+  hashes.add(hash);
+  const arr = Array.from(hashes);
+  if (arr.length > 2000) arr.splice(0, arr.length - 2000);
+  localStorage.setItem("lp_file_hashes", JSON.stringify(arr));
+};
+
+const loadPersistedFailures = (): FailedUpload[] => {
+  try {
+    const stored = localStorage.getItem("lp_failed_uploads");
+    if (!stored) return [];
+    return JSON.parse(stored).map((f: any) => ({ ...f, timestamp: new Date(f.timestamp) }));
+  } catch { return []; }
+};
+
+const persistFailures = (failures: FailedUpload[]) => {
+  localStorage.setItem("lp_failed_uploads", JSON.stringify(failures));
+};
+
 const Index = () => {
   const [authed, setAuthed] = useState(() => localStorage.getItem("lp_auth") === "1");
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [queue, setQueue] = useState<FileQueueItem[]>([]);
-  const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
+  const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
   const processingRef = useRef(false);
   const queueRef = useRef<FileQueueItem[]>([]);
-  const processedFilesRef = useRef(new Set<string>());
+  const processedHashesRef = useRef<Set<string>>(loadPersistedHashes());
+
+  // Wrapper that also persists failures to localStorage
+  const addFailedUpload = useCallback((failure: FailedUpload) => {
+    setFailedUploads(prev => {
+      const next = [...prev, failure];
+      persistFailures(next);
+      return next;
+    });
+  }, []);
 
   const isProcessing = queue.some(q => q.status === "processing" || q.status === "queued");
 
@@ -337,7 +382,7 @@ const Index = () => {
             error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
           queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: msg } : q);
           setQueue([...queueRef.current]);
-          setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() }]);
+          addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() });
         } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
           await mergeAndPersist(data.leads);
           queueRef.current = queueRef.current.filter(q => q.id !== itemId);
@@ -346,29 +391,30 @@ const Index = () => {
           const reason = data?.error || "No readable address or data found in PDF";
           queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
           setQueue([...queueRef.current]);
-          setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
+          addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() });
         }
       }
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Unexpected error";
       queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
       setQueue([...queueRef.current]);
-      setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
+      addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() });
     }
 
     processingRef.current = false;
     processNext();
   }, []);
 
-  const handleFilesSelected = useCallback((files: File[]) => {
+  const handleFilesSelected = useCallback(async (files: File[]) => {
     const newItems: FileQueueItem[] = [];
     for (const file of files) {
-      const fileKey = `${file.name}__${file.size}`;
-      if (processedFilesRef.current.has(fileKey)) {
-        toast.warning(`"${file.name}" already uploaded this session — skipped.`);
+      const hash = await hashFile(file);
+      if (processedHashesRef.current.has(hash)) {
+        toast.warning(`"${file.name}" already processed (identical content) — skipped.`);
         continue;
       }
-      processedFilesRef.current.add(fileKey);
+      processedHashesRef.current.add(hash);
+      persistHash(hash);
       newItems.push({ id: crypto.randomUUID(), file, status: "queued" });
     }
 
@@ -404,8 +450,8 @@ const Index = () => {
 
       <FailedUploadsSidebar
         items={failedUploads}
-        onDismiss={(id) => setFailedUploads(prev => prev.filter(f => f.id !== id))}
-        onClear={() => setFailedUploads([])}
+        onDismiss={(id) => setFailedUploads(prev => { const next = prev.filter(f => f.id !== id); persistFailures(next); return next; })}
+        onClear={() => { setFailedUploads([]); persistFailures([]); }}
       />
     </div>
   );
