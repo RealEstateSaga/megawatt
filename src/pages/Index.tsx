@@ -384,7 +384,7 @@ const Index = () => {
             error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
           queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: msg } : q);
           setQueue([...queueRef.current]);
-          setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() }]);
+          addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() });
         } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
           await mergeAndPersist(data.leads);
           queueRef.current = queueRef.current.filter(q => q.id !== itemId);
@@ -393,14 +393,14 @@ const Index = () => {
           const reason = data?.error || "No readable address or data found in PDF";
           queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
           setQueue([...queueRef.current]);
-          setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
+          addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() });
         }
       }
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Unexpected error";
       queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
       setQueue([...queueRef.current]);
-      setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
+      addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() });
     }
 
     processingRef.current = false;
