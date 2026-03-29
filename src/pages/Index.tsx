@@ -452,8 +452,8 @@ const Index = () => {
 
       <FailedUploadsSidebar
         items={failedUploads}
-        onDismiss={(id) => setFailedUploads(prev => prev.filter(f => f.id !== id))}
-        onClear={() => setFailedUploads([])}
+        onDismiss={(id) => setFailedUploads(prev => { const next = prev.filter(f => f.id !== id); persistFailures(next); return next; })}
+        onClear={() => { setFailedUploads([]); persistFailures([]); }}
       />
     </div>
   );
