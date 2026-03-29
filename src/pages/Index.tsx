@@ -156,9 +156,23 @@ const Index = () => {
     return () => { supabase.removeChannel(channel); };
   }, [activeJob?.id]);
 
+  const fetchAllLeads = async () => {
+    const all: any[] = [];
+    const PAGE = 1000;
+    let from = 0;
+    while (true) {
+      const { data } = await supabase.from("leads").select("*").order("created_at", { ascending: false }).range(from, from + PAGE - 1);
+      if (!data || data.length === 0) break;
+      all.push(...data);
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    return all;
+  };
+
   const reloadLeads = async () => {
-    const { data: allRows } = await supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(10000);
-    if (allRows) setLeads(allRows.map(mapRowToLead));
+    const allRows = await fetchAllLeads();
+    setLeads(allRows.map(mapRowToLead));
   };
 
   const addFailedUpload = useCallback((failure: FailedUpload) => {
@@ -263,7 +277,7 @@ const Index = () => {
 
   // --- Merge & Persist ---
   const mergeAndPersist = async (newLeads: LeadRecord[]) => {
-    const { data: existingRows } = await supabase.from("leads").select("*").limit(10000);
+    const existingRows = await fetchAllLeads();
     const existingByKey = new Map<string, any>();
     const existingByMail = new Map<string, any>();
     for (const row of existingRows || []) {
