@@ -6,6 +6,7 @@ import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
 import LeadTable from "@/components/LeadTable";
 import type { LeadRecord, FileQueueItem, FailedUpload } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
+import { abbreviateState } from "@/lib/stateAbbreviations";
 
 const normalizeAddressKey = (addr: string) =>
   addr.toLowerCase().replace(/\b(street|road|avenue|drive|lane|court|boulevard|place|circle|way)\b/g, (m) => {
@@ -16,7 +17,6 @@ const normalizeAddressKey = (addr: string) =>
 /** Fix state abbreviations like "Mn" → "MN" in "City Mn 55391" */
 const fixStateCasing = (cityStateZip: string): string => {
   if (!cityStateZip) return cityStateZip;
-  // Match pattern: "City XX ZIPCODE" where XX is 2-letter state
   return cityStateZip.replace(/\b([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)/, (_match, state, zip) => {
     return `${state.toUpperCase()} ${zip}`;
   });
@@ -45,7 +45,6 @@ const Index = () => {
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
   const processingRef = useRef(false);
   const queueRef = useRef<FileQueueItem[]>([]);
-  // Dedup guard: track file names + sizes already queued this session
   const processedFilesRef = useRef(new Set<string>());
 
   const isProcessing = queue.some(q => q.status === "processing" || q.status === "queued");
@@ -86,6 +85,112 @@ const Index = () => {
     await reloadLeads();
   };
 
+  const handleUpdateLastName = async (id: string, newName: string) => {
+    const { error } = await supabase.from("leads").update({ owner_last_name: newName }).eq("id", id);
+    if (error) {
+      toast.error("Failed to update last name");
+      return;
+    }
+    toast.success("Last name updated");
+    await reloadLeads();
+  };
+
+  const handleImportCSV = async (file: File) => {
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) {
+        toast.error("CSV file is empty or has no data rows");
+        return;
+      }
+
+      const headerLine = lines[0];
+      const headers = headerLine.split(",").map(h => h.trim().toLowerCase());
+
+      // Detect columns
+      const statusIdx = headers.findIndex(h => h === "status");
+      const lastNameIdx = headers.findIndex(h => h.includes("last name") || h === "last name");
+      const mailAddrIdx = headers.findIndex(h => h.includes("mail address") || h === "mail address");
+      const cityIdx = headers.findIndex(h => h === "city");
+      const stateIdx = headers.findIndex(h => h === "state");
+      const zipIdx = headers.findIndex(h => h === "zip");
+      // Also check for combined "mail city state zip"
+      const combinedIdx = headers.findIndex(h => h.includes("city state zip"));
+      // Check for property address
+      const propAddrIdx = headers.findIndex(h => h.includes("property address") || h === "address");
+
+      if (mailAddrIdx === -1) {
+        toast.error("CSV must have a 'Mail Address' column");
+        return;
+      }
+
+      const parseCSVRow = (line: string): string[] => {
+        const result: string[] = [];
+        let current = "";
+        let inQuotes = false;
+        for (const char of line) {
+          if (char === '"') { inQuotes = !inQuotes; continue; }
+          if (char === "," && !inQuotes) { result.push(current.trim()); current = ""; continue; }
+          current += char;
+        }
+        result.push(current.trim());
+        return result;
+      };
+
+      const newLeads: LeadRecord[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVRow(lines[i]);
+        if (cols.length < 3) continue;
+
+        const mailAddress = cols[mailAddrIdx] || "";
+        // Use mail address as the property address if no dedicated column
+        const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || mailAddress) : mailAddress;
+        if (!address) continue;
+
+        const lastName = lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "";
+        const statusRaw = statusIdx >= 0 ? (cols[statusIdx] || "").toUpperCase() : "GOOD";
+        const status: "GOOD" | "BAD" | "PENDING" = statusRaw === "BAD" ? "BAD" : statusRaw === "PENDING" ? "PENDING" : "GOOD";
+
+        let cityStateZip = "";
+        if (combinedIdx >= 0) {
+          cityStateZip = fixStateCasing(cols[combinedIdx] || "");
+        } else if (cityIdx >= 0 && stateIdx >= 0 && zipIdx >= 0) {
+          const city = cols[cityIdx] || "";
+          const state = abbreviateState(cols[stateIdx] || "");
+          const zip = cols[zipIdx] || "";
+          cityStateZip = `${city} ${state} ${zip}`.trim();
+        }
+
+        newLeads.push({
+          id: crypto.randomUUID(),
+          address,
+          addressKey: normalizeAddressKey(address),
+          ownerLastName: lastName,
+          mailingAddress1: mailAddress,
+          mailingAddress2: cityStateZip,
+          status,
+          analysisReason: status === "GOOD" ? "Imported from CSV as GOOD" : status === "BAD" ? "Imported from CSV as BAD" : "Awaiting additional documentation for 360-degree view.",
+          offMarketDate: null,
+          saleDate: null,
+          lastRecordingDate: null,
+          hasTaxData: status !== "PENDING",
+          hasHistoryData: status !== "PENDING",
+        });
+      }
+
+      if (newLeads.length === 0) {
+        toast.error("No valid rows found in CSV");
+        return;
+      }
+
+      await mergeAndPersist(newLeads);
+      toast.success(`Imported ${newLeads.length} leads from CSV`);
+    } catch (err) {
+      console.error("CSV import error:", err);
+      toast.error("Failed to parse CSV file");
+    }
+  };
+
   const mergeAndPersist = async (newLeads: LeadRecord[]) => {
     const { data: existingRows } = await supabase.from("leads").select("*");
     const existingMap = new Map<string, any>();
@@ -107,9 +212,11 @@ const Index = () => {
         const saleDate = lead.saleDate || existing.sale_date || null;
         const lastRecordingDate = lead.lastRecordingDate || existing.last_recording_date || null;
 
-        let status: "GOOD" | "BAD" | "PENDING" = "PENDING";
-        let analysisReason = "Awaiting additional documentation for 360-degree view.";
-        if (hasTax && hasHistory) {
+        // If CSV import marked as GOOD/BAD, respect that status
+        let status: "GOOD" | "BAD" | "PENDING" = lead.status !== "PENDING" ? lead.status : "PENDING";
+        let analysisReason = lead.analysisReason;
+
+        if (status === "PENDING" && hasTax && hasHistory) {
           const offDate = offMarketDate ? new Date(offMarketDate) : null;
           const sDate = saleDate ? new Date(saleDate) : null;
           const rDate = lastRecordingDate ? new Date(lastRecordingDate) : null;
@@ -118,9 +225,7 @@ const Index = () => {
             analysisReason = `Sale/recording date is after off-market date of ${offMarketDate}`;
           } else {
             status = "GOOD";
-            analysisReason = lead.analysisReason && lead.status !== "PENDING"
-              ? lead.analysisReason
-              : "No sale record found after off-market date";
+            analysisReason = "No sale record found after off-market date";
           }
         }
 
@@ -160,7 +265,6 @@ const Index = () => {
     processingRef.current = true;
     const itemId = nextItem.id;
 
-    // Update status to processing
     queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "processing" as const } : q);
     setQueue([...queueRef.current]);
 
@@ -178,7 +282,6 @@ const Index = () => {
         setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() }]);
       } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
         await mergeAndPersist(data.leads);
-        // Auto-clear completed file from queue immediately
         queueRef.current = queueRef.current.filter(q => q.id !== itemId);
         setQueue([...queueRef.current]);
       } else {
@@ -195,8 +298,6 @@ const Index = () => {
     }
 
     processingRef.current = false;
-
-    // Process next in queue
     processNext();
   }, []);
 
@@ -216,8 +317,6 @@ const Index = () => {
 
     queueRef.current = [...queueRef.current, ...newItems];
     setQueue([...queueRef.current]);
-
-    // Kick off processing immediately
     processNext();
   }, [processNext]);
 
@@ -243,7 +342,12 @@ const Index = () => {
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         ) : (
-          <LeadTable leads={leads} onDeleteLeads={handleDeleteLeads} />
+          <LeadTable
+            leads={leads}
+            onDeleteLeads={handleDeleteLeads}
+            onUpdateLastName={handleUpdateLastName}
+            onImportCSV={handleImportCSV}
+          />
         )}
       </main>
 

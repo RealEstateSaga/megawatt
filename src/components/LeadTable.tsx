@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { Download, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
+import { Download, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Upload, Pencil, Check, X } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,18 +10,23 @@ import type { LeadRecord, SortField, SortDirection } from "@/lib/types";
 interface LeadTableProps {
   leads: LeadRecord[];
   onDeleteLeads?: (ids: string[]) => Promise<void>;
+  onUpdateLastName?: (id: string, newName: string) => Promise<void>;
+  onImportCSV?: (file: File) => Promise<void>;
 }
 
 const ROW_HEIGHT = 40;
 
-const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
+const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: LeadTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("status");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
   const lastCheckedIndexRef = useRef<number | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -104,6 +109,29 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
     setIsDeleting(false);
   };
 
+  const startEdit = (lead: LeadRecord) => {
+    setEditingId(lead.id);
+    setEditValue(lead.ownerLastName);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
+
+  const saveEdit = async () => {
+    if (editingId && onUpdateLastName) {
+      await onUpdateLastName(editingId, editValue.trim());
+    }
+    setEditingId(null);
+    setEditValue("");
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") saveEdit();
+    if (e.key === "Escape") cancelEdit();
+  };
+
   const downloadCSV = () => {
     const good = leads.filter(l => l.status === "GOOD");
     const header = "Property Address,Last Name,Mail Address,Mail City State Zip\n";
@@ -117,7 +145,21 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
     URL.revokeObjectURL(url);
   };
 
-  if (leads.length === 0) return null;
+  const handleCSVInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onImportCSV) onImportCSV(file);
+    if (csvInputRef.current) csvInputRef.current.value = "";
+  };
+
+  if (leads.length === 0) return (
+    <div className="flex items-center gap-2">
+      <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCSVInput} />
+      <Button variant="outline" size="sm" className="h-8" onClick={() => csvInputRef.current?.click()}>
+        <Upload className="mr-1.5 h-3.5 w-3.5" />
+        Import CSV
+      </Button>
+    </div>
+  );
 
   const columns: { field: SortField; label: string; width: string }[] = [
     { field: "status", label: "Status", width: "w-24" },
@@ -144,7 +186,27 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
       case "address":
         return <span className="font-medium text-sm">{lead.address}</span>;
       case "ownerLastName":
-        return <span className="text-sm">{lead.ownerLastName || "—"}</span>;
+        if (editingId === lead.id) {
+          return (
+            <div className="flex items-center gap-1">
+              <Input
+                value={editValue}
+                onChange={e => setEditValue(e.target.value)}
+                onKeyDown={handleEditKeyDown}
+                className="h-6 text-sm px-1 w-24"
+                autoFocus
+              />
+              <button onClick={saveEdit} className="text-accent hover:text-accent/80"><Check className="h-3.5 w-3.5" /></button>
+              <button onClick={cancelEdit} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+            </div>
+          );
+        }
+        return (
+          <span className="text-sm group/name flex items-center gap-1 cursor-pointer" onDoubleClick={() => startEdit(lead)}>
+            {lead.ownerLastName || "—"}
+            <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover/name:opacity-100 transition-opacity" />
+          </span>
+        );
       case "mailingAddress1":
         return <span className="text-sm">{lead.mailingAddress1 || "—"}</span>;
       case "mailingAddress2":
@@ -191,6 +253,11 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
               className="pl-8 h-8 w-56 text-sm"
             />
           </div>
+          <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCSVInput} />
+          <Button variant="outline" size="sm" className="h-8" onClick={() => csvInputRef.current?.click()}>
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
+            Import CSV
+          </Button>
           {goodCount > 0 && (
             <Button onClick={downloadCSV} variant="default" size="sm" className="h-8">
               <Download className="mr-1.5 h-3.5 w-3.5" />
