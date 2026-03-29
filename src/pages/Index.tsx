@@ -287,8 +287,21 @@ const Index = () => {
     }
 
     const upsertRows = Array.from(upsertMap.values());
-    const { error } = await supabase.from("leads").upsert(upsertRows, { onConflict: "address_key" });
-    if (error) console.error("Failed to persist leads:", error);
+
+    // Batch upserts in chunks of 500 to avoid payload limits
+    const BATCH_SIZE = 500;
+    let totalFailed = 0;
+    for (let i = 0; i < upsertRows.length; i += BATCH_SIZE) {
+      const batch = upsertRows.slice(i, i + BATCH_SIZE);
+      const { error } = await supabase.from("leads").upsert(batch, { onConflict: "address_key" });
+      if (error) {
+        console.error(`Failed to persist batch ${i / BATCH_SIZE + 1}:`, error);
+        totalFailed += batch.length;
+      }
+    }
+    if (totalFailed > 0) {
+      toast.error(`${totalFailed} rows failed to save — please retry`);
+    }
 
     await reloadLeads();
     return newLeads.length;
@@ -302,31 +315,39 @@ const Index = () => {
 
     processingRef.current = true;
     const itemId = nextItem.id;
+    const isCSV = nextItem.file.name.toLowerCase().endsWith(".csv") || nextItem.file.type === "text/csv";
 
     queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "processing" as const } : q);
     setQueue([...queueRef.current]);
 
     try {
-      const base64 = await fileToBase64(nextItem.file);
-      const { data, error } = await supabase.functions.invoke("process-leads", {
-        body: { files: [{ name: nextItem.file.name, base64 }] },
-      });
-
-      if (error) {
-        const msg = error.message?.includes("429") ? "Rate limit reached" :
-          error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
-        queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: msg } : q);
-        setQueue([...queueRef.current]);
-        setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() }]);
-      } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
-        await mergeAndPersist(data.leads);
+      if (isCSV) {
+        // Process CSV directly through the import handler
+        await handleImportCSV(nextItem.file);
         queueRef.current = queueRef.current.filter(q => q.id !== itemId);
         setQueue([...queueRef.current]);
       } else {
-        const reason = data?.error || "No readable address or data found in PDF";
-        queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
-        setQueue([...queueRef.current]);
-        setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
+        const base64 = await fileToBase64(nextItem.file);
+        const { data, error } = await supabase.functions.invoke("process-leads", {
+          body: { files: [{ name: nextItem.file.name, base64 }] },
+        });
+
+        if (error) {
+          const msg = error.message?.includes("429") ? "Rate limit reached" :
+            error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
+          queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: msg } : q);
+          setQueue([...queueRef.current]);
+          setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() }]);
+        } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
+          await mergeAndPersist(data.leads);
+          queueRef.current = queueRef.current.filter(q => q.id !== itemId);
+          setQueue([...queueRef.current]);
+        } else {
+          const reason = data?.error || "No readable address or data found in PDF";
+          queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
+          setQueue([...queueRef.current]);
+          setFailedUploads(prev => [...prev, { id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() }]);
+        }
       }
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Unexpected error";
@@ -374,7 +395,7 @@ const Index = () => {
           onImportCSV={handleImportCSV}
           fileUploader={
             <div className="flex items-center gap-3">
-              <FileUploader onFilesSelected={handleFilesSelected} onCSVSelected={handleImportCSV} isProcessing={isProcessing} />
+              <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
               <FileQueue items={queue} />
             </div>
           }

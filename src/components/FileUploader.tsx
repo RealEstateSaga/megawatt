@@ -3,11 +3,10 @@ import { Upload } from "lucide-react";
 
 interface FileUploaderProps {
   onFilesSelected: (files: File[]) => void;
-  onCSVSelected?: (file: File) => void;
   isProcessing: boolean;
 }
 
-const FileUploader = ({ onFilesSelected, onCSVSelected }: FileUploaderProps) => {
+const FileUploader = ({ onFilesSelected }: FileUploaderProps) => {
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dragCountRef = useRef(0);
@@ -15,11 +14,10 @@ const FileUploader = ({ onFilesSelected, onCSVSelected }: FileUploaderProps) => 
   const dispatchFiles = useCallback((files: File[]) => {
     const pdfs = files.filter(f => f.type === "application/pdf");
     const csvs = files.filter(f => f.name.toLowerCase().endsWith(".csv") || f.type === "text/csv");
-    if (pdfs.length > 0) onFilesSelected(pdfs);
-    if (csvs.length > 0 && onCSVSelected) {
-      csvs.forEach(csv => onCSVSelected(csv));
-    }
-  }, [onFilesSelected, onCSVSelected]);
+    // Send all files together so the parent can queue them sequentially
+    const allFiles = [...pdfs, ...csvs];
+    if (allFiles.length > 0) onFilesSelected(allFiles);
+  }, [onFilesSelected]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
