@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
+import PasswordGate from "@/components/PasswordGate";
 import FileUploader from "@/components/FileUploader";
 import FileQueue from "@/components/FileQueue";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
@@ -39,6 +40,7 @@ const mapRowToLead = (row: any): LeadRecord => ({
 });
 
 const Index = () => {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem("lp_auth") === "1");
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [queue, setQueue] = useState<FileQueueItem[]>([]);
@@ -344,6 +346,8 @@ const Index = () => {
     setQueue([...queueRef.current]);
     processNext();
   }, [processNext]);
+
+  if (!authed) return <PasswordGate onUnlock={() => setAuthed(true)} />;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
