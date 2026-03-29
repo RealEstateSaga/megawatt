@@ -378,6 +378,16 @@ const Index = () => {
     throw new Error("Retry exhausted");
   };
 
+  const dbUpdate = async (table: "job_files" | "file_hashes" | "processing_jobs", data: any, filter: { column: string; value: string }) => {
+    const { error } = await supabase.from(table).update(data).eq(filter.column, filter.value);
+    if (error) throw error;
+  };
+
+  const dbUpsert = async (table: "file_hashes", data: any, onConflict: string) => {
+    const { error } = await supabase.from(table).upsert(data, { onConflict });
+    if (error) throw error;
+  };
+
   // --- Merge leads from multiple pages (client-side reconciliation) ---
   const mergePageLeads = (allLeads: any[]) => {
     const mergedByAddress = new Map<string, any>();
