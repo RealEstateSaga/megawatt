@@ -66,6 +66,17 @@ const Index = () => {
     if (allRows) setLeads(allRows.map(mapRowToLead));
   };
 
+  const handleDeleteLeads = async (ids: string[]) => {
+    const { error } = await supabase.from("leads").delete().in("id", ids);
+    if (error) {
+      toast.error("Failed to delete selected leads");
+      console.error("Delete error:", error);
+      return;
+    }
+    toast.success(`Deleted ${ids.length} lead${ids.length > 1 ? "s" : ""}`);
+    await reloadLeads();
+  };
+
   const mergeAndPersist = async (newLeads: LeadRecord[]) => {
     const { data: existingRows } = await supabase.from("leads").select("*");
     const existingMap = new Map<string, any>();
