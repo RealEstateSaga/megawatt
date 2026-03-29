@@ -14,7 +14,6 @@ const FileUploader = ({ onFilesSelected }: FileUploaderProps) => {
   const dispatchFiles = useCallback((files: File[]) => {
     const pdfs = files.filter(f => f.type === "application/pdf");
     const csvs = files.filter(f => f.name.toLowerCase().endsWith(".csv") || f.type === "text/csv");
-    // Send all files together so the parent can queue them sequentially
     const allFiles = [...pdfs, ...csvs];
     if (allFiles.length > 0) onFilesSelected(allFiles);
   }, [onFilesSelected]);
@@ -50,7 +49,7 @@ const FileUploader = ({ onFilesSelected }: FileUploaderProps) => {
 
   return (
     <div
-      className={`border border-dashed rounded-md px-3 py-1.5 flex items-center gap-2 transition-all cursor-pointer ${
+      className={`border border-dashed rounded-md px-3 py-1.5 flex items-center gap-2 cursor-pointer w-[200px] h-[34px] box-border transition-colors ${
         dragActive
           ? "border-primary bg-primary/10 ring-2 ring-primary/30"
           : "border-border/60 hover:border-primary/40 hover:bg-primary/5"
@@ -61,7 +60,7 @@ const FileUploader = ({ onFilesSelected }: FileUploaderProps) => {
       onDrop={handleDrop}
     >
       <Upload className={`h-3.5 w-3.5 shrink-0 transition-colors ${dragActive ? "text-primary" : "text-muted-foreground"}`} />
-      <span className={`text-xs ${dragActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
+      <span className={`text-xs whitespace-nowrap ${dragActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
         {dragActive ? "Drop here" : "Drop files or"}
       </span>
       {!dragActive && (
