@@ -1,0 +1,1 @@
+CREATE POLICY "Allow public delete leads" ON public.leads FOR DELETE TO anon, authenticated USING (true);
