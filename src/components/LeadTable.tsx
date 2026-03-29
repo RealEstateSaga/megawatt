@@ -51,6 +51,7 @@ const LeadTable = ({ leads }: LeadTableProps) => {
   }, [filtered, sortField, sortDir]);
 
   const goodCount = leads.filter(l => l.status === "GOOD").length;
+  const pendingCount = leads.filter(l => l.status === "PENDING").length;
 
   const downloadCSV = () => {
     const good = leads.filter(l => l.status === "GOOD");
@@ -79,13 +80,19 @@ const LeadTable = ({ leads }: LeadTableProps) => {
     { field: "analysisReason", label: "Analysis" },
   ];
 
+  const statusBadgeClass = (status: string) => {
+    if (status === "GOOD") return "bg-lead-good text-lead-good-foreground border-lead-good-border text-xs font-semibold";
+    if (status === "BAD") return "bg-lead-bad text-lead-bad-foreground border-lead-bad-border text-xs font-semibold";
+    return "bg-lead-pending text-lead-pending-foreground border-lead-pending-border text-xs font-semibold";
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-base font-semibold text-foreground">Lead Results</h2>
           <p className="text-xs text-muted-foreground">
-            {leads.length} total · <span className="text-accent font-medium">{goodCount} good</span> · {leads.length - goodCount} bad
+            {leads.length} total · <span className="text-accent font-medium">{goodCount} good</span> · {leads.length - goodCount - pendingCount} bad · <span className="text-muted-foreground">{pendingCount} pending</span>
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -132,21 +139,14 @@ const LeadTable = ({ leads }: LeadTableProps) => {
                 className={`${idx % 2 === 0 ? "bg-card" : "bg-muted/30"} hover:bg-muted/50 transition-colors`}
               >
                 <TableCell className="py-2">
-                  <Badge
-                    variant="outline"
-                    className={
-                      lead.status === "GOOD"
-                        ? "bg-lead-good text-lead-good-foreground border-lead-good-border text-xs font-semibold"
-                        : "bg-lead-bad text-lead-bad-foreground border-lead-bad-border text-xs font-semibold"
-                    }
-                  >
+                  <Badge variant="outline" className={statusBadgeClass(lead.status)}>
                     {lead.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="font-medium text-sm py-2">{lead.address}</TableCell>
-                <TableCell className="text-sm py-2">{lead.ownerLastName}</TableCell>
-                <TableCell className="text-sm py-2">{lead.mailingAddress1}</TableCell>
-                <TableCell className="text-sm py-2">{lead.mailingAddress2}</TableCell>
+                <TableCell className="text-sm py-2">{lead.ownerLastName || "—"}</TableCell>
+                <TableCell className="text-sm py-2">{lead.mailingAddress1 || "—"}</TableCell>
+                <TableCell className="text-sm py-2">{lead.mailingAddress2 || "—"}</TableCell>
                 <TableCell className="text-xs py-2 text-muted-foreground">{lead.offMarketDate ?? "—"}</TableCell>
                 <TableCell className="text-xs py-2 text-muted-foreground">{lead.saleDate ?? "—"}</TableCell>
                 <TableCell className="text-xs py-2 text-muted-foreground">{lead.lastRecordingDate ?? "—"}</TableCell>
