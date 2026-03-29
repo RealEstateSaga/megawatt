@@ -87,6 +87,15 @@ const Index = () => {
   const queueRef = useRef<FileQueueItem[]>([]);
   const processedHashesRef = useRef<Set<string>>(loadPersistedHashes());
 
+  // Wrapper that also persists failures to localStorage
+  const addFailedUpload = useCallback((failure: FailedUpload) => {
+    setFailedUploads(prev => {
+      const next = [...prev, failure];
+      persistFailures(next);
+      return next;
+    });
+  }, []);
+
   const isProcessing = queue.some(q => q.status === "processing" || q.status === "queued");
 
   useEffect(() => {
