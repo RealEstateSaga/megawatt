@@ -378,13 +378,18 @@ const Index = () => {
     throw new Error("Retry exhausted");
   };
 
-  const dbUpdate = async (table: "job_files" | "file_hashes" | "processing_jobs", data: any, filter: { column: string; value: string }) => {
-    const { error } = await supabase.from(table).update(data).eq(filter.column, filter.value);
+  const updateJobFile = async (id: string, data: Record<string, any>) => {
+    const { error } = await supabase.from("job_files").update(data).eq("id", id);
     if (error) throw error;
   };
 
-  const dbUpsert = async (table: "file_hashes", data: any, onConflict: string) => {
-    const { error } = await supabase.from(table).upsert(data, { onConflict });
+  const updateJob = async (id: string, data: Record<string, any>) => {
+    const { error } = await supabase.from("processing_jobs").update(data).eq("id", id);
+    if (error) throw error;
+  };
+
+  const upsertHash = async (data: { sha256: string; file_name: string; file_size: number }) => {
+    const { error } = await supabase.from("file_hashes").upsert(data, { onConflict: "sha256" });
     if (error) throw error;
   };
 
