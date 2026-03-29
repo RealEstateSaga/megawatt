@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef } from "react";
-import { Download, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Upload, Pencil, Check, X } from "lucide-react";
+import { useState, useMemo, useRef, type ReactNode } from "react";
+import { Download, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Pencil, Check, X } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,30 @@ interface LeadTableProps {
   onDeleteLeads?: (ids: string[]) => Promise<void>;
   onUpdateLastName?: (id: string, newName: string) => Promise<void>;
   onImportCSV?: (file: File) => Promise<void>;
+  fileUploader?: ReactNode;
 }
 
 const ROW_HEIGHT = 40;
 
-const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: LeadTableProps) => {
+const columns: { field: SortField; label: string; flex: string; minW: string }[] = [
+  { field: "status", label: "Status", flex: "flex-[0.8]", minW: "min-w-[80px]" },
+  { field: "address", label: "Property Address", flex: "flex-[2.2]", minW: "min-w-[180px]" },
+  { field: "ownerLastName", label: "Last Name", flex: "flex-[1.2]", minW: "min-w-[110px]" },
+  { field: "mailingAddress1", label: "Mail Address", flex: "flex-[1.8]", minW: "min-w-[150px]" },
+  { field: "mailingAddress2", label: "Mail City State Zip", flex: "flex-[1.6]", minW: "min-w-[150px]" },
+  { field: "offMarketDate", label: "Off Market Date", flex: "flex-[1]", minW: "min-w-[100px]" },
+  { field: "saleDate", label: "Last Sale Date", flex: "flex-[1]", minW: "min-w-[100px]" },
+  { field: "lastRecordingDate", label: "Last Recording Date", flex: "flex-[1.1]", minW: "min-w-[110px]" },
+  { field: "analysisReason", label: "Analysis", flex: "flex-[2.2]", minW: "min-w-[160px]" },
+];
+
+const statusBadgeClass = (status: string) => {
+  if (status === "GOOD") return "bg-lead-good text-lead-good-foreground border-lead-good-border text-xs font-semibold";
+  if (status === "BAD") return "bg-lead-bad text-lead-bad-foreground border-lead-bad-border text-xs font-semibold";
+  return "bg-lead-pending text-lead-pending-foreground border-lead-pending-border text-xs font-semibold";
+};
+
+const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader }: LeadTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("status");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
@@ -26,7 +45,6 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
   const [editValue, setEditValue] = useState("");
   const lastCheckedIndexRef = useRef<number | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
-  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -145,36 +163,6 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
     URL.revokeObjectURL(url);
   };
 
-  const handleCSVInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && onImportCSV) onImportCSV(file);
-    if (csvInputRef.current) csvInputRef.current.value = "";
-  };
-
-  if (leads.length === 0) return (
-    <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
-      No leads yet — drop PDFs or CSVs above to get started.
-    </div>
-  );
-
-  const columns: { field: SortField; label: string; flex: string; minW: string }[] = [
-    { field: "status", label: "Status", flex: "flex-[0.8]", minW: "min-w-[80px]" },
-    { field: "address", label: "Property Address", flex: "flex-[2.2]", minW: "min-w-[180px]" },
-    { field: "ownerLastName", label: "Last Name", flex: "flex-[1.2]", minW: "min-w-[110px]" },
-    { field: "mailingAddress1", label: "Mail Address", flex: "flex-[1.8]", minW: "min-w-[150px]" },
-    { field: "mailingAddress2", label: "Mail City State Zip", flex: "flex-[1.6]", minW: "min-w-[150px]" },
-    { field: "offMarketDate", label: "Off Market Date", flex: "flex-[1]", minW: "min-w-[100px]" },
-    { field: "saleDate", label: "Last Sale Date", flex: "flex-[1]", minW: "min-w-[100px]" },
-    { field: "lastRecordingDate", label: "Last Recording Date", flex: "flex-[1.1]", minW: "min-w-[110px]" },
-    { field: "analysisReason", label: "Analysis", flex: "flex-[2.2]", minW: "min-w-[160px]" },
-  ];
-
-  const statusBadgeClass = (status: string) => {
-    if (status === "GOOD") return "bg-lead-good text-lead-good-foreground border-lead-good-border text-xs font-semibold";
-    if (status === "BAD") return "bg-lead-bad text-lead-bad-foreground border-lead-bad-border text-xs font-semibold";
-    return "bg-lead-pending text-lead-pending-foreground border-lead-pending-border text-xs font-semibold";
-  };
-
   const getCellValue = (lead: LeadRecord, field: SortField) => {
     switch (field) {
       case "status":
@@ -218,74 +206,92 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
     }
   };
 
+  const emptyState = leads.length === 0;
+
   return (
-    <div className="space-y-3 flex-1 flex flex-col min-h-0">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Lead Results</h2>
-          <p className="text-xs text-muted-foreground">
-            {leads.length} total · <span className="text-accent font-medium">{goodCount} good</span> · {leads.length - goodCount - pendingCount} bad · <span className="text-muted-foreground">{pendingCount} pending</span>
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {selectedIds.size > 0 && (
-            <Button
-              onClick={handleDelete}
-              variant="destructive"
-              size="sm"
-              className="h-8"
-              disabled={isDeleting}
-            >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-              Delete {selectedIds.size} row{selectedIds.size > 1 ? "s" : ""}
-            </Button>
-          )}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Search address or name..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 w-56 text-sm"
-            />
+    <div className="flex-1 flex flex-col min-h-0">
+      {/* Sticky top bar: title + controls */}
+      <div className="sticky top-0 z-20 bg-card border-b border-border flex-shrink-0">
+        <div className="px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Lead Pro
+            </h1>
+            {!emptyState && (
+              <p className="text-xs text-muted-foreground">
+                {leads.length} total · <span className="text-accent font-medium">{goodCount} good</span> · {leads.length - goodCount - pendingCount} bad · <span className="text-muted-foreground">{pendingCount} pending</span>
+              </p>
+            )}
           </div>
-          {goodCount > 0 && (
-            <Button onClick={downloadCSV} variant="default" size="sm" className="h-8">
-              <Download className="mr-1.5 h-3.5 w-3.5" />
-              Download Mailing List ({goodCount})
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {selectedIds.size > 0 && (
+              <Button
+                onClick={handleDelete}
+                variant="destructive"
+                size="sm"
+                className="h-8"
+                disabled={isDeleting}
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                Delete {selectedIds.size} row{selectedIds.size > 1 ? "s" : ""}
+              </Button>
+            )}
+            {!emptyState && (
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search address or name..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 w-56 text-sm"
+                />
+              </div>
+            )}
+            {fileUploader}
+            {goodCount > 0 && (
+              <Button onClick={downloadCSV} variant="default" size="sm" className="h-8">
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                Download Mailing List ({goodCount})
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Sticky column headers */}
+        {!emptyState && (
+          <div className="bg-muted border-t border-border">
+            <div className="flex">
+              <div className="w-10 flex-shrink-0 px-2 py-2 text-[10px] font-semibold text-muted-foreground text-center">#</div>
+              <div className="w-10 flex-shrink-0 px-3 py-2 flex items-center">
+                <Checkbox
+                  checked={allFilteredSelected}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+              </div>
+              {columns.map(col => (
+                <div
+                  key={col.field}
+                  className={`${col.flex} ${col.minW} px-3 py-2 font-semibold text-xs cursor-pointer select-none hover:bg-muted-foreground/10 transition-colors`}
+                  onClick={() => toggleSort(col.field)}
+                >
+                  <span className="inline-flex items-center whitespace-nowrap">
+                    {col.label}
+                    <SortIcon field={col.field} />
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="rounded-lg border border-border overflow-hidden flex-1 flex flex-col min-h-0">
-        {/* Sticky header */}
-        <div className="bg-muted border-b border-border flex-shrink-0">
-          <div className="flex">
-            <div className="w-10 flex-shrink-0 px-2 py-2 text-[10px] font-semibold text-muted-foreground text-center">#</div>
-            <div className="w-10 flex-shrink-0 px-3 py-2 flex items-center">
-              <Checkbox
-                checked={allFilteredSelected}
-                onCheckedChange={toggleSelectAll}
-                aria-label="Select all"
-              />
-            </div>
-            {columns.map(col => (
-              <div
-                key={col.field}
-                className={`${col.flex} ${col.minW} px-3 py-2 font-semibold text-xs cursor-pointer select-none hover:bg-muted-foreground/10 transition-colors`}
-                onClick={() => toggleSort(col.field)}
-              >
-                <span className="inline-flex items-center whitespace-nowrap">
-                  {col.label}
-                  <SortIcon field={col.field} />
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* Scrollable body */}
+      {emptyState ? (
+        <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
+          No leads yet — drop PDFs or CSVs above to get started.
         </div>
-
-        {/* Virtualized body */}
+      ) : (
         <div ref={parentRef} className="flex-1 overflow-auto min-h-0">
           {sorted.length === 0 ? (
             <div className="text-center text-muted-foreground py-8 text-sm">
@@ -333,7 +339,7 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 };
