@@ -20,7 +20,6 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Build content array with all PDFs as inline data
     const contentParts: any[] = files.map((f: { name: string; base64: string }) => ({
       type: "image_url" as const,
       image_url: { url: `data:application/pdf;base64,${f.base64}` },
@@ -30,21 +29,24 @@ serve(async (req) => {
       type: "text",
       text: `You are a real estate lead validation AI. You will receive MLS Listing History PDFs and County Tax Information PDFs.
 
-Your job:
-1. Find the Property Address at the top of each document.
-2. Group documents by property address using fuzzy matching (e.g. "Gale Rd" = "Gale Road").
-3. For each property, extract:
-   - owner_last_name: From "Owner Name:" field, take ONLY the very first word (e.g. "Baron William T Trust" → "Baron")
-   - mailing_address_1: The billing/mailing street address
-   - mailing_address_2: Combine city, state, and zip into one string (e.g. "Wayzata MN 55391")
-   - off_market_date: Most recent Cancelled or Expired date from MLS history (format YYYY-MM-DD or null)
-   - sale_date: Latest public record Sale/Rec date (format YYYY-MM-DD or null)
+ADDRESS MAPPING:
+- Identify the Property Address at the top of every file.
+- Use fuzzy matching to link Tax and History sheets for the same property (e.g. "Rd" = "Road", "St" = "Street", "Ave" = "Avenue").
 
-4. Apply the Golden Rule:
-   - If sale_date exists AND sale_date > off_market_date → status = "BAD - SOLD"
-   - If sale_date <= off_market_date OR no sale found → status = "GOOD - PROSPECT"
+TAX SHEET EXTRACTION:
+- owner_last_name: Locate "Owner Name:" field. Extract ONLY the very first word (e.g. "Baron William T Trust" → "Baron").
+- mailing_address_1: Extract the "Tax Billing Street" address.
+- mailing_address_2: Combine "Tax Billing City & State" and "Tax Billing Zip" into one string (e.g. "Wayzata MN 55391").
 
-5. Provide a brief analysis_reason explaining the determination.
+HISTORY SHEET EXTRACTION:
+- off_market_date: The most recent Cancelled or Expired date from MLS listing history (format YYYY-MM-DD or null).
+- sale_date: The most recent "Public Record Sale/Rec" date from the Sale History section (format YYYY-MM-DD or null).
+
+THE GOLDEN RULE:
+- If sale_date exists AND sale_date > off_market_date → status = "BAD - SOLD"
+- If sale_date <= off_market_date OR no sale found → status = "GOOD - PROSPECT"
+
+Provide a brief analysis_reason explaining the determination.
 
 Respond with ONLY valid JSON (no markdown):
 {
@@ -96,8 +98,6 @@ Respond with ONLY valid JSON (no markdown):
 
     const aiResult = await response.json();
     let content = aiResult.choices?.[0]?.message?.content || "";
-
-    // Strip markdown code fences if present
     content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
     let parsed;
@@ -111,8 +111,7 @@ Respond with ONLY valid JSON (no markdown):
       });
     }
 
-    // Normalize to our LeadRecord format
-    const leads = (parsed.leads || []).map((l: any, i: number) => ({
+    const leads = (parsed.leads || []).map((l: any) => ({
       id: crypto.randomUUID(),
       address: l.address || "Unknown",
       ownerLastName: l.owner_last_name || "Unknown",
