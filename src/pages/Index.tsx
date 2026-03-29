@@ -398,15 +398,16 @@ const Index = () => {
     processNext();
   }, []);
 
-  const handleFilesSelected = useCallback((files: File[]) => {
+  const handleFilesSelected = useCallback(async (files: File[]) => {
     const newItems: FileQueueItem[] = [];
     for (const file of files) {
-      const fileKey = `${file.name}__${file.size}`;
-      if (processedFilesRef.current.has(fileKey)) {
-        toast.warning(`"${file.name}" already uploaded this session — skipped.`);
+      const hash = await hashFile(file);
+      if (processedHashesRef.current.has(hash)) {
+        toast.warning(`"${file.name}" already processed (identical content) — skipped.`);
         continue;
       }
-      processedFilesRef.current.add(fileKey);
+      processedHashesRef.current.add(hash);
+      persistHash(hash);
       newItems.push({ id: crypto.randomUUID(), file, status: "queued" });
     }
 
