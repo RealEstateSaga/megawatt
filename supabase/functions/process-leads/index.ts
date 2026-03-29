@@ -99,10 +99,10 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { files, job_file_id } = body;
+    const { name, base64, pageNum, totalPages, job_file_id } = body;
 
-    if (!files || !Array.isArray(files) || files.length === 0) {
-      return new Response(JSON.stringify({ error: "No files provided" }), {
+    if (!name || !base64) {
+      return new Response(JSON.stringify({ error: "Missing name or base64" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -112,128 +112,67 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const supabase = getSupabaseClient();
-    const allLeads: any[] = [];
+    const currentPage = pageNum || 1;
 
-    for (const f of files) {
-      const { name, base64, pageNum, totalPages } = f;
-      const currentPage = pageNum || 1;
+    const rawLeads = await extractFromPage(base64, name, currentPage, LOVABLE_API_KEY);
 
-      try {
-        const rawLeads = await extractFromPage(base64, name, currentPage, LOVABLE_API_KEY);
-
-        // Log each page result
-        if (job_file_id) {
-          await supabase.from("processing_logs").insert({
-            job_file_id,
-            page_number: currentPage,
-            status: rawLeads.length > 0 ? "success" : "empty",
-            extracted_data: rawLeads.length > 0 ? rawLeads : null,
-            source_address: rawLeads[0]?.address || null,
-          });
-
-          // Update processed pages count
-          await supabase.from("job_files").update({
-            processed_pages: currentPage,
-            updated_at: new Date().toISOString(),
-          }).eq("id", job_file_id);
-        }
-
-        for (const l of rawLeads) {
-          allLeads.push({
-            id: crypto.randomUUID(),
-            address: l.address || "Unknown",
-            ownerLastName: l.owner_last_name || "",
-            mailingAddress1: l.mail_address || "",
-            mailingAddress2: l.mail_city_state_zip || "",
-            status: "PENDING",
-            analysisReason: "Awaiting additional documentation for 360-degree view.",
-            offMarketDate: l.off_market_date || null,
-            saleDate: l.last_sale_date || null,
-            lastRecordingDate: l.last_recording_date || null,
-            hasTaxData: l.has_tax_data === true,
-            hasHistoryData: l.has_history_data === true,
-            sourceFile: name,
-            sourcePage: currentPage,
-          });
-        }
-      } catch (pageErr) {
-        console.error(`Error processing ${name} page ${currentPage}:`, pageErr);
-        
-        // Log the failure
-        if (job_file_id) {
-          await supabase.from("processing_logs").insert({
-            job_file_id,
-            page_number: currentPage,
-            status: "failed",
-            error_message: pageErr instanceof Error ? pageErr.message : "Unknown error",
-          });
-        }
-
-        // Re-throw rate limit / payment errors
-        if (pageErr instanceof Error && (pageErr.message === "429" || pageErr.message === "402")) {
-          throw pageErr;
-        }
-        // Otherwise continue processing remaining pages
-      }
-    }
-
-    // Merge leads with the same address from different pages
-    const mergedByAddress = new Map<string, any>();
-    for (const lead of allLeads) {
-      const key = lead.address.toLowerCase().replace(/[.,#]/g, "").replace(/\s+/g, " ").trim();
-      if (key === "unknown" || !key) continue;
-
-      const existing = mergedByAddress.get(key);
-      if (existing) {
-        // Pick the longest/most-complete value for each field to avoid data loss
-        const pickBest = (a: string, b: string) => {
-          if (!a) return b;
-          if (!b) return a;
-          return a.length >= b.length ? a : b;
-        };
-        existing.ownerLastName = pickBest(existing.ownerLastName, lead.ownerLastName);
-        existing.mailingAddress1 = pickBest(existing.mailingAddress1, lead.mailingAddress1);
-        existing.mailingAddress2 = pickBest(existing.mailingAddress2, lead.mailingAddress2);
-        existing.offMarketDate = existing.offMarketDate || lead.offMarketDate;
-        existing.saleDate = existing.saleDate || lead.saleDate;
-        existing.lastRecordingDate = existing.lastRecordingDate || lead.lastRecordingDate;
-        existing.hasTaxData = existing.hasTaxData || lead.hasTaxData;
-        existing.hasHistoryData = existing.hasHistoryData || lead.hasHistoryData;
-
-        if (existing.hasTaxData && existing.hasHistoryData) {
-          const offDate = existing.offMarketDate ? new Date(existing.offMarketDate) : null;
-          const sDate = existing.saleDate ? new Date(existing.saleDate) : null;
-          const rDate = existing.lastRecordingDate ? new Date(existing.lastRecordingDate) : null;
-          if (offDate && ((rDate && rDate > offDate) || (sDate && sDate > offDate))) {
-            existing.status = "BAD";
-            existing.analysisReason = `Sale/recording date is after off-market date of ${existing.offMarketDate}`;
-          } else {
-            existing.status = "GOOD";
-            existing.analysisReason = "No sale record found after off-market date";
-          }
-        }
-      } else {
-        mergedByAddress.set(key, { ...lead });
-      }
-    }
-
-    // Update job_file status
+    // Log each page result
     if (job_file_id) {
-      const leads = Array.from(mergedByAddress.values());
+      await supabase.from("processing_logs").insert({
+        job_file_id,
+        page_number: currentPage,
+        status: rawLeads.length > 0 ? "success" : "empty",
+        extracted_data: rawLeads.length > 0 ? rawLeads : null,
+        source_address: rawLeads[0]?.address || null,
+      });
+
+      // Update processed pages count
       await supabase.from("job_files").update({
-        status: "completed",
-        leads_found: leads.length,
+        processed_pages: currentPage,
         updated_at: new Date().toISOString(),
       }).eq("id", job_file_id);
     }
 
-    return new Response(JSON.stringify({ leads: Array.from(mergedByAddress.values()) }), {
+    // Map to lead format
+    const leads = rawLeads.map((l: any) => ({
+      id: crypto.randomUUID(),
+      address: l.address || "Unknown",
+      ownerLastName: l.owner_last_name || "",
+      mailingAddress1: l.mail_address || "",
+      mailingAddress2: l.mail_city_state_zip || "",
+      status: "PENDING",
+      analysisReason: "Awaiting additional documentation for 360-degree view.",
+      offMarketDate: l.off_market_date || null,
+      saleDate: l.last_sale_date || null,
+      lastRecordingDate: l.last_recording_date || null,
+      hasTaxData: l.has_tax_data === true,
+      hasHistoryData: l.has_history_data === true,
+      sourceFile: name,
+      sourcePage: currentPage,
+    }));
+
+    return new Response(JSON.stringify({ leads }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("process-leads error:", e);
     const status = e instanceof Error && (e.message === "429" || e.message === "402")
       ? parseInt(e.message) : 500;
+
+    // Log error if job_file_id provided
+    try {
+      const body = await req.clone().json().catch(() => null);
+      if (body?.job_file_id) {
+        const supabase = getSupabaseClient();
+        await supabase.from("processing_logs").insert({
+          job_file_id: body.job_file_id,
+          page_number: body.pageNum || 1,
+          status: "failed",
+          error_message: e instanceof Error ? e.message : "Unknown error",
+        });
+      }
+    } catch { /* best effort */ }
+
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
       { status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
