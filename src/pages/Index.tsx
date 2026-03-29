@@ -365,13 +365,61 @@ const Index = () => {
     return newLeads.length;
   };
 
-  // --- Server-side job queue: process next file ---
+  // --- Retry helper with exponential backoff ---
+  const withRetry = async <T,>(fn: () => Promise<T>, retries = 3): Promise<T> => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (attempt === retries - 1) throw err;
+        await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+      }
+    }
+    throw new Error("Retry exhausted");
+  };
+
+  // --- Merge leads from multiple pages (client-side reconciliation) ---
+  const mergePageLeads = (allLeads: any[]) => {
+    const mergedByAddress = new Map<string, any>();
+    for (const lead of allLeads) {
+      const key = lead.address.toLowerCase().replace(/[.,#]/g, "").replace(/\s+/g, " ").trim();
+      if (key === "unknown" || !key) continue;
+      const existing = mergedByAddress.get(key);
+      if (existing) {
+        const pickBest = (a: string, b: string) => (!a ? b : !b ? a : a.length >= b.length ? a : b);
+        existing.ownerLastName = pickBest(existing.ownerLastName, lead.ownerLastName);
+        existing.mailingAddress1 = pickBest(existing.mailingAddress1, lead.mailingAddress1);
+        existing.mailingAddress2 = pickBest(existing.mailingAddress2, lead.mailingAddress2);
+        existing.offMarketDate = existing.offMarketDate || lead.offMarketDate;
+        existing.saleDate = existing.saleDate || lead.saleDate;
+        existing.lastRecordingDate = existing.lastRecordingDate || lead.lastRecordingDate;
+        existing.hasTaxData = existing.hasTaxData || lead.hasTaxData;
+        existing.hasHistoryData = existing.hasHistoryData || lead.hasHistoryData;
+        if (existing.hasTaxData && existing.hasHistoryData) {
+          const offDate = existing.offMarketDate ? new Date(existing.offMarketDate) : null;
+          const sDate = existing.saleDate ? new Date(existing.saleDate) : null;
+          const rDate = existing.lastRecordingDate ? new Date(existing.lastRecordingDate) : null;
+          if (offDate && ((rDate && rDate > offDate) || (sDate && sDate > offDate))) {
+            existing.status = "BAD";
+            existing.analysisReason = `Sale/recording date is after off-market date of ${existing.offMarketDate}`;
+          } else {
+            existing.status = "GOOD";
+            existing.analysisReason = "No sale record found after off-market date";
+          }
+        }
+      } else {
+        mergedByAddress.set(key, { ...lead });
+      }
+    }
+    return Array.from(mergedByAddress.values());
+  };
+
+  // --- Server-side job queue: process next file (one page at a time) ---
   const processNextFile = useCallback(async () => {
     if (processingRef.current) return;
 
     const nextItem = fileQueueRef.current[0];
     if (!nextItem) {
-      // All files done — update job status
       if (activeJob) {
         await supabase.from("processing_jobs").update({
           status: "completed",
@@ -385,114 +433,105 @@ const Index = () => {
     const { file, jobFileId, hash } = nextItem;
     const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
 
-    // Update job_file status to hashing
-    await supabase.from("job_files").update({
+    // Hashing phase
+    await withRetry(() => supabase.from("job_files").update({
       status: "hashing",
       updated_at: new Date().toISOString(),
-    }).eq("id", jobFileId);
+    }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
 
     try {
       if (isCSV) {
         await handleImportCSV(file);
-        await supabase.from("job_files").update({
+        await withRetry(() => supabase.from("job_files").update({
           status: "completed",
           updated_at: new Date().toISOString(),
-        }).eq("id", jobFileId);
+        }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
       } else {
         // Splitting phase
-        await supabase.from("job_files").update({
+        await withRetry(() => supabase.from("job_files").update({
           status: "splitting",
           updated_at: new Date().toISOString(),
-        }).eq("id", jobFileId);
+        }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
 
         let pageCount = 1;
-        try {
-          pageCount = await getPageCount(file);
-        } catch {
-          // If page count fails, process as single page
-        }
+        try { pageCount = await getPageCount(file); } catch {}
 
-        await supabase.from("job_files").update({
+        await withRetry(() => supabase.from("job_files").update({
           total_pages: pageCount,
           status: "processing",
           updated_at: new Date().toISOString(),
-        }).eq("id", jobFileId);
+        }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
 
         const base64 = await fileToBase64(file);
 
-        // Send each page individually to prevent context thinning
-        const pageFiles = [];
+        // Process ONE PAGE AT A TIME to avoid edge function timeout
+        const allPageLeads: any[] = [];
         for (let p = 1; p <= pageCount; p++) {
-          pageFiles.push({ name: file.name, base64, pageNum: p, totalPages: pageCount });
+          const { data, error } = await supabase.functions.invoke("process-leads", {
+            body: { name: file.name, base64, pageNum: p, totalPages: pageCount, job_file_id: jobFileId },
+          });
+
+          if (error) {
+            const msg = error.message?.includes("429") ? "Rate limit reached" :
+              error.message?.includes("402") ? "AI credits exhausted" : `Failed on page ${p}`;
+            // Rate limit / payment — abort entire file
+            if (error.message?.includes("429") || error.message?.includes("402")) {
+              throw new Error(msg);
+            }
+            // Otherwise log and continue to next page
+            console.error(`Page ${p} of ${file.name} failed:`, error.message);
+            continue;
+          }
+
+          if (data?.leads && Array.isArray(data.leads)) {
+            allPageLeads.push(...data.leads);
+          }
         }
 
-        const { data, error } = await supabase.functions.invoke("process-leads", {
-          body: { files: pageFiles, job_file_id: jobFileId },
-        });
+        // Reconcile all pages into merged leads
+        const mergedLeads = mergePageLeads(allPageLeads);
 
-        if (error) {
-          const msg = error.message?.includes("429") ? "Rate limit reached" :
-            error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
-          await supabase.from("job_files").update({
-            status: "failed",
-            error_message: msg,
-            updated_at: new Date().toISOString(),
-          }).eq("id", jobFileId);
-          addFailedUpload({ id: jobFileId, fileName: file.name, reason: msg, timestamp: new Date() });
-        } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
+        if (mergedLeads.length > 0) {
           // Committing phase
-          await supabase.from("job_files").update({
+          await withRetry(() => supabase.from("job_files").update({
             status: "committing",
             updated_at: new Date().toISOString(),
-          }).eq("id", jobFileId);
-          await mergeAndPersist(data.leads);
-          await supabase.from("job_files").update({
+          }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
+
+          await mergeAndPersist(mergedLeads);
+
+          await withRetry(() => supabase.from("job_files").update({
             status: "completed",
-            leads_found: data.leads.length,
+            leads_found: mergedLeads.length,
             updated_at: new Date().toISOString(),
-          }).eq("id", jobFileId);
+          }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
         } else {
-          const reason = data?.error || "No readable address or data found in PDF";
-          await supabase.from("job_files").update({
+          const reason = "No readable address or data found in PDF";
+          await withRetry(() => supabase.from("job_files").update({
             status: "failed",
             error_message: reason,
             updated_at: new Date().toISOString(),
-          }).eq("id", jobFileId);
+          }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
           addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
         }
       }
 
-      // Only register hash on successful processing (not on failure)
-      if (fileQueueRef.current.length > 0 || true) {
-        const { data: fileStatus } = await supabase
-          .from("job_files")
-          .select("status")
-          .eq("id", jobFileId)
-          .maybeSingle();
-
-        if (fileStatus?.status === "completed") {
-          await supabase.from("file_hashes").upsert({
-            sha256: hash,
-            file_name: file.name,
-            file_size: file.size,
-          }, { onConflict: "sha256" });
-        }
+      // Register hash only on success
+      const { data: fileStatus } = await supabase.from("job_files").select("status").eq("id", jobFileId).maybeSingle();
+      if (fileStatus?.status === "completed") {
+        await withRetry(() => supabase.from("file_hashes").upsert({
+          sha256: hash, file_name: file.name, file_size: file.size,
+        }, { onConflict: "sha256" }).then(r => { if (r.error) throw r.error; }));
       }
 
       // Update job progress
       if (activeJob) {
-        const { data: updatedFiles } = await supabase
-          .from("job_files")
-          .select("status")
-          .eq("job_id", activeJob.id);
-
+        const { data: updatedFiles } = await supabase.from("job_files").select("status").eq("job_id", activeJob.id);
         if (updatedFiles) {
           const completed = updatedFiles.filter(f => f.status === "completed" || f.status === "skipped").length;
           const failed = updatedFiles.filter(f => f.status === "failed").length;
           await supabase.from("processing_jobs").update({
-            completed_files: completed,
-            failed_files: failed,
-            status: "processing",
+            completed_files: completed, failed_files: failed, status: "processing",
             updated_at: new Date().toISOString(),
           }).eq("id", activeJob.id);
         }
@@ -500,14 +539,11 @@ const Index = () => {
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Unexpected error";
       await supabase.from("job_files").update({
-        status: "failed",
-        error_message: reason,
-        updated_at: new Date().toISOString(),
+        status: "failed", error_message: reason, updated_at: new Date().toISOString(),
       }).eq("id", jobFileId);
       addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
     }
 
-    // Remove processed item from queue
     fileQueueRef.current = fileQueueRef.current.slice(1);
     processingRef.current = false;
     processNextFile();
