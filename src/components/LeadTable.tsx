@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Download, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { LeadRecord, SortField, SortDirection } from "@/lib/types";
 
@@ -10,10 +10,13 @@ interface LeadTableProps {
   leads: LeadRecord[];
 }
 
+const ROW_HEIGHT = 40;
+
 const LeadTable = ({ leads }: LeadTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("status");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -50,6 +53,13 @@ const LeadTable = ({ leads }: LeadTableProps) => {
     });
   }, [filtered, sortField, sortDir]);
 
+  const rowVirtualizer = useVirtualizer({
+    count: sorted.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 20,
+  });
+
   const goodCount = leads.filter(l => l.status === "GOOD").length;
   const pendingCount = leads.filter(l => l.status === "PENDING").length;
 
@@ -68,16 +78,16 @@ const LeadTable = ({ leads }: LeadTableProps) => {
 
   if (leads.length === 0) return null;
 
-  const columns: { field: SortField; label: string }[] = [
-    { field: "status", label: "Status" },
-    { field: "address", label: "Property Address" },
-    { field: "ownerLastName", label: "Last Name" },
-    { field: "mailingAddress1", label: "Mail Address" },
-    { field: "mailingAddress2", label: "Mail City State Zip" },
-    { field: "offMarketDate", label: "Off Market Date" },
-    { field: "saleDate", label: "Last Sale Date" },
-    { field: "lastRecordingDate", label: "Last Recording Date" },
-    { field: "analysisReason", label: "Analysis" },
+  const columns: { field: SortField; label: string; width: string }[] = [
+    { field: "status", label: "Status", width: "w-24" },
+    { field: "address", label: "Property Address", width: "w-48" },
+    { field: "ownerLastName", label: "Last Name", width: "w-32" },
+    { field: "mailingAddress1", label: "Mail Address", width: "w-40" },
+    { field: "mailingAddress2", label: "Mail City State Zip", width: "w-40" },
+    { field: "offMarketDate", label: "Off Market Date", width: "w-32" },
+    { field: "saleDate", label: "Last Sale Date", width: "w-32" },
+    { field: "lastRecordingDate", label: "Last Recording Date", width: "w-36" },
+    { field: "analysisReason", label: "Analysis", width: "w-56" },
   ];
 
   const statusBadgeClass = (status: string) => {
@@ -86,8 +96,31 @@ const LeadTable = ({ leads }: LeadTableProps) => {
     return "bg-lead-pending text-lead-pending-foreground border-lead-pending-border text-xs font-semibold";
   };
 
+  const getCellValue = (lead: LeadRecord, field: SortField) => {
+    switch (field) {
+      case "status":
+        return <Badge variant="outline" className={statusBadgeClass(lead.status)}>{lead.status}</Badge>;
+      case "address":
+        return <span className="font-medium text-sm">{lead.address}</span>;
+      case "ownerLastName":
+        return <span className="text-sm">{lead.ownerLastName || "—"}</span>;
+      case "mailingAddress1":
+        return <span className="text-sm">{lead.mailingAddress1 || "—"}</span>;
+      case "mailingAddress2":
+        return <span className="text-sm">{lead.mailingAddress2 || "—"}</span>;
+      case "offMarketDate":
+        return <span className="text-xs text-muted-foreground">{lead.offMarketDate ?? "—"}</span>;
+      case "saleDate":
+        return <span className="text-xs text-muted-foreground">{lead.saleDate ?? "—"}</span>;
+      case "lastRecordingDate":
+        return <span className="text-xs text-muted-foreground">{lead.lastRecordingDate ?? "—"}</span>;
+      case "analysisReason":
+        return <span className="text-xs text-muted-foreground truncate block max-w-xs">{lead.analysisReason}</span>;
+    }
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 flex-1 flex flex-col min-h-0">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-base font-semibold text-foreground">Lead Results</h2>
@@ -114,54 +147,56 @@ const LeadTable = ({ leads }: LeadTableProps) => {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border overflow-auto max-h-[calc(100vh-200px)]">
-        <Table>
-          <TableHeader className="sticky top-0 z-10 bg-muted">
-            <TableRow>
-              {columns.map(col => (
-                <TableHead
-                  key={col.field}
-                  className="font-semibold text-xs cursor-pointer select-none hover:bg-muted-foreground/10 transition-colors whitespace-nowrap"
-                  onClick={() => toggleSort(col.field)}
-                >
-                  <span className="inline-flex items-center">
-                    {col.label}
-                    <SortIcon field={col.field} />
-                  </span>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sorted.map((lead, idx) => (
-              <TableRow
-                key={lead.id}
-                className={`${idx % 2 === 0 ? "bg-card" : "bg-muted/30"} hover:bg-muted/50 transition-colors`}
+      <div className="rounded-lg border border-border overflow-hidden flex-1 flex flex-col min-h-0">
+        {/* Sticky header */}
+        <div className="bg-muted border-b border-border flex-shrink-0">
+          <div className="flex">
+            {columns.map(col => (
+              <div
+                key={col.field}
+                className={`${col.width} flex-shrink-0 px-3 py-2 font-semibold text-xs cursor-pointer select-none hover:bg-muted-foreground/10 transition-colors`}
+                onClick={() => toggleSort(col.field)}
               >
-                <TableCell className="py-2">
-                  <Badge variant="outline" className={statusBadgeClass(lead.status)}>
-                    {lead.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-medium text-sm py-2">{lead.address}</TableCell>
-                <TableCell className="text-sm py-2">{lead.ownerLastName || "—"}</TableCell>
-                <TableCell className="text-sm py-2">{lead.mailingAddress1 || "—"}</TableCell>
-                <TableCell className="text-sm py-2">{lead.mailingAddress2 || "—"}</TableCell>
-                <TableCell className="text-xs py-2 text-muted-foreground">{lead.offMarketDate ?? "—"}</TableCell>
-                <TableCell className="text-xs py-2 text-muted-foreground">{lead.saleDate ?? "—"}</TableCell>
-                <TableCell className="text-xs py-2 text-muted-foreground">{lead.lastRecordingDate ?? "—"}</TableCell>
-                <TableCell className="text-xs py-2 text-muted-foreground max-w-xs truncate">{lead.analysisReason}</TableCell>
-              </TableRow>
+                <span className="inline-flex items-center whitespace-nowrap">
+                  {col.label}
+                  <SortIcon field={col.field} />
+                </span>
+              </div>
             ))}
-            {sorted.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
-                  No results match your search.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+          </div>
+        </div>
+
+        {/* Virtualized body */}
+        <div ref={parentRef} className="flex-1 overflow-auto min-h-0">
+          {sorted.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8 text-sm">
+              No results match your search.
+            </div>
+          ) : (
+            <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const lead = sorted[virtualRow.index];
+                const isEven = virtualRow.index % 2 === 0;
+                return (
+                  <div
+                    key={lead.id}
+                    className={`absolute top-0 left-0 w-full flex items-center ${isEven ? "bg-card" : "bg-muted/30"} hover:bg-muted/50 transition-colors`}
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                  >
+                    {columns.map(col => (
+                      <div key={col.field} className={`${col.width} flex-shrink-0 px-3 truncate`}>
+                        {getCellValue(lead, col.field)}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
