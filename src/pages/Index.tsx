@@ -449,20 +449,20 @@ const Index = () => {
     const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
 
     // Hashing phase
-    await withRetry(() => updateJobFile(jobFileId, { status: "hashing", updated_at: new Date().toISOString() });
+    await withRetry(() => updateJobFile(jobFileId, { status: "hashing", updated_at: new Date().toISOString() }));
 
     try {
       if (isCSV) {
         await handleImportCSV(file);
-        await withRetry(() => updateJobFile(jobFileId, { status: "completed", updated_at: new Date().toISOString() });
+        await withRetry(() => updateJobFile(jobFileId, { status: "completed", updated_at: new Date().toISOString() }));
       } else {
         // Splitting phase
-        await withRetry(() => updateJobFile(jobFileId, { status: "splitting", updated_at: new Date().toISOString() });
+        await withRetry(() => updateJobFile(jobFileId, { status: "splitting", updated_at: new Date().toISOString() }));
 
         let pageCount = 1;
         try { pageCount = await getPageCount(file); } catch {}
 
-        await withRetry(() => updateJobFile(jobFileId, { total_pages: pageCount, status: "processing", updated_at: new Date().toISOString() });
+        await withRetry(() => updateJobFile(jobFileId, { total_pages: pageCount, status: "processing", updated_at: new Date().toISOString() }));
 
         const base64 = await fileToBase64(file);
 
@@ -491,12 +491,12 @@ const Index = () => {
         const mergedLeads = mergePageLeads(allPageLeads);
 
         if (mergedLeads.length > 0) {
-          await withRetry(() => updateJobFile(jobFileId, { status: "committing", updated_at: new Date().toISOString() });
+          await withRetry(() => updateJobFile(jobFileId, { status: "committing", updated_at: new Date().toISOString() }));
           await mergeAndPersist(mergedLeads);
-          await withRetry(() => updateJobFile(jobFileId, { status: "completed", leads_found: mergedLeads.length, updated_at: new Date().toISOString() });
+          await withRetry(() => updateJobFile(jobFileId, { status: "completed", leads_found: mergedLeads.length, updated_at: new Date().toISOString() }));
         } else {
           const reason = "No readable address or data found in PDF";
-          await withRetry(() => updateJobFile(jobFileId, { status: "failed", error_message: reason, updated_at: new Date().toISOString() });
+          await withRetry(() => updateJobFile(jobFileId, { status: "failed", error_message: reason, updated_at: new Date().toISOString() }));
           addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
         }
       }
