@@ -78,13 +78,22 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
     }
   };
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: string, index: number, shiftKey: boolean) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (shiftKey && lastCheckedIndexRef.current !== null) {
+        const start = Math.min(lastCheckedIndexRef.current, index);
+        const end = Math.max(lastCheckedIndexRef.current, index);
+        for (let i = start; i <= end; i++) {
+          next.add(sorted[i].id);
+        }
+      } else {
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+      }
       return next;
     });
+    lastCheckedIndexRef.current = index;
   };
 
   const handleDelete = async () => {
