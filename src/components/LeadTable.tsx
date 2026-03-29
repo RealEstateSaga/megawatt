@@ -157,16 +157,16 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
     </div>
   );
 
-  const columns: { field: SortField; label: string; width: string }[] = [
-    { field: "status", label: "Status", width: "w-24" },
-    { field: "address", label: "Property Address", width: "w-48" },
-    { field: "ownerLastName", label: "Last Name", width: "w-32" },
-    { field: "mailingAddress1", label: "Mail Address", width: "w-40" },
-    { field: "mailingAddress2", label: "Mail City State Zip", width: "w-40" },
-    { field: "offMarketDate", label: "Off Market Date", width: "w-32" },
-    { field: "saleDate", label: "Last Sale Date", width: "w-32" },
-    { field: "lastRecordingDate", label: "Last Recording Date", width: "w-36" },
-    { field: "analysisReason", label: "Analysis", width: "w-56" },
+  const columns: { field: SortField; label: string; flex: string; minW: string }[] = [
+    { field: "status", label: "Status", flex: "flex-[0.8]", minW: "min-w-[80px]" },
+    { field: "address", label: "Property Address", flex: "flex-[2.2]", minW: "min-w-[180px]" },
+    { field: "ownerLastName", label: "Last Name", flex: "flex-[1.2]", minW: "min-w-[110px]" },
+    { field: "mailingAddress1", label: "Mail Address", flex: "flex-[1.8]", minW: "min-w-[150px]" },
+    { field: "mailingAddress2", label: "Mail City State Zip", flex: "flex-[1.6]", minW: "min-w-[150px]" },
+    { field: "offMarketDate", label: "Off Market Date", flex: "flex-[1]", minW: "min-w-[100px]" },
+    { field: "saleDate", label: "Last Sale Date", flex: "flex-[1]", minW: "min-w-[100px]" },
+    { field: "lastRecordingDate", label: "Last Recording Date", flex: "flex-[1.1]", minW: "min-w-[110px]" },
+    { field: "analysisReason", label: "Analysis", flex: "flex-[2.2]", minW: "min-w-[160px]" },
   ];
 
   const statusBadgeClass = (status: string) => {
@@ -272,7 +272,7 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
             {columns.map(col => (
               <div
                 key={col.field}
-                className={`${col.width} flex-shrink-0 px-3 py-2 font-semibold text-xs cursor-pointer select-none hover:bg-muted-foreground/10 transition-colors`}
+                className={`${col.flex} ${col.minW} px-3 py-2 font-semibold text-xs cursor-pointer select-none hover:bg-muted-foreground/10 transition-colors`}
                 onClick={() => toggleSort(col.field)}
               >
                 <span className="inline-flex items-center whitespace-nowrap">
@@ -319,7 +319,7 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, onImportCSV }: Lead
                       />
                     </div>
                     {columns.map(col => (
-                      <div key={col.field} className={`${col.width} flex-shrink-0 px-3 truncate`}>
+                      <div key={col.field} className={`${col.flex} ${col.minW} px-3 truncate`}>
                         {getCellValue(lead, col.field)}
                       </div>
                     ))}
