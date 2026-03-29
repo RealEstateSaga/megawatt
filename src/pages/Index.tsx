@@ -143,9 +143,9 @@ const Index = () => {
         if (cols.length < 3) continue;
 
         const mailAddress = cols[mailAddrIdx] || "";
-        // Use mail address as the property address if no dedicated column
-        const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || mailAddress) : mailAddress;
-        if (!address) continue;
+        // If no Property Address column exists, label as "CSV" to indicate it came from CSV import
+        const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || "CSV") : "CSV";
+        if (!mailAddress && address === "CSV") continue;
 
         const lastName = lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "";
         const statusRaw = statusIdx >= 0 ? (cols[statusIdx] || "").toUpperCase() : "GOOD";
@@ -164,7 +164,7 @@ const Index = () => {
         newLeads.push({
           id: crypto.randomUUID(),
           address,
-          addressKey: normalizeAddressKey(address),
+          addressKey: address === "CSV" ? normalizeAddressKey(`csv-${mailAddress}-${cityStateZip}`) : normalizeAddressKey(address),
           ownerLastName: lastName,
           mailingAddress1: mailAddress,
           mailingAddress2: cityStateZip,
