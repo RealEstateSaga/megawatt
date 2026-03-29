@@ -444,33 +444,20 @@ const Index = () => {
     const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
 
     // Hashing phase
-    await withRetry(() => supabase.from("job_files").update({
-      status: "hashing",
-      updated_at: new Date().toISOString(),
-    }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
+    await withRetry(() => dbUpdate("job_files", { status: "hashing", updated_at: new Date().toISOString() }, { column: "id", value: jobFileId }));
 
     try {
       if (isCSV) {
         await handleImportCSV(file);
-        await withRetry(() => supabase.from("job_files").update({
-          status: "completed",
-          updated_at: new Date().toISOString(),
-        }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
+        await withRetry(() => dbUpdate("job_files", { status: "completed", updated_at: new Date().toISOString() }, { column: "id", value: jobFileId }));
       } else {
         // Splitting phase
-        await withRetry(() => supabase.from("job_files").update({
-          status: "splitting",
-          updated_at: new Date().toISOString(),
-        }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
+        await withRetry(() => dbUpdate("job_files", { status: "splitting", updated_at: new Date().toISOString() }, { column: "id", value: jobFileId }));
 
         let pageCount = 1;
         try { pageCount = await getPageCount(file); } catch {}
 
-        await withRetry(() => supabase.from("job_files").update({
-          total_pages: pageCount,
-          status: "processing",
-          updated_at: new Date().toISOString(),
-        }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
+        await withRetry(() => dbUpdate("job_files", { total_pages: pageCount, status: "processing", updated_at: new Date().toISOString() }, { column: "id", value: jobFileId }));
 
         const base64 = await fileToBase64(file);
 
@@ -484,11 +471,9 @@ const Index = () => {
           if (error) {
             const msg = error.message?.includes("429") ? "Rate limit reached" :
               error.message?.includes("402") ? "AI credits exhausted" : `Failed on page ${p}`;
-            // Rate limit / payment — abort entire file
             if (error.message?.includes("429") || error.message?.includes("402")) {
               throw new Error(msg);
             }
-            // Otherwise log and continue to next page
             console.error(`Page ${p} of ${file.name} failed:`, error.message);
             continue;
           }
@@ -498,30 +483,15 @@ const Index = () => {
           }
         }
 
-        // Reconcile all pages into merged leads
         const mergedLeads = mergePageLeads(allPageLeads);
 
         if (mergedLeads.length > 0) {
-          // Committing phase
-          await withRetry(() => supabase.from("job_files").update({
-            status: "committing",
-            updated_at: new Date().toISOString(),
-          }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
-
+          await withRetry(() => dbUpdate("job_files", { status: "committing", updated_at: new Date().toISOString() }, { column: "id", value: jobFileId }));
           await mergeAndPersist(mergedLeads);
-
-          await withRetry(() => supabase.from("job_files").update({
-            status: "completed",
-            leads_found: mergedLeads.length,
-            updated_at: new Date().toISOString(),
-          }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
+          await withRetry(() => dbUpdate("job_files", { status: "completed", leads_found: mergedLeads.length, updated_at: new Date().toISOString() }, { column: "id", value: jobFileId }));
         } else {
           const reason = "No readable address or data found in PDF";
-          await withRetry(() => supabase.from("job_files").update({
-            status: "failed",
-            error_message: reason,
-            updated_at: new Date().toISOString(),
-          }).eq("id", jobFileId).then(r => { if (r.error) throw r.error; }));
+          await withRetry(() => dbUpdate("job_files", { status: "failed", error_message: reason, updated_at: new Date().toISOString() }, { column: "id", value: jobFileId }));
           addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
         }
       }
@@ -529,9 +499,7 @@ const Index = () => {
       // Register hash only on success
       const { data: fileStatus } = await supabase.from("job_files").select("status").eq("id", jobFileId).maybeSingle();
       if (fileStatus?.status === "completed") {
-        await withRetry(() => supabase.from("file_hashes").upsert({
-          sha256: hash, file_name: file.name, file_size: file.size,
-        }, { onConflict: "sha256" }).then(r => { if (r.error) throw r.error; }));
+        await withRetry(() => dbUpsert("file_hashes", { sha256: hash, file_name: file.name, file_size: file.size }, "sha256"));
       }
 
       // Update job progress
