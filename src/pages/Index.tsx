@@ -608,6 +608,7 @@ const Index = () => {
                   job={activeJob}
                   files={jobFiles}
                   onDismiss={dismissJob}
+                  onRetryFailed={handleRetryFailed}
                 />
               )}
             </div>
