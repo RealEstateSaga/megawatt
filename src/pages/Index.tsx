@@ -576,13 +576,18 @@ const Index = () => {
       `${failedFiles.length} file${failedFiles.length > 1 ? "s" : ""} failed. Please re-drop them to retry — the system will re-process only these files.`,
       { duration: 6000 }
     );
-    // Reset their hashes from file_hashes so re-drop won't be blocked
+    // Clear error logs, hashes, and reset file statuses for a clean re-run
+    const failedIds = failedFiles.map(f => f.id);
     const hashes = failedFiles.map(f => f.file_hash);
-    supabase.from("file_hashes").delete().in("sha256", hashes).then(() => {
-      // Mark them as skipped so they don't block the job
-      for (const f of failedFiles) {
-        supabase.from("job_files").update({ status: "skipped", error_message: "Awaiting re-upload" }).eq("id", f.id);
-      }
+    // Delete processing_logs for failed files first (clean slate)
+    supabase.from("processing_logs").delete().in("job_file_id", failedIds).then(() => {
+      // Remove hashes so re-drop won't be blocked by dedup
+      supabase.from("file_hashes").delete().in("sha256", hashes).then(() => {
+        // Mark them as skipped so they don't block the job
+        for (const f of failedFiles) {
+          supabase.from("job_files").update({ status: "skipped", error_message: "Awaiting re-upload" }).eq("id", f.id);
+        }
+      });
     });
   }, [jobFiles]);
 
