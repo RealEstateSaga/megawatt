@@ -13,6 +13,15 @@ const normalizeAddressKey = (addr: string) =>
     return abbr[m] || m;
   }).replace(/[.,#]/g, "").replace(/\s+/g, " ").trim();
 
+/** Fix state abbreviations like "Mn" → "MN" in "City Mn 55391" */
+const fixStateCasing = (cityStateZip: string): string => {
+  if (!cityStateZip) return cityStateZip;
+  // Match pattern: "City XX ZIPCODE" where XX is 2-letter state
+  return cityStateZip.replace(/\b([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)/, (_match, state, zip) => {
+    return `${state.toUpperCase()} ${zip}`;
+  });
+};
+
 const mapRowToLead = (row: any): LeadRecord => ({
   id: row.id,
   address: row.address,
