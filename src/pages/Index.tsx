@@ -138,6 +138,8 @@ const Index = () => {
       };
 
       const newLeads: LeadRecord[] = [];
+      const seenMailingAddresses = new Set<string>();
+
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCSVRow(lines[i]);
         if (cols.length < 3) continue;
@@ -146,6 +148,11 @@ const Index = () => {
         // If no Property Address column exists, label as "CSV" to indicate it came from CSV import
         const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || "CSV") : "CSV";
         if (!mailAddress && address === "CSV") continue;
+
+        // Deduplicate by mailing address — skip if we've already seen this address
+        const mailKey = normalizeAddressKey(mailAddress);
+        if (mailKey && seenMailingAddresses.has(mailKey)) continue;
+        if (mailKey) seenMailingAddresses.add(mailKey);
 
         const lastName = lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "";
         const statusRaw = statusIdx >= 0 ? (cols[statusIdx] || "").toUpperCase() : "GOOD";
