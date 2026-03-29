@@ -25,7 +25,7 @@ const LeadTable = ({ leads }: LeadTableProps) => {
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-40" />;
+    if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />;
     return sortDir === "asc"
       ? <ArrowUp className="ml-1 h-3 w-3" />
       : <ArrowDown className="ml-1 h-3 w-3" />;
@@ -50,12 +50,12 @@ const LeadTable = ({ leads }: LeadTableProps) => {
     });
   }, [filtered, sortField, sortDir]);
 
-  const goodCount = leads.filter(l => l.status === "GOOD - PROSPECT").length;
+  const goodCount = leads.filter(l => l.status === "GOOD").length;
 
   const downloadCSV = () => {
-    const good = leads.filter(l => l.status === "GOOD - PROSPECT");
-    const header = "Last Name,Mailing Address 1,Mailing Address 2\n";
-    const rows = good.map(l => `"${l.ownerLastName}","${l.mailingAddress1}","${l.mailingAddress2}"`).join("\n");
+    const good = leads.filter(l => l.status === "GOOD");
+    const header = "Property Address,Last Name,Mail Address,Mail City State Zip\n";
+    const rows = good.map(l => `"${l.address}","${l.ownerLastName}","${l.mailingAddress1}","${l.mailingAddress2}"`).join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -71,49 +71,50 @@ const LeadTable = ({ leads }: LeadTableProps) => {
     { field: "status", label: "Status" },
     { field: "address", label: "Property Address" },
     { field: "ownerLastName", label: "Last Name" },
-    { field: "mailingAddress1", label: "Mailing Address 1" },
-    { field: "mailingAddress2", label: "Mailing Address 2" },
-    { field: "offMarketDate", label: "MLS Cancel Date" },
+    { field: "mailingAddress1", label: "Mail Address" },
+    { field: "mailingAddress2", label: "Mail City State Zip" },
+    { field: "offMarketDate", label: "Off Market Date" },
     { field: "saleDate", label: "Last Sale Date" },
-    { field: "analysisReason", label: "Analysis Reason" },
+    { field: "lastRecordingDate", label: "Last Recording Date" },
+    { field: "analysisReason", label: "Analysis" },
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Lead Results</h2>
-          <p className="text-sm text-muted-foreground">
-            {leads.length} total · <span className="text-accent font-medium">{goodCount} prospects</span> · {leads.length - goodCount} sold
+          <h2 className="text-base font-semibold text-foreground">Lead Results</h2>
+          <p className="text-xs text-muted-foreground">
+            {leads.length} total · <span className="text-accent font-medium">{goodCount} good</span> · {leads.length - goodCount} bad
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder="Search address or last name..."
+              placeholder="Search address or name..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 w-64"
+              className="pl-8 h-8 w-56 text-sm"
             />
           </div>
           {goodCount > 0 && (
-            <Button onClick={downloadCSV} variant="default" size="sm">
-              <Download className="mr-2 h-4 w-4" />
+            <Button onClick={downloadCSV} variant="default" size="sm" className="h-8">
+              <Download className="mr-1.5 h-3.5 w-3.5" />
               Download Mailing List ({goodCount})
             </Button>
           )}
         </div>
       </div>
 
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="rounded-lg border border-border overflow-auto max-h-[calc(100vh-200px)]">
         <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
+          <TableHeader className="sticky top-0 z-10 bg-muted">
+            <TableRow>
               {columns.map(col => (
                 <TableHead
                   key={col.field}
-                  className="font-semibold cursor-pointer select-none hover:bg-muted/80 transition-colors"
+                  className="font-semibold text-xs cursor-pointer select-none hover:bg-muted-foreground/10 transition-colors whitespace-nowrap"
                   onClick={() => toggleSort(col.field)}
                 >
                   <span className="inline-flex items-center">
@@ -128,32 +129,33 @@ const LeadTable = ({ leads }: LeadTableProps) => {
             {sorted.map((lead, idx) => (
               <TableRow
                 key={lead.id}
-                className={idx % 2 === 0 ? "bg-card" : "bg-muted/30"}
+                className={`${idx % 2 === 0 ? "bg-card" : "bg-muted/30"} hover:bg-muted/50 transition-colors`}
               >
-                <TableCell>
+                <TableCell className="py-2">
                   <Badge
-                    variant={lead.status === "GOOD - PROSPECT" ? "default" : "destructive"}
+                    variant="outline"
                     className={
-                      lead.status === "GOOD - PROSPECT"
-                        ? "bg-lead-good text-accent border-lead-good-border"
-                        : "bg-lead-bad text-destructive border-lead-bad-border"
+                      lead.status === "GOOD"
+                        ? "bg-lead-good text-lead-good-foreground border-lead-good-border text-xs font-semibold"
+                        : "bg-lead-bad text-lead-bad-foreground border-lead-bad-border text-xs font-semibold"
                     }
                   >
-                    {lead.status === "GOOD - PROSPECT" ? "GOOD" : "BAD"}
+                    {lead.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-medium">{lead.address}</TableCell>
-                <TableCell>{lead.ownerLastName}</TableCell>
-                <TableCell>{lead.mailingAddress1}</TableCell>
-                <TableCell>{lead.mailingAddress2}</TableCell>
-                <TableCell className="text-sm">{lead.offMarketDate ?? "—"}</TableCell>
-                <TableCell className="text-sm">{lead.saleDate ?? "—"}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{lead.analysisReason}</TableCell>
+                <TableCell className="font-medium text-sm py-2">{lead.address}</TableCell>
+                <TableCell className="text-sm py-2">{lead.ownerLastName}</TableCell>
+                <TableCell className="text-sm py-2">{lead.mailingAddress1}</TableCell>
+                <TableCell className="text-sm py-2">{lead.mailingAddress2}</TableCell>
+                <TableCell className="text-xs py-2 text-muted-foreground">{lead.offMarketDate ?? "—"}</TableCell>
+                <TableCell className="text-xs py-2 text-muted-foreground">{lead.saleDate ?? "—"}</TableCell>
+                <TableCell className="text-xs py-2 text-muted-foreground">{lead.lastRecordingDate ?? "—"}</TableCell>
+                <TableCell className="text-xs py-2 text-muted-foreground max-w-xs truncate">{lead.analysisReason}</TableCell>
               </TableRow>
             ))}
             {sorted.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   No results match your search.
                 </TableCell>
               </TableRow>

@@ -1,56 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --background: 210 11% 98%;
+    --foreground: 215 20% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 215 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 215 20% 15%;
 
-    --primary: 215 70% 28%;
+    --primary: 215 25% 27%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 15% 93%;
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 210 14% 95%;
+    --secondary-foreground: 215 20% 25%;
 
-    --muted: 210 15% 95%;
-    --muted-foreground: 215 10% 45%;
+    --muted: 210 14% 96%;
+    --muted-foreground: 215 10% 46%;
 
-    --accent: 145 55% 42%;
+    --accent: 145 50% 40%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 65% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 215 70% 28%;
+    --border: 214 18% 90%;
+    --input: 214 18% 90%;
+    --ring: 215 25% 27%;
 
     --radius: 0.5rem;
 
-    --lead-good: 145 55% 92%;
-    --lead-good-border: 145 55% 72%;
-    --lead-bad: 0 60% 94%;
-    --lead-bad-border: 0 60% 75%;
+    --lead-good: 145 45% 93%;
+    --lead-good-foreground: 145 55% 28%;
+    --lead-good-border: 145 45% 75%;
+    --lead-bad: 0 55% 95%;
+    --lead-bad-foreground: 0 60% 38%;
+    --lead-bad-border: 0 55% 78%;
 
-    --sidebar-background: 215 70% 22%;
+    --sidebar-background: 215 25% 18%;
     --sidebar-foreground: 210 20% 95%;
-    --sidebar-primary: 145 55% 50%;
+    --sidebar-primary: 145 50% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 60% 32%;
+    --sidebar-accent: 215 25% 28%;
     --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 215 50% 30%;
-    --sidebar-ring: 145 55% 50%;
+    --sidebar-border: 215 20% 26%;
+    --sidebar-ring: 145 50% 45%;
   }
 }
 
@@ -58,8 +58,8 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }

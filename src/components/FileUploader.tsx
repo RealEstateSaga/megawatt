@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Upload, FileText, Loader2 } from "lucide-react";
+import { Upload, FileText, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface FileUploaderProps {
@@ -34,45 +34,41 @@ const FileUploader = ({ onFilesSelected, isProcessing }: FileUploaderProps) => {
   const clearFiles = () => setSelectedFiles([]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex items-start gap-4 flex-wrap">
       <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          dragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+        className={`border border-dashed rounded-lg px-5 py-3 flex items-center gap-3 transition-colors cursor-pointer ${
+          dragActive ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/40"
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
         onDrop={handleDrop}
       >
-        <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-        <p className="text-foreground font-medium mb-1">Drop MLS & Tax PDFs here</p>
-        <p className="text-sm text-muted-foreground mb-3">Listing History and Tax Information sheets</p>
+        <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
+        <span className="text-sm text-muted-foreground">Drop PDFs here or</span>
         <label>
           <input type="file" accept=".pdf" multiple className="hidden" onChange={handleFileInput} />
-          <span className="inline-flex items-center px-4 py-2 rounded-md bg-secondary text-secondary-foreground text-sm font-medium cursor-pointer hover:bg-secondary/80 transition-colors">
-            Browse Files
-          </span>
+          <span className="text-sm font-medium text-primary cursor-pointer hover:underline">browse</span>
         </label>
       </div>
 
       {selectedFiles.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">{selectedFiles.length} file(s) selected</p>
-            <button onClick={clearFiles} className="text-xs text-muted-foreground hover:text-destructive">Clear all</button>
-          </div>
-          <div className="max-h-32 overflow-y-auto space-y-1">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {selectedFiles.map((f, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <FileText className="h-3.5 w-3.5" />
-                <span className="truncate">{f.name}</span>
-              </div>
+              <span key={i} className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground rounded px-2 py-1 text-xs">
+                <FileText className="h-3 w-3" />
+                <span className="truncate max-w-32">{f.name}</span>
+              </span>
             ))}
           </div>
-          <Button onClick={handleProcess} disabled={isProcessing} className="w-full">
+          <button onClick={clearFiles} className="text-xs text-muted-foreground hover:text-destructive">
+            <X className="h-3.5 w-3.5" />
+          </button>
+          <Button onClick={handleProcess} disabled={isProcessing} size="sm">
             {isProcessing ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing with AI...
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                Processing...
               </>
             ) : (
               <>Process {selectedFiles.length} File(s)</>

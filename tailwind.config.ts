@@ -59,8 +59,10 @@ export default {
         },
         lead: {
           good: "hsl(var(--lead-good))",
+          "good-foreground": "hsl(var(--lead-good-foreground))",
           "good-border": "hsl(var(--lead-good-border))",
           bad: "hsl(var(--lead-bad))",
+          "bad-foreground": "hsl(var(--lead-bad-foreground))",
           "bad-border": "hsl(var(--lead-bad-border))",
         },
       },
