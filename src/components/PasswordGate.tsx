@@ -15,7 +15,7 @@ const PasswordGate = ({ onUnlock }: PasswordGateProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (value === PASS) {
-      sessionStorage.setItem("lp_auth", "1");
+      localStorage.setItem("lp_auth", "1");
       onUnlock();
     } else {
       setError(true);

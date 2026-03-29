@@ -40,7 +40,7 @@ const mapRowToLead = (row: any): LeadRecord => ({
 });
 
 const Index = () => {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem("lp_auth") === "1");
+  const [authed, setAuthed] = useState(() => localStorage.getItem("lp_auth") === "1");
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [queue, setQueue] = useState<FileQueueItem[]>([]);
