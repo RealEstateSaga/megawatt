@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Upload } from "lucide-react";
 
 interface FileUploaderProps {
@@ -8,8 +8,9 @@ interface FileUploaderProps {
 }
 
 const FileUploader = ({ onFilesSelected, onCSVSelected }: FileUploaderProps) => {
-  const dragActive = useRef(false);
+  const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dragCountRef = useRef(0);
 
   const dispatchFiles = useCallback((files: File[]) => {
     const pdfs = files.filter(f => f.type === "application/pdf");
@@ -20,9 +21,25 @@ const FileUploader = ({ onFilesSelected, onCSVSelected }: FileUploaderProps) => 
     }
   }, [onFilesSelected, onCSVSelected]);
 
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCountRef.current += 1;
+    setDragActive(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCountRef.current -= 1;
+    if (dragCountRef.current <= 0) {
+      dragCountRef.current = 0;
+      setDragActive(false);
+    }
+  }, []);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    dragActive.current = false;
+    dragCountRef.current = 0;
+    setDragActive(false);
     dispatchFiles(Array.from(e.dataTransfer.files));
   }, [dispatchFiles]);
 
@@ -35,17 +52,27 @@ const FileUploader = ({ onFilesSelected, onCSVSelected }: FileUploaderProps) => 
 
   return (
     <div
-      className="border border-dashed rounded-md px-3 py-1.5 flex items-center gap-2 transition-all cursor-pointer border-border/60 hover:border-primary/40 hover:bg-primary/5"
-      onDragOver={(e) => { e.preventDefault(); }}
+      className={`border border-dashed rounded-md px-3 py-1.5 flex items-center gap-2 transition-all cursor-pointer ${
+        dragActive
+          ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+          : "border-border/60 hover:border-primary/40 hover:bg-primary/5"
+      }`}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
-      <Upload className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-      <span className="text-xs text-muted-foreground">Drop files or</span>
-      <label>
-        <input ref={inputRef} type="file" accept=".pdf,.csv" multiple className="hidden" onChange={handleFileInput} />
-        <span className="text-xs font-medium text-primary cursor-pointer hover:underline">browse</span>
-      </label>
-      <span className="text-[10px] text-muted-foreground/60">.pdf .csv</span>
+      <Upload className={`h-3.5 w-3.5 shrink-0 transition-colors ${dragActive ? "text-primary" : "text-muted-foreground"}`} />
+      <span className={`text-xs ${dragActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
+        {dragActive ? "Drop here" : "Drop files or"}
+      </span>
+      {!dragActive && (
+        <label>
+          <input ref={inputRef} type="file" accept=".pdf,.csv" multiple className="hidden" onChange={handleFileInput} />
+          <span className="text-xs font-medium text-primary cursor-pointer hover:underline">browse</span>
+        </label>
+      )}
+      {!dragActive && <span className="text-[10px] text-muted-foreground/60">.pdf .csv</span>}
     </div>
   );
 };
