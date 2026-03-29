@@ -20,6 +20,7 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
+  const lastCheckedIndexRef = useRef<number | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
 
   const toggleSort = (field: SortField) => {
@@ -77,13 +78,22 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
     }
   };
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: string, index: number, shiftKey: boolean) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (shiftKey && lastCheckedIndexRef.current !== null) {
+        const start = Math.min(lastCheckedIndexRef.current, index);
+        const end = Math.max(lastCheckedIndexRef.current, index);
+        for (let i = start; i <= end; i++) {
+          next.add(sorted[i].id);
+        }
+      } else {
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+      }
       return next;
     });
+    lastCheckedIndexRef.current = index;
   };
 
   const handleDelete = async () => {
@@ -237,10 +247,16 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    <div className="w-10 flex-shrink-0 px-3 flex items-center">
+                    <div
+                      className="w-10 flex-shrink-0 px-3 flex items-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelect(lead.id, virtualRow.index, e.shiftKey);
+                      }}
+                    >
                       <Checkbox
                         checked={isSelected}
-                        onCheckedChange={() => toggleSelect(lead.id)}
+                        tabIndex={-1}
                         aria-label={`Select ${lead.address}`}
                       />
                     </div>
