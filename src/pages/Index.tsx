@@ -109,13 +109,23 @@ const Index = () => {
       const headerLine = lines[0];
       const headers = headerLine.split(",").map(h => h.trim().toLowerCase());
 
-      // Detect columns
+      // Detect columns — support both our internal names and standard CSV headers
       const statusIdx = headers.findIndex(h => h === "status");
-      const lastNameIdx = headers.findIndex(h => h.includes("last name") || h === "last name");
-      const mailAddrIdx = headers.findIndex(h => h.includes("mail address") || h === "mail address");
-      const cityIdx = headers.findIndex(h => h === "city");
-      const stateIdx = headers.findIndex(h => h === "state");
-      const zipIdx = headers.findIndex(h => h === "zip");
+      const lastNameIdx = headers.findIndex(h =>
+        h === "last name" || h.includes("last name") || h === "owner1lastname"
+      );
+      const mailAddrIdx = headers.findIndex(h =>
+        h === "mail address" || h.includes("mail address") || h === "owner mail address"
+      );
+      const cityIdx = headers.findIndex(h =>
+        h === "city" || h === "mailcityname"
+      );
+      const stateIdx = headers.findIndex(h =>
+        h === "state" || h === "mailstate"
+      );
+      const zipIdx = headers.findIndex(h =>
+        h === "zip" || h === "mailpostalcode"
+      );
       // Also check for combined "mail city state zip"
       const combinedIdx = headers.findIndex(h => h.includes("city state zip"));
       // Check for property address
