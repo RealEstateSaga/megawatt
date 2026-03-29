@@ -247,10 +247,16 @@ const LeadTable = ({ leads, onDeleteLeads }: LeadTableProps) => {
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    <div className="w-10 flex-shrink-0 px-3 flex items-center">
+                    <div
+                      className="w-10 flex-shrink-0 px-3 flex items-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelect(lead.id, virtualRow.index, e.shiftKey);
+                      }}
+                    >
                       <Checkbox
                         checked={isSelected}
-                        onCheckedChange={() => toggleSelect(lead.id)}
+                        tabIndex={-1}
                         aria-label={`Select ${lead.address}`}
                       />
                     </div>
