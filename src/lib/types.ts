@@ -17,14 +17,6 @@ export interface LeadRecord {
 export type SortField = keyof Pick<LeadRecord, 'status' | 'address' | 'ownerLastName' | 'mailingAddress1' | 'mailingAddress2' | 'offMarketDate' | 'saleDate' | 'lastRecordingDate' | 'analysisReason'>;
 export type SortDirection = 'asc' | 'desc';
 
-export interface FileQueueItem {
-  id: string;
-  file: File;
-  status: 'queued' | 'processing' | 'done' | 'failed';
-  error?: string;
-  leadsFound?: number;
-}
-
 export interface FailedUpload {
   id: string;
   fileName: string;
