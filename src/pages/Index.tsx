@@ -164,7 +164,7 @@ const Index = () => {
         newLeads.push({
           id: crypto.randomUUID(),
           address,
-          addressKey: normalizeAddressKey(address),
+          addressKey: address === "CSV" ? normalizeAddressKey(`csv-${mailAddress}-${cityStateZip}`) : normalizeAddressKey(address),
           ownerLastName: lastName,
           mailingAddress1: mailAddress,
           mailingAddress2: cityStateZip,
