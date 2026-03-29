@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import PasswordGate from "@/components/PasswordGate";
 import FileUploader from "@/components/FileUploader";
-import FileQueue from "@/components/FileQueue";
+import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
 import LeadTable from "@/components/LeadTable";
-import type { LeadRecord, FileQueueItem, FailedUpload } from "@/lib/types";
+import type { LeadRecord, FailedUpload } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
 import { abbreviateState } from "@/lib/stateAbbreviations";
+import { hashFile, fileToBase64, getPageCount } from "@/lib/pdfUtils";
 
 const normalizeAddressKey = (addr: string) =>
   addr.toLowerCase().replace(/\b(street|road|avenue|drive|lane|court|boulevard|place|circle|way)\b/g, (m) => {
@@ -15,7 +16,6 @@ const normalizeAddressKey = (addr: string) =>
     return abbr[m] || m;
   }).replace(/[.,#]/g, "").replace(/\s+/g, " ").trim();
 
-/** Fix state abbreviations like "Mn" → "MN" in "City Mn 55391" */
 const fixStateCasing = (cityStateZip: string): string => {
   if (!cityStateZip) return cityStateZip;
   return cityStateZip.replace(/\b([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)/, (_match, state, zip) => {
@@ -39,28 +39,29 @@ const mapRowToLead = (row: any): LeadRecord => ({
   hasHistoryData: row.has_history_data,
 });
 
-// --- SHA-256 content hashing for true deduplication ---
-const hashFile = async (file: File): Promise<string> => {
-  const buffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-};
+export interface JobFile {
+  id: string;
+  job_id: string;
+  file_name: string;
+  file_hash: string;
+  status: "queued" | "processing" | "completed" | "failed" | "skipped";
+  error_message: string | null;
+  total_pages: number | null;
+  processed_pages: number;
+  leads_found: number;
+}
 
-// Load persisted hashes from localStorage (cross-session dedup)
-const loadPersistedHashes = (): Set<string> => {
-  try {
-    const stored = localStorage.getItem("lp_file_hashes");
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  } catch { return new Set(); }
-};
+export interface Job {
+  id: string;
+  status: "pending" | "processing" | "completed" | "failed";
+  total_files: number;
+  completed_files: number;
+  failed_files: number;
+  created_at: string;
+}
 
-const persistHash = (hash: string) => {
-  const hashes = loadPersistedHashes();
-  hashes.add(hash);
-  const arr = Array.from(hashes);
-  if (arr.length > 2000) arr.splice(0, arr.length - 2000);
-  localStorage.setItem("lp_file_hashes", JSON.stringify(arr));
+const persistFailures = (failures: FailedUpload[]) => {
+  localStorage.setItem("lp_failed_uploads", JSON.stringify(failures));
 };
 
 const loadPersistedFailures = (): FailedUpload[] => {
@@ -71,31 +72,19 @@ const loadPersistedFailures = (): FailedUpload[] => {
   } catch { return []; }
 };
 
-const persistFailures = (failures: FailedUpload[]) => {
-  localStorage.setItem("lp_failed_uploads", JSON.stringify(failures));
-};
-
 const Index = () => {
   const [authed, setAuthed] = useState(() => localStorage.getItem("lp_auth") === "1");
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [queue, setQueue] = useState<FileQueueItem[]>([]);
+  const [activeJob, setActiveJob] = useState<Job | null>(null);
+  const [jobFiles, setJobFiles] = useState<JobFile[]>([]);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
   const processingRef = useRef(false);
-  const queueRef = useRef<FileQueueItem[]>([]);
-  const processedHashesRef = useRef<Set<string>>(loadPersistedHashes());
+  const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
 
-  // Wrapper that also persists failures to localStorage
-  const addFailedUpload = useCallback((failure: FailedUpload) => {
-    setFailedUploads(prev => {
-      const next = [...prev, failure];
-      persistFailures(next);
-      return next;
-    });
-  }, []);
+  const isProcessing = activeJob?.status === "processing" || activeJob?.status === "pending";
 
-  const isProcessing = queue.some(q => q.status === "processing" || q.status === "queued");
-
+  // --- Load leads ---
   useEffect(() => {
     const loadLeads = async () => {
       const { data, error } = await supabase
@@ -109,24 +98,81 @@ const Index = () => {
     loadLeads();
   }, []);
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve((reader.result as string).split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  // --- Check for in-progress jobs on mount (persistent recovery) ---
+  useEffect(() => {
+    const checkPendingJobs = async () => {
+      const { data: jobs } = await supabase
+        .from("processing_jobs")
+        .select("*")
+        .in("status", ["pending", "processing"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (jobs && jobs.length > 0) {
+        const job = jobs[0] as Job;
+        setActiveJob(job);
+
+        const { data: files } = await supabase
+          .from("job_files")
+          .select("*")
+          .eq("job_id", job.id)
+          .order("created_at", { ascending: true });
+
+        if (files) setJobFiles(files as JobFile[]);
+      }
+    };
+    checkPendingJobs();
+  }, []);
+
+  // --- Real-time subscription to job files ---
+  useEffect(() => {
+    if (!activeJob) return;
+
+    const channel = supabase
+      .channel(`job-${activeJob.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "job_files", filter: `job_id=eq.${activeJob.id}` },
+        (payload) => {
+          const updated = payload.new as JobFile;
+          setJobFiles(prev =>
+            prev.map(f => f.id === updated.id ? updated : f)
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "processing_jobs", filter: `id=eq.${activeJob.id}` },
+        (payload) => {
+          const updated = payload.new as Job;
+          setActiveJob(updated);
+          if (updated.status === "completed" || updated.status === "failed") {
+            reloadLeads();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [activeJob?.id]);
 
   const reloadLeads = async () => {
     const { data: allRows } = await supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(10000);
     if (allRows) setLeads(allRows.map(mapRowToLead));
   };
 
+  const addFailedUpload = useCallback((failure: FailedUpload) => {
+    setFailedUploads(prev => {
+      const next = [...prev, failure];
+      persistFailures(next);
+      return next;
+    });
+  }, []);
+
   const handleDeleteLeads = async (ids: string[]) => {
     const { error } = await supabase.from("leads").delete().in("id", ids);
     if (error) {
       toast.error("Failed to delete selected leads");
-      console.error("Delete error:", error);
       return;
     }
     toast.success(`Deleted ${ids.length} lead${ids.length > 1 ? "s" : ""}`);
@@ -135,52 +181,29 @@ const Index = () => {
 
   const handleUpdateLastName = async (id: string, newName: string) => {
     const { error } = await supabase.from("leads").update({ owner_last_name: newName }).eq("id", id);
-    if (error) {
-      toast.error("Failed to update last name");
-      return;
-    }
+    if (error) { toast.error("Failed to update last name"); return; }
     toast.success("Last name updated");
     await reloadLeads();
   };
 
+  // --- CSV Import ---
   const handleImportCSV = async (file: File) => {
     try {
       const text = await file.text();
       const lines = text.split(/\r?\n/).filter(l => l.trim());
-      if (lines.length < 2) {
-        toast.error("CSV file is empty or has no data rows");
-        return;
-      }
+      if (lines.length < 2) { toast.error("CSV file is empty or has no data rows"); return; }
 
-      const headerLine = lines[0];
-      const headers = headerLine.split(",").map(h => h.trim().toLowerCase());
-
-      // Detect columns — support both our internal names and standard CSV headers
+      const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
       const statusIdx = headers.findIndex(h => h === "status");
-      const lastNameIdx = headers.findIndex(h =>
-        h === "last name" || h.includes("last name") || h === "owner1lastname"
-      );
-      const mailAddrIdx = headers.findIndex(h =>
-        h === "mail address" || h.includes("mail address") || h === "owner mail address"
-      );
-      const cityIdx = headers.findIndex(h =>
-        h === "city" || h === "mailcityname"
-      );
-      const stateIdx = headers.findIndex(h =>
-        h === "state" || h === "mailstate"
-      );
-      const zipIdx = headers.findIndex(h =>
-        h === "zip" || h === "mailpostalcode"
-      );
-      // Also check for combined "mail city state zip"
+      const lastNameIdx = headers.findIndex(h => h === "last name" || h.includes("last name") || h === "owner1lastname");
+      const mailAddrIdx = headers.findIndex(h => h === "mail address" || h.includes("mail address") || h === "owner mail address");
+      const cityIdx = headers.findIndex(h => h === "city" || h === "mailcityname");
+      const stateIdx = headers.findIndex(h => h === "state" || h === "mailstate");
+      const zipIdx = headers.findIndex(h => h === "zip" || h === "mailpostalcode");
       const combinedIdx = headers.findIndex(h => h.includes("city state zip"));
-      // Check for property address
       const propAddrIdx = headers.findIndex(h => h.includes("property address") || h === "address");
 
-      if (mailAddrIdx === -1) {
-        toast.error("CSV must have a 'Mail Address' column");
-        return;
-      }
+      if (mailAddrIdx === -1) { toast.error("CSV must have a 'Mail Address' column"); return; }
 
       const parseCSVRow = (line: string): string[] => {
         const result: string[] = [];
@@ -201,13 +224,9 @@ const Index = () => {
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCSVRow(lines[i]);
         if (cols.length < 3) continue;
-
         const mailAddress = cols[mailAddrIdx] || "";
-        // If no Property Address column exists, label as "CSV" to indicate it came from CSV import
         const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || "CSV") : "CSV";
         if (!mailAddress && address === "CSV") continue;
-
-        // Deduplicate by mailing address — skip if we've already seen this address
         const mailKey = normalizeAddressKey(mailAddress);
         if (mailKey && seenMailingAddresses.has(mailKey)) continue;
         if (mailKey) seenMailingAddresses.add(mailKey);
@@ -220,34 +239,20 @@ const Index = () => {
         if (combinedIdx >= 0) {
           cityStateZip = fixStateCasing(cols[combinedIdx] || "");
         } else if (cityIdx >= 0 && stateIdx >= 0 && zipIdx >= 0) {
-          const city = cols[cityIdx] || "";
-          const state = abbreviateState(cols[stateIdx] || "");
-          const zip = cols[zipIdx] || "";
-          cityStateZip = `${city} ${state} ${zip}`.trim();
+          cityStateZip = `${cols[cityIdx] || ""} ${abbreviateState(cols[stateIdx] || "")} ${cols[zipIdx] || ""}`.trim();
         }
 
         newLeads.push({
-          id: crypto.randomUUID(),
-          address,
+          id: crypto.randomUUID(), address,
           addressKey: address === "CSV" ? normalizeAddressKey(`csv-${mailAddress}-${cityStateZip}`) : normalizeAddressKey(address),
-          ownerLastName: lastName,
-          mailingAddress1: mailAddress,
-          mailingAddress2: cityStateZip,
-          status,
-          analysisReason: status === "GOOD" ? "Imported from CSV as GOOD" : status === "BAD" ? "Imported from CSV as BAD" : "Awaiting additional documentation for 360-degree view.",
-          offMarketDate: null,
-          saleDate: null,
-          lastRecordingDate: null,
-          hasTaxData: status !== "PENDING",
-          hasHistoryData: status !== "PENDING",
+          ownerLastName: lastName, mailingAddress1: mailAddress, mailingAddress2: cityStateZip,
+          status, analysisReason: status === "GOOD" ? "Imported from CSV as GOOD" : status === "BAD" ? "Imported from CSV as BAD" : "Awaiting additional documentation for 360-degree view.",
+          offMarketDate: null, saleDate: null, lastRecordingDate: null,
+          hasTaxData: status !== "PENDING", hasHistoryData: status !== "PENDING",
         });
       }
 
-      if (newLeads.length === 0) {
-        toast.error("No valid rows found in CSV");
-        return;
-      }
-
+      if (newLeads.length === 0) { toast.error("No valid rows found in CSV"); return; }
       await mergeAndPersist(newLeads);
       toast.success(`Imported ${newLeads.length} leads from CSV`);
     } catch (err) {
@@ -256,15 +261,14 @@ const Index = () => {
     }
   };
 
+  // --- Merge & Persist ---
   const mergeAndPersist = async (newLeads: LeadRecord[]) => {
     const { data: existingRows } = await supabase.from("leads").select("*").limit(10000);
     const existingByKey = new Map<string, any>();
     const existingByMail = new Map<string, any>();
     for (const row of existingRows || []) {
       existingByKey.set(row.address_key, row);
-      if (row.mailing_address_1) {
-        existingByMail.set(normalizeAddressKey(row.mailing_address_1), row);
-      }
+      if (row.mailing_address_1) existingByMail.set(normalizeAddressKey(row.mailing_address_1), row);
     }
 
     const upsertMap = new Map<string, any>();
@@ -272,19 +276,15 @@ const Index = () => {
 
     for (const lead of newLeads) {
       const key = lead.addressKey || normalizeAddressKey(lead.address);
-
-      // Skip if this mailing address already exists in the DB or in this batch
       const mailKey = lead.mailingAddress1 ? normalizeAddressKey(lead.mailingAddress1) : "";
       if (mailKey) {
         if (seenMailKeys.has(mailKey)) continue;
         seenMailKeys.add(mailKey);
-        // If mailing address already in DB under a different address_key, skip
         const existingByMailRow = existingByMail.get(mailKey);
         if (existingByMailRow && existingByMailRow.address_key !== key) continue;
       }
 
       const existing = existingByKey.get(key);
-
       if (existing) {
         const hasTax = existing.has_tax_data || lead.hasTaxData;
         const hasHistory = existing.has_history_data || lead.hasHistoryData;
@@ -297,7 +297,6 @@ const Index = () => {
 
         let status: "GOOD" | "BAD" | "PENDING" = lead.status !== "PENDING" ? lead.status : "PENDING";
         let analysisReason = lead.analysisReason;
-
         if (status === "PENDING" && hasTax && hasHistory) {
           const offDate = offMarketDate ? new Date(offMarketDate) : null;
           const sDate = saleDate ? new Date(saleDate) : null;
@@ -332,8 +331,6 @@ const Index = () => {
     }
 
     const upsertRows = Array.from(upsertMap.values());
-
-    // Batch upserts in chunks of 500 to avoid payload limits
     const BATCH_SIZE = 500;
     let totalFailed = 0;
     for (let i = 0; i < upsertRows.length; i += BATCH_SIZE) {
@@ -344,86 +341,222 @@ const Index = () => {
         totalFailed += batch.length;
       }
     }
-    if (totalFailed > 0) {
-      toast.error(`${totalFailed} rows failed to save — please retry`);
-    }
-
+    if (totalFailed > 0) toast.error(`${totalFailed} rows failed to save — please retry`);
     await reloadLeads();
     return newLeads.length;
   };
 
-  const processNext = useCallback(async () => {
+  // --- Server-side job queue: process next file ---
+  const processNextFile = useCallback(async () => {
     if (processingRef.current) return;
 
-    const nextItem = queueRef.current.find(q => q.status === "queued");
-    if (!nextItem) return;
+    const nextItem = fileQueueRef.current[0];
+    if (!nextItem) {
+      // All files done — update job status
+      if (activeJob) {
+        await supabase.from("processing_jobs").update({
+          status: "completed",
+          updated_at: new Date().toISOString(),
+        }).eq("id", activeJob.id);
+      }
+      return;
+    }
 
     processingRef.current = true;
-    const itemId = nextItem.id;
-    const isCSV = nextItem.file.name.toLowerCase().endsWith(".csv") || nextItem.file.type === "text/csv";
+    const { file, jobFileId, hash } = nextItem;
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
 
-    queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "processing" as const } : q);
-    setQueue([...queueRef.current]);
+    // Update job_file status to processing
+    await supabase.from("job_files").update({
+      status: "processing",
+      updated_at: new Date().toISOString(),
+    }).eq("id", jobFileId);
 
     try {
       if (isCSV) {
-        // Process CSV directly through the import handler
-        await handleImportCSV(nextItem.file);
-        queueRef.current = queueRef.current.filter(q => q.id !== itemId);
-        setQueue([...queueRef.current]);
+        await handleImportCSV(file);
+        await supabase.from("job_files").update({
+          status: "completed",
+          updated_at: new Date().toISOString(),
+        }).eq("id", jobFileId);
       } else {
-        const base64 = await fileToBase64(nextItem.file);
+        // Get page count for the PDF
+        let pageCount = 1;
+        try {
+          pageCount = await getPageCount(file);
+        } catch {
+          // If page count fails, process as single page
+        }
+
+        await supabase.from("job_files").update({
+          total_pages: pageCount,
+          updated_at: new Date().toISOString(),
+        }).eq("id", jobFileId);
+
+        const base64 = await fileToBase64(file);
+
+        // Send each page individually to prevent context thinning
+        const pageFiles = [];
+        for (let p = 1; p <= pageCount; p++) {
+          pageFiles.push({ name: file.name, base64, pageNum: p, totalPages: pageCount });
+        }
+
         const { data, error } = await supabase.functions.invoke("process-leads", {
-          body: { files: [{ name: nextItem.file.name, base64 }] },
+          body: { files: pageFiles, job_file_id: jobFileId },
         });
 
         if (error) {
           const msg = error.message?.includes("429") ? "Rate limit reached" :
             error.message?.includes("402") ? "AI credits exhausted" : "Processing failed";
-          queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: msg } : q);
-          setQueue([...queueRef.current]);
-          addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason: msg, timestamp: new Date() });
+          await supabase.from("job_files").update({
+            status: "failed",
+            error_message: msg,
+            updated_at: new Date().toISOString(),
+          }).eq("id", jobFileId);
+          addFailedUpload({ id: jobFileId, fileName: file.name, reason: msg, timestamp: new Date() });
         } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
           await mergeAndPersist(data.leads);
-          queueRef.current = queueRef.current.filter(q => q.id !== itemId);
-          setQueue([...queueRef.current]);
+          await supabase.from("job_files").update({
+            status: "completed",
+            leads_found: data.leads.length,
+            updated_at: new Date().toISOString(),
+          }).eq("id", jobFileId);
         } else {
           const reason = data?.error || "No readable address or data found in PDF";
-          queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
-          setQueue([...queueRef.current]);
-          addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() });
+          await supabase.from("job_files").update({
+            status: "failed",
+            error_message: reason,
+            updated_at: new Date().toISOString(),
+          }).eq("id", jobFileId);
+          addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
+        }
+      }
+
+      // Register hash in DB for cross-device dedup
+      await supabase.from("file_hashes").upsert({
+        sha256: hash,
+        file_name: file.name,
+        file_size: file.size,
+      }, { onConflict: "sha256" });
+
+      // Update job progress
+      if (activeJob) {
+        const { data: updatedFiles } = await supabase
+          .from("job_files")
+          .select("status")
+          .eq("job_id", activeJob.id);
+
+        if (updatedFiles) {
+          const completed = updatedFiles.filter(f => f.status === "completed" || f.status === "skipped").length;
+          const failed = updatedFiles.filter(f => f.status === "failed").length;
+          await supabase.from("processing_jobs").update({
+            completed_files: completed,
+            failed_files: failed,
+            status: "processing",
+            updated_at: new Date().toISOString(),
+          }).eq("id", activeJob.id);
         }
       }
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Unexpected error";
-      queueRef.current = queueRef.current.map(q => q.id === itemId ? { ...q, status: "failed" as const, error: reason } : q);
-      setQueue([...queueRef.current]);
-      addFailedUpload({ id: itemId, fileName: nextItem.file.name, reason, timestamp: new Date() });
+      await supabase.from("job_files").update({
+        status: "failed",
+        error_message: reason,
+        updated_at: new Date().toISOString(),
+      }).eq("id", jobFileId);
+      addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
     }
 
+    // Remove processed item from queue
+    fileQueueRef.current = fileQueueRef.current.slice(1);
     processingRef.current = false;
-    processNext();
-  }, []);
+    processNextFile();
+  }, [activeJob]);
 
+  // --- Handle file drop ---
   const handleFilesSelected = useCallback(async (files: File[]) => {
-    const newItems: FileQueueItem[] = [];
+    // 1. Hash all files and check against DB
+    const validFiles: { file: File; hash: string }[] = [];
     for (const file of files) {
       const hash = await hashFile(file);
-      if (processedHashesRef.current.has(hash)) {
+
+      // Check DB for existing hash (cross-device dedup)
+      const { data: existing } = await supabase
+        .from("file_hashes")
+        .select("id")
+        .eq("sha256", hash)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
         toast.warning(`"${file.name}" already processed (identical content) — skipped.`);
         continue;
       }
-      processedHashesRef.current.add(hash);
-      persistHash(hash);
-      newItems.push({ id: crypto.randomUUID(), file, status: "queued" });
+
+      validFiles.push({ file, hash });
     }
 
-    if (newItems.length === 0) return;
+    if (validFiles.length === 0) return;
 
-    queueRef.current = [...queueRef.current, ...newItems];
-    setQueue([...queueRef.current]);
-    processNext();
-  }, [processNext]);
+    // 2. Create a processing job
+    const { data: jobData, error: jobError } = await supabase
+      .from("processing_jobs")
+      .insert({
+        status: "pending",
+        total_files: validFiles.length,
+      })
+      .select()
+      .single();
+
+    if (jobError || !jobData) {
+      toast.error("Failed to create processing job");
+      return;
+    }
+
+    const job = jobData as Job;
+    setActiveJob(job);
+
+    // 3. Create job_file records
+    const jobFileInserts = validFiles.map(({ file, hash }) => ({
+      job_id: job.id,
+      file_name: file.name,
+      file_hash: hash,
+      status: "queued" as const,
+    }));
+
+    const { data: jobFilesData, error: jfError } = await supabase
+      .from("job_files")
+      .insert(jobFileInserts)
+      .select();
+
+    if (jfError || !jobFilesData) {
+      toast.error("Failed to register files");
+      return;
+    }
+
+    setJobFiles(jobFilesData as JobFile[]);
+
+    // 4. Queue for processing
+    const queueItems = validFiles.map(({ file, hash }, i) => ({
+      file,
+      jobFileId: (jobFilesData as any[])[i].id,
+      hash,
+    }));
+
+    fileQueueRef.current = [...fileQueueRef.current, ...queueItems];
+
+    // 5. Start processing
+    await supabase.from("processing_jobs").update({
+      status: "processing",
+      updated_at: new Date().toISOString(),
+    }).eq("id", job.id);
+
+    processNextFile();
+  }, [processNextFile]);
+
+  const dismissJob = useCallback(() => {
+    setActiveJob(null);
+    setJobFiles([]);
+  }, []);
 
   if (!authed) return <PasswordGate onUnlock={() => setAuthed(true)} />;
 
@@ -442,7 +575,13 @@ const Index = () => {
           fileUploader={
             <div className="flex items-center gap-3">
               <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-              <FileQueue items={queue} />
+              {activeJob && (
+                <JobProgressPanel
+                  job={activeJob}
+                  files={jobFiles}
+                  onDismiss={dismissJob}
+                />
+              )}
             </div>
           }
         />
