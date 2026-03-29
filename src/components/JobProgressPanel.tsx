@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye, RotateCcw, Hash, SplitSquareVertical, Brain, Database } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,9 +27,29 @@ const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed }: JobProgressP
     switch (status) {
       case "completed": return <CheckCircle2 className="h-3.5 w-3.5 text-accent" />;
       case "failed": return <XCircle className="h-3.5 w-3.5 text-destructive" />;
-      case "processing": return <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />;
+      case "hashing": return <Hash className="h-3.5 w-3.5 animate-pulse text-amber-500" />;
+      case "splitting": return <SplitSquareVertical className="h-3.5 w-3.5 animate-pulse text-blue-500" />;
+      case "processing": return <Brain className="h-3.5 w-3.5 animate-spin text-primary" />;
+      case "committing": return <Database className="h-3.5 w-3.5 animate-pulse text-emerald-500" />;
       case "skipped": return <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />;
       default: return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
+    }
+  };
+
+  const statusLabel = (file: JobFile) => {
+    switch (file.status) {
+      case "hashing": return "Hashing...";
+      case "splitting": return "Splitting PDF...";
+      case "processing":
+        if (file.total_pages && file.total_pages > 1) {
+          return `AI Extracting p${file.processed_pages || 0}/${file.total_pages}`;
+        }
+        return "AI Extracting...";
+      case "committing": return "Saving to DB...";
+      case "completed": return "Done";
+      case "failed": return file.error_message || "Failed";
+      case "skipped": return "Skipped";
+      default: return "Queued";
     }
   };
 
@@ -81,21 +101,14 @@ const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed }: JobProgressP
               <div key={file.id} className="px-3 py-2 flex items-center gap-2">
                 {statusIcon(file.status)}
                 <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs truncate flex-1">{file.file_name}</span>
-                {file.total_pages && file.status === "processing" && (
-                  <span className="text-[10px] text-muted-foreground tabular-nums">
-                    p{file.processed_pages}/{file.total_pages}
-                  </span>
-                )}
+                <span className="text-xs truncate flex-1" title={file.file_name}>{file.file_name}</span>
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  {statusLabel(file)}
+                </span>
                 {file.leads_found > 0 && (
                   <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-lead-good text-lead-good-foreground border-lead-good-border">
                     {file.leads_found} leads
                   </Badge>
-                )}
-                {file.error_message && (
-                  <span className="text-[10px] text-destructive truncate max-w-24" title={file.error_message}>
-                    {file.error_message}
-                  </span>
                 )}
                 {(file.status === "completed" || file.status === "failed") && (
                   <button

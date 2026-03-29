@@ -44,7 +44,7 @@ export interface JobFile {
   job_id: string;
   file_name: string;
   file_hash: string;
-  status: "queued" | "processing" | "completed" | "failed" | "skipped";
+  status: "queued" | "hashing" | "splitting" | "processing" | "committing" | "completed" | "failed" | "skipped";
   error_message: string | null;
   total_pages: number | null;
   processed_pages: number;
@@ -87,12 +87,8 @@ const Index = () => {
   // --- Load leads ---
   useEffect(() => {
     const loadLeads = async () => {
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(10000);
-      if (!error && data) setLeads(data.map(mapRowToLead));
+      const allRows = await fetchAllLeads();
+      setLeads(allRows.map(mapRowToLead));
       setIsLoading(false);
     };
     loadLeads();
@@ -380,9 +376,9 @@ const Index = () => {
     const { file, jobFileId, hash } = nextItem;
     const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
 
-    // Update job_file status to processing
+    // Update job_file status to hashing
     await supabase.from("job_files").update({
-      status: "processing",
+      status: "hashing",
       updated_at: new Date().toISOString(),
     }).eq("id", jobFileId);
 
@@ -394,7 +390,12 @@ const Index = () => {
           updated_at: new Date().toISOString(),
         }).eq("id", jobFileId);
       } else {
-        // Get page count for the PDF
+        // Splitting phase
+        await supabase.from("job_files").update({
+          status: "splitting",
+          updated_at: new Date().toISOString(),
+        }).eq("id", jobFileId);
+
         let pageCount = 1;
         try {
           pageCount = await getPageCount(file);
@@ -404,6 +405,7 @@ const Index = () => {
 
         await supabase.from("job_files").update({
           total_pages: pageCount,
+          status: "processing",
           updated_at: new Date().toISOString(),
         }).eq("id", jobFileId);
 
@@ -429,6 +431,11 @@ const Index = () => {
           }).eq("id", jobFileId);
           addFailedUpload({ id: jobFileId, fileName: file.name, reason: msg, timestamp: new Date() });
         } else if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
+          // Committing phase
+          await supabase.from("job_files").update({
+            status: "committing",
+            updated_at: new Date().toISOString(),
+          }).eq("id", jobFileId);
           await mergeAndPersist(data.leads);
           await supabase.from("job_files").update({
             status: "completed",
@@ -557,7 +564,7 @@ const Index = () => {
       return;
     }
 
-    setJobFiles(jobFilesData as JobFile[]);
+    setJobFiles(prev => [...prev, ...(jobFilesData as JobFile[])]);
 
     // 4. Queue for processing
     const queueItems = validFiles.map(({ file, hash }, i) => ({
