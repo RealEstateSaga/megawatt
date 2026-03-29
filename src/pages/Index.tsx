@@ -44,7 +44,7 @@ export interface JobFile {
   job_id: string;
   file_name: string;
   file_hash: string;
-  status: "queued" | "processing" | "completed" | "failed" | "skipped";
+  status: "queued" | "hashing" | "splitting" | "processing" | "committing" | "completed" | "failed" | "skipped";
   error_message: string | null;
   total_pages: number | null;
   processed_pages: number;
