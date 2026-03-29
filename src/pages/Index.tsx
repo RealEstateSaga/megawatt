@@ -94,9 +94,18 @@ const Index = () => {
     loadLeads();
   }, []);
 
-  // --- Check for in-progress jobs on mount (persistent recovery) ---
+  // --- Check for in-progress jobs on mount + stale job recovery ---
   useEffect(() => {
     const checkPendingJobs = async () => {
+      // Reset stale jobs: files stuck in processing for >5 min
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      await supabase.from("job_files").update({
+        status: "queued",
+        error_message: "Auto-reset: stale processing detected",
+        updated_at: new Date().toISOString(),
+      }).in("status", ["processing", "hashing", "splitting", "committing"])
+        .lt("updated_at", fiveMinAgo);
+
       const { data: jobs } = await supabase
         .from("processing_jobs")
         .select("*")
