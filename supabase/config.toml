@@ -1,0 +1,4 @@
+project_id = "qtelfavvdfoxmtfqmuek"
+
+[functions.process-leads]
+verify_jwt = false

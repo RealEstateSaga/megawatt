@@ -57,6 +57,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        lead: {
+          good: "hsl(var(--lead-good))",
+          "good-border": "hsl(var(--lead-good-border))",
+          bad: "hsl(var(--lead-bad))",
+          "bad-border": "hsl(var(--lead-bad-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
