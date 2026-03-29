@@ -564,7 +564,7 @@ const Index = () => {
       return;
     }
 
-    setJobFiles(jobFilesData as JobFile[]);
+    setJobFiles(prev => [...prev, ...(jobFilesData as JobFile[])]);
 
     // 4. Queue for processing
     const queueItems = validFiles.map(({ file, hash }, i) => ({
