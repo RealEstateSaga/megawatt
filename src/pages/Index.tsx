@@ -56,7 +56,8 @@ const Index = () => {
       const { data, error } = await supabase
         .from("leads")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(10000);
       if (!error && data) setLeads(data.map(mapRowToLead));
       setIsLoading(false);
     };
@@ -72,7 +73,7 @@ const Index = () => {
     });
 
   const reloadLeads = async () => {
-    const { data: allRows } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
+    const { data: allRows } = await supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(10000);
     if (allRows) setLeads(allRows.map(mapRowToLead));
   };
 
@@ -211,7 +212,7 @@ const Index = () => {
   };
 
   const mergeAndPersist = async (newLeads: LeadRecord[]) => {
-    const { data: existingRows } = await supabase.from("leads").select("*");
+    const { data: existingRows } = await supabase.from("leads").select("*").limit(10000);
     const existingByKey = new Map<string, any>();
     const existingByMail = new Map<string, any>();
     for (const row of existingRows || []) {
