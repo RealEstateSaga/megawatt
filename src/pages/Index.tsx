@@ -776,6 +776,20 @@ const Index = () => {
     </div>
   );
 
+  const fileUploaderElement = (
+    <div className="flex items-center gap-3">
+      <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
+      {activeJob && (
+        <JobProgressPanel
+          job={activeJob}
+          files={jobFiles}
+          onDismiss={dismissJob}
+          onRetryFailed={handleRetryFailed}
+        />
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {isLoading ? (
@@ -783,25 +797,39 @@ const Index = () => {
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         </div>
       ) : (
-        <LeadTable
-          leads={leads}
-          onDeleteLeads={handleDeleteLeads}
-          onUpdateLastName={handleUpdateLastName}
-          onImportCSV={handleImportCSV}
-          fileUploader={
-            <div className="flex items-center gap-3">
-              <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-              {activeJob && (
-                <JobProgressPanel
-                  job={activeJob}
-                  files={jobFiles}
-                  onDismiss={dismissJob}
-                  onRetryFailed={handleRetryFailed}
-                />
-              )}
-            </div>
-          }
-        />
+        <Tabs defaultValue="master" className="flex-1 flex flex-col min-h-0">
+          <div className="px-6 pt-2 bg-card border-b border-border">
+            <TabsList className="h-9">
+              <TabsTrigger value="master" className="text-sm">
+                Master List
+                {leads.length > 0 && <span className="ml-1.5 text-xs text-muted-foreground">({leads.length})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="text-sm">
+                Rejected Records
+                {rejectedRecords.length > 0 && (
+                  <span className="ml-1.5 text-xs text-destructive font-semibold">({rejectedRecords.length})</span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="master" className="flex-1 flex flex-col min-h-0 mt-0">
+            <LeadTable
+              leads={leads}
+              onDeleteLeads={handleDeleteLeads}
+              onUpdateLastName={handleUpdateLastName}
+              onImportCSV={handleImportCSV}
+              fileUploader={fileUploaderElement}
+            />
+          </TabsContent>
+
+          <TabsContent value="rejected" className="flex-1 flex flex-col min-h-0 mt-0">
+            <RejectedRecordsTable
+              records={rejectedRecords}
+              onClear={() => { setRejectedRecords([]); persistRejected([]); }}
+            />
+          </TabsContent>
+        </Tabs>
       )}
 
       <FailedUploadsSidebar
