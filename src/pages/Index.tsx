@@ -74,7 +74,7 @@ const loadPersistedFailures = (): FailedUpload[] => {
 };
 
 const Index = () => {
-  const [authed, setAuthed] = useState(() => localStorage.getItem("lp_auth") === "1");
+  const [entered, setEntered] = useState(false);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
