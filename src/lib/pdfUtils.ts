@@ -3,29 +3,49 @@ import * as pdfjsLib from "pdfjs-dist";
 // Use the bundled worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs`;
 
+export interface SplitPdfPage {
+  base64: string;
+  mimeType: "image/png";
+}
+
 /**
- * Split a PDF File into individual page base64 strings.
- * Each page is rendered as a standalone single-page PDF.
+ * Split a PDF file into individual page images so each AI call receives exactly one page.
  */
-export async function splitPdfToPages(file: File): Promise<string[]> {
+export async function splitPdfToPages(file: File): Promise<SplitPdfPage[]> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
   const pageCount = pdf.numPages;
 
-  // For single-page PDFs, just return the original base64
-  if (pageCount === 1) {
-    const base64 = await fileToBase64Raw(file);
-    return [base64];
+  const pages: SplitPdfPage[] = [];
+  for (let i = 1; i <= pageCount; i++) {
+    const page = await pdf.getPage(i);
+    const baseViewport = page.getViewport({ scale: 1 });
+    const scale = Math.min(2, 1800 / Math.max(baseViewport.width, baseViewport.height));
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d", { alpha: false });
+
+    if (!context) {
+      throw new Error("Unable to render PDF page");
+    }
+
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+
+    await page.render({ canvasContext: context, viewport }).promise;
+
+    const dataUrl = canvas.toDataURL("image/png");
+    pages.push({
+      base64: dataUrl.split(",")[1],
+      mimeType: "image/png",
+    });
+
+    page.cleanup();
+    canvas.width = 0;
+    canvas.height = 0;
   }
 
-  // For multi-page, we send the whole PDF but tell the server the page count
-  // The server will process it page-by-page using its own PDF parsing
-  // This avoids the complexity of client-side PDF reconstruction
-  const base64 = await fileToBase64Raw(file);
-  const pages: string[] = [];
-  for (let i = 0; i < pageCount; i++) {
-    pages.push(base64); // Same base64, different page numbers sent separately
-  }
   return pages;
 }
 
