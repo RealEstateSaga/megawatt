@@ -877,7 +877,7 @@ const Index = () => {
     ownerLastName: r.rawData.ownerLastName || "",
     mailingAddress1: r.rawData.mailingAddress1 || "",
     mailingAddress2: r.rawData.mailingAddress2 || "",
-    status: "BAD" as const,
+    status: r.classification === "duplicate" ? "DUPE" as const : "FAIL" as const,
     analysisReason: `[${r.classification.toUpperCase()}] ${r.reason}`,
     offMarketDate: null,
     saleDate: null,
