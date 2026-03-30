@@ -549,7 +549,7 @@ const Index = () => {
 
     const filesToProcess = pdfFiles;
     const validFiles: { file: File; hash: string }[] = [];
-    for (const file of files) {
+    for (const file of filesToProcess) {
       const hash = await hashFile(file);
 
       // Check DB for existing hash (cross-device dedup)
