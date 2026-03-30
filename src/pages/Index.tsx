@@ -832,8 +832,35 @@ const Index = () => {
   const goodLeads = leads.filter(l => l.status === "GOOD");
   const badLeads = leads.filter(l => l.status === "BAD");
   const pendingLeads = leads.filter(l => l.status === "PENDING");
+
+  // Convert rejected records into LeadRecord shape so LeadTable can render them identically
+  const rejectedAsLeads: LeadRecord[] = rejectedRecords.map(r => ({
+    id: r.id,
+    address: r.rawData.address || "—",
+    addressKey: "",
+    ownerLastName: r.rawData.ownerLastName || "",
+    mailingAddress1: r.rawData.mailingAddress1 || "",
+    mailingAddress2: r.rawData.mailingAddress2 || "",
+    status: "BAD" as const,
+    analysisReason: `[${r.classification.toUpperCase()}] ${r.reason}`,
+    offMarketDate: null,
+    saleDate: null,
+    lastRecordingDate: null,
+    hasTaxData: false,
+    hasHistoryData: false,
+  }));
+
   const tabCounts = { good: goodLeads.length, bad: badLeads.length, pending: pendingLeads.length, rejected: rejectedRecords.length };
-  const visibleLeads = activeTab === "good" ? goodLeads : activeTab === "bad" ? badLeads : activeTab === "pending" ? pendingLeads : [];
+  const visibleLeads = activeTab === "good" ? goodLeads : activeTab === "bad" ? badLeads : activeTab === "pending" ? pendingLeads : rejectedAsLeads;
+
+  const handleDeleteRejected = async (ids: string[]) => {
+    setRejectedRecords(prev => {
+      const next = prev.filter(r => !ids.includes(r.id));
+      persistRejected(next);
+      return next;
+    });
+    toast.success(`Removed ${ids.length} rejected record${ids.length > 1 ? "s" : ""}`);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -841,45 +868,11 @@ const Index = () => {
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         </div>
-      ) : activeTab === "rejected" ? (
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="sticky top-0 z-20 bg-card border-b border-border flex-shrink-0">
-            <div className="px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-4">
-                <h1 className="text-lg font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Lead Pro
-                </h1>
-                <div className="flex items-center gap-1">
-                  {([
-                    { key: "good" as LeadTab, label: "Good", count: tabCounts.good },
-                    { key: "bad" as LeadTab, label: "Bad", count: tabCounts.bad },
-                    { key: "pending" as LeadTab, label: "Pending", count: tabCounts.pending },
-                    { key: "rejected" as LeadTab, label: "Rejected", count: tabCounts.rejected },
-                  ]).map(tab => (
-                    <button
-                      key={tab.key}
-                      onClick={() => setActiveTab(tab.key)}
-                      className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
-                        activeTab === tab.key ? "bg-foreground text-background shadow-sm" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"
-                      }`}
-                    >
-                      {tab.label} ({tab.count})
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          <RejectedRecordsTable
-            records={rejectedRecords}
-            onClear={() => { setRejectedRecords([]); persistRejected([]); }}
-          />
-        </div>
       ) : (
         <LeadTable
           leads={visibleLeads}
-          onDeleteLeads={handleDeleteLeads}
-          onUpdateLastName={handleUpdateLastName}
+          onDeleteLeads={activeTab === "rejected" ? handleDeleteRejected : handleDeleteLeads}
+          onUpdateLastName={activeTab === "rejected" ? undefined : handleUpdateLastName}
           onImportCSV={handleImportCSV}
           fileUploader={fileUploaderElement}
           activeTab={activeTab}
