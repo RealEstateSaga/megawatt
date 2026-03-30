@@ -339,8 +339,8 @@ const Index = () => {
         }
 
         newLeads.push({
-          id: crypto.randomUUID(), address,
-          addressKey: address === "CSV" ? normalizeAddressKey(`csv-${mailAddress}-${cityStateZip}`) : normalizeAddressKey(address),
+          id: crypto.randomUUID(), address: effectiveAddress,
+          addressKey: effectiveAddress === "CSV" ? normalizeAddressKey(`csv-${mailAddress}-${cityStateZip}`) : normalizeAddressKey(effectiveAddress),
           ownerLastName: lastName, mailingAddress1: mailAddress, mailingAddress2: cityStateZip,
           status, analysisReason: status === "GOOD" ? "Imported from CSV as GOOD" : status === "BAD" ? "Imported from CSV as BAD" : "Awaiting additional documentation for 360-degree view.",
           offMarketDate: null, saleDate: null, lastRecordingDate: null,
