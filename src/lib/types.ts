@@ -5,7 +5,7 @@ export interface LeadRecord {
   ownerLastName: string;
   mailingAddress1: string;
   mailingAddress2: string;
-  status: "GOOD" | "BAD" | "PENDING";
+  status: "GOOD" | "BAD" | "PENDING" | "DUPE" | "FAIL";
   analysisReason: string;
   offMarketDate: string | null;
   saleDate: string | null;

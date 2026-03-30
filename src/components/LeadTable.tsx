@@ -37,6 +37,8 @@ const columns: { field: SortField; label: string; flex: string; minW: string }[]
 const statusBadgeClass = (status: string) => {
   if (status === "GOOD") return "bg-lead-good text-lead-good-foreground border-lead-good-border text-xs font-semibold";
   if (status === "BAD") return "bg-lead-bad text-lead-bad-foreground border-lead-bad-border text-xs font-semibold";
+  if (status === "DUPE") return "bg-orange-500/15 text-orange-600 border-orange-500/30 text-xs font-semibold";
+  if (status === "FAIL") return "bg-destructive/15 text-destructive border-destructive/30 text-xs font-semibold";
   return "bg-lead-pending text-lead-pending-foreground border-lead-pending-border text-xs font-semibold";
 };
 
