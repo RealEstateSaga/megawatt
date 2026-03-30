@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye, RotateCcw, Hash, SplitSquareVertical, Brain, Database } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye, RotateCcw, Hash, SplitSquareVertical, Brain, Database, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ interface JobProgressPanelProps {
   onCancelJob?: () => void;
 }
 
-const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed }: JobProgressPanelProps) => {
+const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed, onCancelJob }: JobProgressPanelProps) => {
   const [expanded, setExpanded] = useState(false);
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
 
