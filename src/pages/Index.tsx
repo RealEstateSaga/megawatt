@@ -623,7 +623,7 @@ const Index = () => {
     }).eq("id", job.id);
 
     processNextFile();
-  }, [processNextFile]);
+  }, [processNextFile, handleImportCSV]);
 
   const dismissJob = useCallback(() => {
     setActiveJob(null);
