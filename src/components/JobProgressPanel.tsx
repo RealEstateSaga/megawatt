@@ -84,6 +84,12 @@ const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed, onCancelJob }:
               Job Progress
             </span>
             <div className="flex items-center gap-1">
+              {!isDone && onCancelJob && (
+                <Button onClick={onCancelJob} variant="destructive" size="sm" className="h-6 text-xs gap-1">
+                  <X className="h-3 w-3" />
+                  Cancel
+                </Button>
+              )}
               {failed > 0 && onRetryFailed && (
                 <Button onClick={onRetryFailed} variant="outline" size="sm" className="h-6 text-xs gap-1">
                   <RotateCcw className="h-3 w-3" />
