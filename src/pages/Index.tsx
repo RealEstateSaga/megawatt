@@ -13,10 +13,13 @@ import { abbreviateState } from "@/lib/stateAbbreviations";
 import { hashFile, fileToBase64, getPageCount } from "@/lib/pdfUtils";
 
 const normalizeAddressKey = (addr: string) =>
-  addr.toLowerCase().replace(/\b(street|road|avenue|drive|lane|court|boulevard|place|circle|way)\b/g, (m) => {
-    const abbr: Record<string, string> = { street: "st", road: "rd", avenue: "ave", drive: "dr", lane: "ln", court: "ct", boulevard: "blvd", place: "pl", circle: "cir", way: "way" };
-    return abbr[m] || m;
-  }).replace(/[.,#]/g, "").replace(/\s+/g, " ").trim();
+  addr.toLowerCase()
+    .replace(/\(no\s*mail\)/gi, "") // strip "(no mail)" markers
+    .replace(/\bunit\b/gi, "") // normalize "unit" (equivalent to # which gets stripped)
+    .replace(/\b(street|road|avenue|drive|lane|court|boulevard|place|circle|way|parkway|terrace|trail)\b/g, (m) => {
+      const abbr: Record<string, string> = { street: "st", road: "rd", avenue: "ave", drive: "dr", lane: "ln", court: "ct", boulevard: "blvd", place: "pl", circle: "cir", way: "way", parkway: "pkwy", terrace: "ter", trail: "trl" };
+      return abbr[m] || m;
+    }).replace(/[.,#]/g, "").replace(/\s+/g, " ").trim();
 
 const fixStateCasing = (cityStateZip: string): string => {
   if (!cityStateZip) return cityStateZip;
