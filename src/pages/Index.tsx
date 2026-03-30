@@ -6,7 +6,9 @@ import FileUploader from "@/components/FileUploader";
 import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
 import LeadTable from "@/components/LeadTable";
-import type { LeadRecord, FailedUpload } from "@/lib/types";
+import RejectedRecordsTable from "@/components/RejectedRecordsTable";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import type { LeadRecord, FailedUpload, RejectedRecord } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
 import { abbreviateState } from "@/lib/stateAbbreviations";
 import { hashFile, fileToBase64, getPageCount } from "@/lib/pdfUtils";
@@ -73,6 +75,18 @@ const loadPersistedFailures = (): FailedUpload[] => {
   } catch { return []; }
 };
 
+const persistRejected = (records: RejectedRecord[]) => {
+  localStorage.setItem("lp_rejected_records", JSON.stringify(records));
+};
+
+const loadPersistedRejected = (): RejectedRecord[] => {
+  try {
+    const stored = localStorage.getItem("lp_rejected_records");
+    if (!stored) return [];
+    return JSON.parse(stored).map((r: any) => ({ ...r, timestamp: new Date(r.timestamp) }));
+  } catch { return []; }
+};
+
 const Index = () => {
   const [entered, setEntered] = useState(false);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
@@ -80,6 +94,7 @@ const Index = () => {
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [jobFiles, setJobFiles] = useState<JobFile[]>([]);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
+  const [rejectedRecords, setRejectedRecords] = useState<RejectedRecord[]>(() => loadPersistedRejected());
   const processingRef = useRef(false);
   const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
 
@@ -330,6 +345,35 @@ const Index = () => {
       }
 
       // --- STEP 8: SUCCESS CONDITION ---
+      // Store rejected records (duplicates + failed) for the Rejected tab
+      const rejectedFromImport: RejectedRecord[] = rowClassifications
+        .filter(r => r.classification === "duplicate" || r.classification === "failed")
+        .map(r => {
+          const cols = parseCSVRow(lines[r.rowIndex + 1]);
+          return {
+            id: crypto.randomUUID(),
+            rowIndex: r.rowIndex,
+            classification: r.classification as "duplicate" | "failed",
+            reason: r.reason,
+            fileName: file.name,
+            timestamp: new Date(),
+            rawData: {
+              address: propAddrIdx >= 0 ? (cols[propAddrIdx] || "") : "",
+              ownerLastName: lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "",
+              mailingAddress1: cols[mailAddrIdx] || "",
+              mailingAddress2: combinedIdx >= 0 ? (cols[combinedIdx] || "") : (cityIdx >= 0 && stateIdx >= 0 && zipIdx >= 0 ? `${cols[cityIdx] || ""} ${cols[stateIdx] || ""} ${cols[zipIdx] || ""}`.trim() : ""),
+            },
+          };
+        });
+
+      if (rejectedFromImport.length > 0) {
+        setRejectedRecords(prev => {
+          const next = [...prev, ...rejectedFromImport];
+          persistRejected(next);
+          return next;
+        });
+      }
+
       if (rowsInserted === 0) {
         toast.error(`No new rows to import. ${rowsDuplicate} duplicates, ${rowsFailed} failed.`);
         return;
@@ -342,16 +386,6 @@ const Index = () => {
       if (rowsDuplicate > 0) parts.push(`${rowsDuplicate} duplicates skipped`);
       if (rowsFailed > 0) parts.push(`${rowsFailed} failed`);
       toast.success(`CSV Import Complete: ${parts.join(", ")} (${totalRowsDetected} total rows)`);
-
-      // Log failed rows for debugging
-      if (rowsFailed > 0) {
-        const failedRows = rowClassifications.filter(r => r.classification === "failed");
-        console.warn("[CSV Validation] Failed rows:", failedRows);
-      }
-      if (rowsDuplicate > 0) {
-        const dupRows = rowClassifications.filter(r => r.classification === "duplicate");
-        console.log("[CSV Validation] Duplicate rows:", dupRows);
-      }
     } catch (err) {
       console.error("CSV import error:", err);
       toast.error("Failed to parse CSV file");
@@ -742,6 +776,20 @@ const Index = () => {
     </div>
   );
 
+  const fileUploaderElement = (
+    <div className="flex items-center gap-3">
+      <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
+      {activeJob && (
+        <JobProgressPanel
+          job={activeJob}
+          files={jobFiles}
+          onDismiss={dismissJob}
+          onRetryFailed={handleRetryFailed}
+        />
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {isLoading ? (
@@ -749,25 +797,39 @@ const Index = () => {
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         </div>
       ) : (
-        <LeadTable
-          leads={leads}
-          onDeleteLeads={handleDeleteLeads}
-          onUpdateLastName={handleUpdateLastName}
-          onImportCSV={handleImportCSV}
-          fileUploader={
-            <div className="flex items-center gap-3">
-              <FileUploader onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-              {activeJob && (
-                <JobProgressPanel
-                  job={activeJob}
-                  files={jobFiles}
-                  onDismiss={dismissJob}
-                  onRetryFailed={handleRetryFailed}
-                />
-              )}
-            </div>
-          }
-        />
+        <Tabs defaultValue="master" className="flex-1 flex flex-col min-h-0">
+          <div className="px-6 pt-2 bg-card border-b border-border">
+            <TabsList className="h-9">
+              <TabsTrigger value="master" className="text-sm">
+                Master List
+                {leads.length > 0 && <span className="ml-1.5 text-xs text-muted-foreground">({leads.length})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="text-sm">
+                Rejected Records
+                {rejectedRecords.length > 0 && (
+                  <span className="ml-1.5 text-xs text-destructive font-semibold">({rejectedRecords.length})</span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="master" className="flex-1 flex flex-col min-h-0 mt-0">
+            <LeadTable
+              leads={leads}
+              onDeleteLeads={handleDeleteLeads}
+              onUpdateLastName={handleUpdateLastName}
+              onImportCSV={handleImportCSV}
+              fileUploader={fileUploaderElement}
+            />
+          </TabsContent>
+
+          <TabsContent value="rejected" className="flex-1 flex flex-col min-h-0 mt-0">
+            <RejectedRecordsTable
+              records={rejectedRecords}
+              onClear={() => { setRejectedRecords([]); persistRejected([]); }}
+            />
+          </TabsContent>
+        </Tabs>
       )}
 
       <FailedUploadsSidebar
