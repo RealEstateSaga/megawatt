@@ -75,6 +75,18 @@ const loadPersistedFailures = (): FailedUpload[] => {
   } catch { return []; }
 };
 
+const persistRejected = (records: RejectedRecord[]) => {
+  localStorage.setItem("lp_rejected_records", JSON.stringify(records));
+};
+
+const loadPersistedRejected = (): RejectedRecord[] => {
+  try {
+    const stored = localStorage.getItem("lp_rejected_records");
+    if (!stored) return [];
+    return JSON.parse(stored).map((r: any) => ({ ...r, timestamp: new Date(r.timestamp) }));
+  } catch { return []; }
+};
+
 const Index = () => {
   const [entered, setEntered] = useState(false);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
