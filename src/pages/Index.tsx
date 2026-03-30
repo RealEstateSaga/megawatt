@@ -641,7 +641,17 @@ const Index = () => {
     });
   }, [jobFiles]);
 
-  if (!authed) return <PasswordGate onUnlock={() => setAuthed(true)} />;
+  if (!entered) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <button
+        onClick={() => setEntered(true)}
+        className="px-10 py-4 text-2xl font-bold tracking-widest bg-primary text-primary-foreground rounded-lg shadow-lg hover:opacity-90 transition-opacity"
+        style={{ fontFamily: "'Playfair Display', serif" }}
+      >
+        LeadPro
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
