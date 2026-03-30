@@ -1026,6 +1026,38 @@ const Index = () => {
     setJobFiles([]);
   }, []);
 
+  // Cancel an in-progress job
+  const handleCancelJob = useCallback(async () => {
+    if (!activeJob) return;
+    cancelledRef.current = true;
+    fileQueueRef.current = [];
+    processingRef.current = false;
+
+    // Mark all non-completed files as failed
+    const pendingFiles = jobFiles.filter(f => !["completed", "failed", "skipped"].includes(f.status));
+    for (const f of pendingFiles) {
+      await supabase.from("job_files").update({
+        status: "failed",
+        error_message: "Cancelled by user",
+        updated_at: new Date().toISOString(),
+      }).eq("id", f.id);
+    }
+
+    await supabase.from("processing_jobs").update({
+      status: "failed",
+      failed_files: pendingFiles.length + (activeJob.failed_files || 0),
+      updated_at: new Date().toISOString(),
+    }).eq("id", activeJob.id);
+
+    // Remove hashes for cancelled files so they can be re-uploaded
+    const cancelledHashes = pendingFiles.map(f => f.file_hash);
+    if (cancelledHashes.length > 0) {
+      await supabase.from("file_hashes").delete().in("sha256", cancelledHashes);
+    }
+
+    toast.info("Job cancelled. You can re-drop the files to try again.");
+  }, [activeJob, jobFiles]);
+
   // Retry failed files: user must re-drop them since File objects don't survive refresh
   const handleRetryFailed = useCallback(() => {
     const failedFiles = jobFiles.filter(f => f.status === "failed");
