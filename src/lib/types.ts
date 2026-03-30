@@ -23,3 +23,18 @@ export interface FailedUpload {
   reason: string;
   timestamp: Date;
 }
+
+export interface RejectedRecord {
+  id: string;
+  rowIndex: number;
+  classification: "duplicate" | "failed";
+  reason: string;
+  fileName: string;
+  timestamp: Date;
+  rawData: {
+    address?: string;
+    ownerLastName?: string;
+    mailingAddress1?: string;
+    mailingAddress2?: string;
+  };
+}
