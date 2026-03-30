@@ -150,17 +150,23 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader }: Lea
     if (e.key === "Escape") cancelEdit();
   };
 
-  const downloadCSV = () => {
-    const good = leads.filter(l => l.status === "GOOD");
+  const buildCSV = (rows: LeadRecord[]) => {
     const header = "Property Address,Last Name,Mail Address,Mail City State Zip\n";
-    const rows = good.map(l => `"${l.address}","${l.ownerLastName}","${l.mailingAddress1}","${l.mailingAddress2}"`).join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
+    const body = rows.map(l => `"${l.address}","${l.ownerLastName}","${l.mailingAddress1}","${l.mailingAddress2}"`).join("\n");
+    const blob = new Blob([header + body], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "mailing_list.csv";
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const downloadCSV = () => buildCSV(leads.filter(l => l.status === "GOOD"));
+
+  const downloadSelected = () => {
+    const selected = sorted.filter(l => selectedIds.has(l.id));
+    if (selected.length > 0) buildCSV(selected);
   };
 
   const getCellValue = (lead: LeadRecord, field: SortField) => {
