@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 import { toast } from "sonner";
-import PasswordGate from "@/components/PasswordGate";
+
 import FileUploader from "@/components/FileUploader";
 import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
