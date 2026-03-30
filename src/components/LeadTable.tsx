@@ -7,15 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { LeadRecord, SortField, SortDirection } from "@/lib/types";
 
+export type LeadTab = "good" | "bad" | "pending" | "rejected";
+
 interface LeadTableProps {
   leads: LeadRecord[];
   onDeleteLeads?: (ids: string[]) => Promise<void>;
   onUpdateLastName?: (id: string, newName: string) => Promise<void>;
   onImportCSV?: (file: File) => Promise<void>;
   fileUploader?: ReactNode;
-  activeTab?: string;
-  onTabChange?: (tab: string) => void;
-  rejectedCount?: number;
+  activeTab?: LeadTab;
+  onTabChange?: (tab: LeadTab) => void;
+  tabCounts?: { good: number; bad: number; pending: number; rejected: number };
 }
 
 const ROW_HEIGHT = 40;
@@ -38,7 +40,7 @@ const statusBadgeClass = (status: string) => {
   return "bg-lead-pending text-lead-pending-foreground border-lead-pending-border text-xs font-semibold";
 };
 
-const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader, activeTab = "master", onTabChange, rejectedCount = 0 }: LeadTableProps) => {
+const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader, activeTab = "good", onTabChange, tabCounts }: LeadTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("status");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
@@ -226,26 +228,27 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader, activ
             <h1 className="text-lg font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
               Lead Pro
             </h1>
-            {onTabChange && (
+            {onTabChange && tabCounts && (
               <div className="flex items-center gap-1">
-                <button
-                  onClick={() => onTabChange("master")}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${activeTab === "master" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"}`}
-                >
-                  Master List{leads.length > 0 ? ` (${leads.length})` : ""}
-                </button>
-                <button
-                  onClick={() => onTabChange("rejected")}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${activeTab === "rejected" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"}`}
-                >
-                  Rejected{rejectedCount > 0 ? ` (${rejectedCount})` : ""}
-                </button>
+                {([
+                  { key: "good" as LeadTab, label: "Good", count: tabCounts.good, color: "bg-lead-good/20 text-lead-good-foreground border border-lead-good-border" },
+                  { key: "bad" as LeadTab, label: "Bad", count: tabCounts.bad, color: "bg-lead-bad/20 text-lead-bad-foreground border border-lead-bad-border" },
+                  { key: "pending" as LeadTab, label: "Pending", count: tabCounts.pending, color: "bg-lead-pending/20 text-lead-pending-foreground border border-lead-pending-border" },
+                  { key: "rejected" as LeadTab, label: "Rejected", count: tabCounts.rejected, color: "bg-destructive/15 text-destructive border border-destructive/30" },
+                ]).map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => onTabChange(tab.key)}
+                    className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
+                      activeTab === tab.key
+                        ? "bg-foreground text-background shadow-sm"
+                        : `${tab.color} hover:opacity-80`
+                    }`}
+                  >
+                    {tab.label} ({tab.count})
+                  </button>
+                ))}
               </div>
-            )}
-            {activeTab === "master" && !emptyState && (
-              <p className="text-xs text-muted-foreground">
-                {leads.length} total · <span className="text-accent font-medium">{goodCount} good</span> · {leads.length - goodCount - pendingCount} bad · <span className="text-muted-foreground">{pendingCount} pending</span>
-              </p>
             )}
           </div>
           <div className="flex items-center gap-2">

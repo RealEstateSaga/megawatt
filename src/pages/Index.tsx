@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import FileUploader from "@/components/FileUploader";
 import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
-import LeadTable from "@/components/LeadTable";
+import LeadTable, { type LeadTab } from "@/components/LeadTable";
 import RejectedRecordsTable from "@/components/RejectedRecordsTable";
 import type { LeadRecord, FailedUpload, RejectedRecord } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,7 +94,7 @@ const Index = () => {
   const [jobFiles, setJobFiles] = useState<JobFile[]>([]);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
   const [rejectedRecords, setRejectedRecords] = useState<RejectedRecord[]>(() => loadPersistedRejected());
-  const [activeTab, setActiveTab] = useState<string>("master");
+  const [activeTab, setActiveTab] = useState<LeadTab>("good");
   const processingRef = useRef(false);
   const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
 
@@ -790,26 +790,20 @@ const Index = () => {
     </div>
   );
 
+  const goodLeads = leads.filter(l => l.status === "GOOD");
+  const badLeads = leads.filter(l => l.status === "BAD");
+  const pendingLeads = leads.filter(l => l.status === "PENDING");
+  const tabCounts = { good: goodLeads.length, bad: badLeads.length, pending: pendingLeads.length, rejected: rejectedRecords.length };
+  const visibleLeads = activeTab === "good" ? goodLeads : activeTab === "bad" ? badLeads : activeTab === "pending" ? pendingLeads : [];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         </div>
-      ) : activeTab === "master" ? (
-        <LeadTable
-          leads={leads}
-          onDeleteLeads={handleDeleteLeads}
-          onUpdateLastName={handleUpdateLastName}
-          onImportCSV={handleImportCSV}
-          fileUploader={fileUploaderElement}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          rejectedCount={rejectedRecords.length}
-        />
-      ) : (
+      ) : activeTab === "rejected" ? (
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Reuse the same sticky header style */}
           <div className="sticky top-0 z-20 bg-card border-b border-border flex-shrink-0">
             <div className="px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-4">
@@ -817,18 +811,22 @@ const Index = () => {
                   Lead Pro
                 </h1>
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setActiveTab("master")}
-                    className="px-3 py-1 rounded text-xs font-semibold transition-colors bg-muted text-muted-foreground hover:bg-muted-foreground/20"
-                  >
-                    Master List ({leads.length})
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("rejected")}
-                    className="px-3 py-1 rounded text-xs font-semibold transition-colors bg-foreground text-background"
-                  >
-                    Rejected ({rejectedRecords.length})
-                  </button>
+                  {([
+                    { key: "good" as LeadTab, label: "Good", count: tabCounts.good },
+                    { key: "bad" as LeadTab, label: "Bad", count: tabCounts.bad },
+                    { key: "pending" as LeadTab, label: "Pending", count: tabCounts.pending },
+                    { key: "rejected" as LeadTab, label: "Rejected", count: tabCounts.rejected },
+                  ]).map(tab => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
+                        activeTab === tab.key ? "bg-foreground text-background shadow-sm" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"
+                      }`}
+                    >
+                      {tab.label} ({tab.count})
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -838,6 +836,17 @@ const Index = () => {
             onClear={() => { setRejectedRecords([]); persistRejected([]); }}
           />
         </div>
+      ) : (
+        <LeadTable
+          leads={visibleLeads}
+          onDeleteLeads={handleDeleteLeads}
+          onUpdateLastName={handleUpdateLastName}
+          onImportCSV={handleImportCSV}
+          fileUploader={fileUploaderElement}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          tabCounts={tabCounts}
+        />
       )}
 
       <FailedUploadsSidebar
