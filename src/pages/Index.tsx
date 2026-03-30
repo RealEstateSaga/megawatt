@@ -7,7 +7,6 @@ import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
 import LeadTable from "@/components/LeadTable";
 import RejectedRecordsTable from "@/components/RejectedRecordsTable";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { LeadRecord, FailedUpload, RejectedRecord } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
 import { abbreviateState } from "@/lib/stateAbbreviations";
@@ -95,6 +94,7 @@ const Index = () => {
   const [jobFiles, setJobFiles] = useState<JobFile[]>([]);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
   const [rejectedRecords, setRejectedRecords] = useState<RejectedRecord[]>(() => loadPersistedRejected());
+  const [activeTab, setActiveTab] = useState<string>("master");
   const processingRef = useRef(false);
   const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
 
