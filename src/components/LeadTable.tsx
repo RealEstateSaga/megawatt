@@ -13,6 +13,9 @@ interface LeadTableProps {
   onUpdateLastName?: (id: string, newName: string) => Promise<void>;
   onImportCSV?: (file: File) => Promise<void>;
   fileUploader?: ReactNode;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
+  rejectedCount?: number;
 }
 
 const ROW_HEIGHT = 40;
@@ -35,7 +38,7 @@ const statusBadgeClass = (status: string) => {
   return "bg-lead-pending text-lead-pending-foreground border-lead-pending-border text-xs font-semibold";
 };
 
-const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader }: LeadTableProps) => {
+const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader, activeTab = "master", onTabChange, rejectedCount = 0 }: LeadTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("status");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
@@ -223,7 +226,23 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader }: Lea
             <h1 className="text-lg font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
               Lead Pro
             </h1>
-            {!emptyState && (
+            {onTabChange && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => onTabChange("master")}
+                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${activeTab === "master" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"}`}
+                >
+                  Master List{leads.length > 0 ? ` (${leads.length})` : ""}
+                </button>
+                <button
+                  onClick={() => onTabChange("rejected")}
+                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${activeTab === "rejected" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"}`}
+                >
+                  Rejected{rejectedCount > 0 ? ` (${rejectedCount})` : ""}
+                </button>
+              </div>
+            )}
+            {activeTab === "master" && !emptyState && (
               <p className="text-xs text-muted-foreground">
                 {leads.length} total · <span className="text-accent font-medium">{goodCount} good</span> · {leads.length - goodCount - pendingCount} bad · <span className="text-muted-foreground">{pendingCount} pending</span>
               </p>
