@@ -188,7 +188,7 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader }: Lea
         return (
           <span className="text-sm group/name flex items-center gap-1 cursor-pointer" onDoubleClick={() => startEdit(lead)}>
             {lead.ownerLastName || "—"}
-            <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover/name:opacity-100 transition-opacity" />
+            <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover/name:opacity-100 transition-opacity cursor-pointer" onClick={(e) => { e.stopPropagation(); startEdit(lead); }} />
           </span>
         );
       case "mailingAddress1":
