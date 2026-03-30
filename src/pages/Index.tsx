@@ -680,9 +680,116 @@ const Index = () => {
     return Array.from(mergedByAddress.values());
   };
 
+  // --- Auto-reconciliation: match PENDING records after every upload ---
+  const reconcilePendingRecords = async () => {
+    const allRows = await fetchAllLeads();
+    const pendingRows = allRows.filter(r => r.status === "PENDING");
+    if (pendingRows.length === 0) return;
+
+    const byAddress = new Map<string, any>();
+    const byMail = new Map<string, any[]>();
+    for (const row of allRows) {
+      byAddress.set(row.address_key, row);
+      if (row.mailing_address_1) {
+        const mk = normalizeAddressKey(row.mailing_address_1);
+        if (!byMail.has(mk)) byMail.set(mk, []);
+        byMail.get(mk)!.push(row);
+      }
+    }
+
+    const updates: any[] = [];
+    const deletes: string[] = [];
+
+    for (const pending of pendingRows) {
+      // Try to find complementary data from other records
+      let taxData: any = null;
+      let historyData: any = null;
+
+      // If this is a CSV record (address="CSV"), look for PDF records that matched by property address
+      // If this is a PDF record, look for CSV records by mailing address
+      if (pending.address === "CSV" && pending.mailing_address_1) {
+        const mk = normalizeAddressKey(pending.mailing_address_1);
+        const siblings = byMail.get(mk) || [];
+        for (const s of siblings) {
+          if (s.id === pending.id) continue;
+          if (s.has_tax_data && s.address !== "CSV") taxData = s;
+          if (s.has_history_data) historyData = s;
+        }
+      } else if (pending.address !== "CSV") {
+        // Look for matches by address key
+        const siblings = allRows.filter(r => r.id !== pending.id && r.address_key === pending.address_key);
+        for (const s of siblings) {
+          if (s.has_tax_data) taxData = s;
+          if (s.has_history_data) historyData = s;
+        }
+      }
+
+      const hasTax = pending.has_tax_data || !!taxData;
+      const hasHistory = pending.has_history_data || !!historyData;
+
+      if (hasTax && hasHistory) {
+        const ownerLastName = pending.owner_last_name || taxData?.owner_last_name || "";
+        const mailingAddress1 = pending.mailing_address_1 || taxData?.mailing_address_1 || "";
+        const mailingAddress2 = pending.mailing_address_2 || taxData?.mailing_address_2 || "";
+        const offMarketDate = pending.off_market_date || historyData?.off_market_date || null;
+        const saleDate = pending.sale_date || historyData?.sale_date || null;
+        const lastRecordingDate = pending.last_recording_date || historyData?.last_recording_date || null;
+        const newAddress = (pending.address === "CSV" && taxData?.address && taxData.address !== "CSV") ? taxData.address : pending.address;
+        const newAddressKey = (pending.address === "CSV" && taxData?.address && taxData.address !== "CSV") ? normalizeAddressKey(taxData.address) : pending.address_key;
+
+        const offDate = offMarketDate ? new Date(offMarketDate) : null;
+        const sDate = saleDate ? new Date(saleDate) : null;
+        const rDate = lastRecordingDate ? new Date(lastRecordingDate) : null;
+        let status = "GOOD";
+        let analysisReason = "No sale record found after off-market date";
+        if (offDate && ((rDate && rDate > offDate) || (sDate && sDate > offDate))) {
+          status = "BAD";
+          analysisReason = `Sale/recording date is after off-market date of ${offMarketDate}`;
+        }
+
+        if (newAddressKey !== pending.address_key) {
+          deletes.push(pending.id);
+        }
+
+        updates.push({
+          id: newAddressKey !== pending.address_key ? crypto.randomUUID() : pending.id,
+          address: newAddress, address_key: newAddressKey,
+          owner_last_name: ownerLastName, mailing_address_1: mailingAddress1, mailing_address_2: mailingAddress2,
+          status, analysis_reason: analysisReason, off_market_date: offMarketDate,
+          sale_date: saleDate, last_recording_date: lastRecordingDate,
+          has_tax_data: true, has_history_data: true, updated_at: new Date().toISOString(),
+        });
+
+        // Clean up merged source records
+        if (taxData && taxData.id !== pending.id) deletes.push(taxData.id);
+        if (historyData && historyData.id !== pending.id && historyData.id !== taxData?.id) deletes.push(historyData.id);
+      }
+    }
+
+    if (deletes.length > 0) {
+      for (let i = 0; i < deletes.length; i += 200) {
+        await supabase.from("leads").delete().in("id", deletes.slice(i, i + 200));
+      }
+    }
+    if (updates.length > 0) {
+      for (let i = 0; i < updates.length; i += 500) {
+        await supabase.from("leads").upsert(updates.slice(i, i + 500), { onConflict: "address_key" });
+      }
+    }
+    if (updates.length > 0) {
+      console.log(`[Reconciliation] Matched ${updates.length} PENDING records`);
+      toast.success(`Auto-matched ${updates.length} pending record${updates.length > 1 ? "s" : ""} with new data`);
+      await reloadLeads();
+    }
+  };
+
   // --- Server-side job queue: process next file (one page at a time) ---
   const processNextFile = useCallback(async () => {
     if (processingRef.current) return;
+    if (cancelledRef.current) {
+      cancelledRef.current = false;
+      return;
+    }
 
     const nextItem = fileQueueRef.current[0];
     if (!nextItem) {
@@ -691,6 +798,8 @@ const Index = () => {
           status: "completed",
           updated_at: new Date().toISOString(),
         }).eq("id", activeJob.id);
+        // Run auto-reconciliation after all files processed
+        await reconcilePendingRecords();
       }
       return;
     }
@@ -717,26 +826,58 @@ const Index = () => {
 
         const base64 = await fileToBase64(file);
 
-        // Process ONE PAGE AT A TIME to avoid edge function timeout
+        // Process ONE PAGE AT A TIME with timeout to avoid getting stuck
         const allPageLeads: any[] = [];
         for (let p = 1; p <= pageCount; p++) {
-          const { data, error } = await supabase.functions.invoke("process-leads", {
-            body: { name: file.name, base64, pageNum: p, totalPages: pageCount, job_file_id: jobFileId },
-          });
+          if (cancelledRef.current) throw new Error("Cancelled by user");
 
-          if (error) {
-            const msg = error.message?.includes("429") ? "Rate limit reached" :
-              error.message?.includes("402") ? "AI credits exhausted" : `Failed on page ${p}`;
-            if (error.message?.includes("429") || error.message?.includes("402")) {
-              throw new Error(msg);
+          // Create AbortController with 90s timeout per page
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 90_000);
+
+          try {
+            const response = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-leads`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+                  "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                },
+                body: JSON.stringify({ name: file.name, base64, pageNum: p, totalPages: pageCount, job_file_id: jobFileId }),
+                signal: controller.signal,
+              }
+            );
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+              const status = response.status;
+              if (status === 429 || status === 402) {
+                throw new Error(status === 429 ? "Rate limit reached" : "AI credits exhausted");
+              }
+              console.error(`Page ${p} of ${file.name} failed with status ${status}`);
+              continue;
             }
-            console.error(`Page ${p} of ${file.name} failed:`, error.message);
-            continue;
+
+            const data = await response.json();
+            if (data?.leads && Array.isArray(data.leads)) {
+              allPageLeads.push(...data.leads);
+            }
+          } catch (err: any) {
+            clearTimeout(timeoutId);
+            if (err.name === "AbortError") {
+              console.error(`Page ${p} of ${file.name} timed out after 90s`);
+              continue; // skip this page, try next
+            }
+            throw err; // re-throw non-timeout errors
           }
 
-          if (data?.leads && Array.isArray(data.leads)) {
-            allPageLeads.push(...data.leads);
-          }
+          // Update page progress
+          await supabase.from("job_files").update({
+            processed_pages: p,
+            updated_at: new Date().toISOString(),
+          }).eq("id", jobFileId);
         }
 
         const mergedLeads = mergePageLeads(allPageLeads);
