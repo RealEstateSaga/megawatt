@@ -6,7 +6,7 @@ import FileUploader from "@/components/FileUploader";
 import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
 import LeadTable, { type LeadTab } from "@/components/LeadTable";
-import RejectedRecordsTable from "@/components/RejectedRecordsTable";
+// RejectedRecordsTable removed — rejected records now render through LeadTable
 import type { LeadRecord, FailedUpload, RejectedRecord } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
 import { abbreviateState } from "@/lib/stateAbbreviations";
