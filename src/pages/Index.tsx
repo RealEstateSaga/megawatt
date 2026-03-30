@@ -205,10 +205,14 @@ const Index = () => {
   }, []);
 
   const handleDeleteLeads = async (ids: string[]) => {
-    const { error } = await supabase.from("leads").delete().in("id", ids);
-    if (error) {
-      toast.error("Failed to delete selected leads");
-      return;
+    const BATCH = 200;
+    for (let i = 0; i < ids.length; i += BATCH) {
+      const batch = ids.slice(i, i + BATCH);
+      const { error } = await supabase.from("leads").delete().in("id", batch);
+      if (error) {
+        toast.error(`Failed to delete leads (batch ${Math.floor(i / BATCH) + 1})`);
+        return;
+      }
     }
     toast.success(`Deleted ${ids.length} lead${ids.length > 1 ? "s" : ""}`);
     await reloadLeads();
