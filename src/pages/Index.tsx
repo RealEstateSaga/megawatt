@@ -206,7 +206,7 @@ const Index = () => {
     await reloadLeads();
   };
 
-  // --- CSV Import ---
+  // --- CSV Import with strict no-data-loss validation ---
   const handleImportCSV = async (file: File) => {
     try {
       const text = await file.text();
@@ -238,17 +238,39 @@ const Index = () => {
         return result;
       };
 
+      // --- STEP 1: ROW COUNT LOCK ---
+      const totalRowsDetected = lines.length - 1; // exclude header
+      console.log(`[CSV Validation] Total rows detected: ${totalRowsDetected}`);
+
+      // --- STEP 2 & 3: ROW TRACKING + CLASSIFICATION ---
+      const rowClassifications: { rowIndex: number; classification: "inserted" | "duplicate" | "failed"; reason: string }[] = [];
+      const processedIndexes = new Set<number>();
       const newLeads: LeadRecord[] = [];
       const seenMailingAddresses = new Set<string>();
 
       for (let i = 1; i < lines.length; i++) {
+        const rowIndex = i - 1; // 0-based data row index
+        processedIndexes.add(rowIndex);
+
         const cols = parseCSVRow(lines[i]);
-        if (cols.length < 3) continue;
+        if (cols.length < 3) {
+          rowClassifications.push({ rowIndex, classification: "failed", reason: `Too few columns (${cols.length})` });
+          continue;
+        }
+
         const mailAddress = cols[mailAddrIdx] || "";
         const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || "CSV") : "CSV";
-        if (!mailAddress && address === "CSV") continue;
+
+        if (!mailAddress && address === "CSV") {
+          rowClassifications.push({ rowIndex, classification: "failed", reason: "No mail address and no property address" });
+          continue;
+        }
+
         const mailKey = normalizeAddressKey(mailAddress);
-        if (mailKey && seenMailingAddresses.has(mailKey)) continue;
+        if (mailKey && seenMailingAddresses.has(mailKey)) {
+          rowClassifications.push({ rowIndex, classification: "duplicate", reason: `Duplicate mailing address within file: ${mailAddress}` });
+          continue;
+        }
         if (mailKey) seenMailingAddresses.add(mailKey);
 
         const lastName = lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "";
@@ -270,11 +292,66 @@ const Index = () => {
           offMarketDate: null, saleDate: null, lastRecordingDate: null,
           hasTaxData: status !== "PENDING", hasHistoryData: status !== "PENDING",
         });
+        rowClassifications.push({ rowIndex, classification: "inserted", reason: "Valid row" });
       }
 
-      if (newLeads.length === 0) { toast.error("No valid rows found in CSV"); return; }
+      // --- STEP 5: MISSING ROW DETECTION ---
+      const missingIndexes: number[] = [];
+      for (let i = 0; i < totalRowsDetected; i++) {
+        if (!processedIndexes.has(i)) missingIndexes.push(i);
+      }
+
+      // --- STEP 6: END-OF-JOB VALIDATION ---
+      const rowsInserted = rowClassifications.filter(r => r.classification === "inserted").length;
+      const rowsDuplicate = rowClassifications.filter(r => r.classification === "duplicate").length;
+      const rowsFailed = rowClassifications.filter(r => r.classification === "failed").length;
+      const rowsProcessed = rowsInserted + rowsDuplicate + rowsFailed;
+
+      const validationReport = {
+        total_rows_detected: totalRowsDetected,
+        rows_processed: rowsProcessed,
+        rows_inserted: rowsInserted,
+        rows_duplicate: rowsDuplicate,
+        rows_failed: rowsFailed,
+        missing_indexes: missingIndexes,
+        reconciliation_match: totalRowsDetected === rowsProcessed && missingIndexes.length === 0,
+      };
+
+      console.log("[CSV Validation] Report:", validationReport);
+
+      // --- STEP 7: FAIL CONDITION ---
+      if (!validationReport.reconciliation_match) {
+        const errorMsg = missingIndexes.length > 0
+          ? `Row reconciliation failed: ${missingIndexes.length} rows were not processed (indexes: ${missingIndexes.slice(0, 10).join(", ")}${missingIndexes.length > 10 ? "..." : ""})`
+          : `Row count mismatch: detected ${totalRowsDetected} but processed ${rowsProcessed}`;
+        console.error("[CSV Validation] FAIL:", errorMsg);
+        toast.error(errorMsg);
+        return;
+      }
+
+      // --- STEP 8: SUCCESS CONDITION ---
+      if (rowsInserted === 0) {
+        toast.error(`No new rows to import. ${rowsDuplicate} duplicates, ${rowsFailed} failed.`);
+        return;
+      }
+
       await mergeAndPersist(newLeads);
-      toast.success(`Imported ${newLeads.length} leads from CSV`);
+
+      // Show detailed success toast
+      const parts: string[] = [`${rowsInserted} inserted`];
+      if (rowsDuplicate > 0) parts.push(`${rowsDuplicate} duplicates skipped`);
+      if (rowsFailed > 0) parts.push(`${rowsFailed} failed`);
+      toast.success(`CSV Import Complete: ${parts.join(", ")} (${totalRowsDetected} total rows)`);
+
+      // Log failed rows for debugging
+      if (rowsFailed > 0) {
+        const failedRows = rowClassifications.filter(r => r.classification === "failed");
+        console.warn("[CSV Validation] Failed rows:", failedRows);
+      }
+      if (rowsDuplicate > 0) {
+        const dupRows = rowClassifications.filter(r => r.classification === "duplicate");
+        console.log("[CSV Validation] Duplicate rows:", dupRows);
+      }
     } catch (err) {
       console.error("CSV import error:", err);
       toast.error("Failed to parse CSV file");
