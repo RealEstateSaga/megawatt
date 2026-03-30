@@ -676,7 +676,10 @@ const Index = () => {
 
         if (mergedLeads.length > 0) {
           await withRetry(() => updateJobFile(jobFileId, { status: "committing", updated_at: new Date().toISOString() }));
-          await mergeAndPersist(mergedLeads);
+          const { dbDuplicates: pdfDupes } = await mergeAndPersist(mergedLeads, file.name);
+          if (pdfDupes.length > 0) {
+            setRejectedRecords(prev => { const next = [...prev, ...pdfDupes]; persistRejected(next); return next; });
+          }
           await withRetry(() => updateJobFile(jobFileId, { status: "completed", leads_found: mergedLeads.length, updated_at: new Date().toISOString() }));
         } else {
           const reason = "No readable address or data found in PDF";
