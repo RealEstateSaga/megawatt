@@ -229,26 +229,29 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader, activ
               Lead Pro
             </h1>
             {onTabChange && tabCounts && (
-              <div className="flex items-center gap-1">
-                {([
-                  { key: "good" as LeadTab, label: "Good", count: tabCounts.good, color: "bg-lead-good/20 text-lead-good-foreground border border-lead-good-border" },
-                  { key: "bad" as LeadTab, label: "Bad", count: tabCounts.bad, color: "bg-lead-bad/20 text-lead-bad-foreground border border-lead-bad-border" },
-                  { key: "pending" as LeadTab, label: "Pending", count: tabCounts.pending, color: "bg-lead-pending/20 text-lead-pending-foreground border border-lead-pending-border" },
-                  { key: "rejected" as LeadTab, label: "Rejected", count: tabCounts.rejected, color: "bg-destructive/15 text-destructive border border-destructive/30" },
-                ]).map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => onTabChange(tab.key)}
-                    className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
-                      activeTab === tab.key
-                        ? "bg-foreground text-background shadow-sm"
-                        : `${tab.color} hover:opacity-80`
-                    }`}
-                  >
-                    {tab.label} ({tab.count})
-                  </button>
-                ))}
-              </div>
+              <>
+                <div className="flex items-center gap-1">
+                  {([
+                    { key: "good" as LeadTab, label: "Good", count: tabCounts.good, color: "bg-lead-good/20 text-lead-good-foreground border border-lead-good-border" },
+                    { key: "bad" as LeadTab, label: "Bad", count: tabCounts.bad, color: "bg-lead-bad/20 text-lead-bad-foreground border border-lead-bad-border" },
+                    { key: "pending" as LeadTab, label: "Pending", count: tabCounts.pending, color: "bg-lead-pending/20 text-lead-pending-foreground border border-lead-pending-border" },
+                    { key: "rejected" as LeadTab, label: "Rejected", count: tabCounts.rejected, color: "bg-destructive/15 text-destructive border border-destructive/30" },
+                  ]).map(tab => (
+                    <button
+                      key={tab.key}
+                      onClick={() => onTabChange(tab.key)}
+                      className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
+                        activeTab === tab.key
+                          ? "bg-foreground text-background shadow-sm"
+                          : `${tab.color} hover:opacity-80`
+                      }`}
+                    >
+                      {tab.label} ({tab.count})
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] text-muted-foreground">{tabCounts.good + tabCounts.bad + tabCounts.pending} total</span>
+              </>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -287,10 +290,10 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader, activ
               </div>
             )}
             {fileUploader}
-            {goodCount > 0 && (
+            {activeTab === "good" && leads.length > 0 && (
               <Button onClick={downloadCSV} variant="default" size="sm" className="h-8">
                 <Download className="mr-1.5 h-3.5 w-3.5" />
-                Download Mailing List ({goodCount})
+                Download Mailing List ({leads.length})
               </Button>
             )}
           </div>
