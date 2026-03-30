@@ -460,6 +460,8 @@ const Index = () => {
       if (totalDupes > 0) parts.push(`${totalDupes} duplicates skipped`);
       if (rowsFailed > 0) parts.push(`${rowsFailed} failed`);
       toast.success(`CSV Import Complete: ${parts.join(", ")} (${totalRowsDetected} total rows)`);
+      // Auto-reconcile pending records after CSV import
+      await reconcilePendingRecords();
     } catch (err) {
       console.error("CSV import error:", err);
       toast.error("Failed to parse CSV file");
