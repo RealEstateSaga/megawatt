@@ -418,11 +418,21 @@ const Index = () => {
         return;
       }
 
-      await mergeAndPersist(newLeads);
+      const { dbDuplicates } = await mergeAndPersist(newLeads, file.name);
+
+      // Capture cross-DB duplicates into Rejected tab
+      if (dbDuplicates.length > 0) {
+        setRejectedRecords(prev => {
+          const next = [...prev, ...dbDuplicates];
+          persistRejected(next);
+          return next;
+        });
+      }
 
       // Show detailed success toast
-      const parts: string[] = [`${rowsInserted} inserted`];
-      if (rowsDuplicate > 0) parts.push(`${rowsDuplicate} duplicates skipped`);
+      const totalDupes = rowsDuplicate + dbDuplicates.length;
+      const parts: string[] = [`${rowsInserted - dbDuplicates.length} inserted`];
+      if (totalDupes > 0) parts.push(`${totalDupes} duplicates skipped`);
       if (rowsFailed > 0) parts.push(`${rowsFailed} failed`);
       toast.success(`CSV Import Complete: ${parts.join(", ")} (${totalRowsDetected} total rows)`);
     } catch (err) {
