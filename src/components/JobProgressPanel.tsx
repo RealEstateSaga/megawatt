@@ -43,10 +43,10 @@ const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed, onCancelJob }:
       case "splitting": return "Splitting PDF...";
       case "processing":
         if (file.total_pages && file.total_pages > 1) {
-          return `AI Extracting p${file.processed_pages || 0}/${file.total_pages}`;
+          return `Step 1/2: Pending p${file.processed_pages || 0}/${file.total_pages}`;
         }
-        return "AI Extracting...";
-      case "committing": return "Saving to DB...";
+        return "Step 1/2: Pending...";
+      case "committing": return "Step 2/2: Consolidating...";
       case "completed": return "Done";
       case "failed": return file.error_message || "Failed";
       case "skipped": return "Skipped";

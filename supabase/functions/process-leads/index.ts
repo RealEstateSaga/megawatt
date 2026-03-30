@@ -52,13 +52,14 @@ function getSupabaseClient() {
 
 async function extractFromPage(
   base64: string,
+  mimeType: string,
   fileName: string,
   pageNum: number,
   apiKey: string
 ): Promise<any[]> {
   const contentParts = [
     { type: "text", text: `${EXTRACTION_PROMPT}\n\nSource: "${fileName}" page ${pageNum}` },
-    { type: "image_url", image_url: { url: `data:application/pdf;base64,${base64}` } },
+    { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}` } },
   ];
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -99,7 +100,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { name, base64, pageNum, totalPages, job_file_id } = body;
+    const { name, base64, mimeType = "image/png", pageNum, totalPages, job_file_id } = body;
 
     if (!name || !base64) {
       return new Response(JSON.stringify({ error: "Missing name or base64" }), {
@@ -114,7 +115,7 @@ serve(async (req) => {
     const supabase = getSupabaseClient();
     const currentPage = pageNum || 1;
 
-    const rawLeads = await extractFromPage(base64, name, currentPage, LOVABLE_API_KEY);
+    const rawLeads = await extractFromPage(base64, mimeType, name, currentPage, LOVABLE_API_KEY);
 
     // Log each page result
     if (job_file_id) {

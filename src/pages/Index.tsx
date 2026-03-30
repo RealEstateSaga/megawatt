@@ -10,7 +10,7 @@ import LeadTable, { type LeadTab } from "@/components/LeadTable";
 import type { LeadRecord, FailedUpload, RejectedRecord } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
 import { abbreviateState } from "@/lib/stateAbbreviations";
-import { hashFile, fileToBase64, getPageCount } from "@/lib/pdfUtils";
+import { hashFile, splitPdfToPages } from "@/lib/pdfUtils";
 
 const normalizeAddressKey = (addr: string) =>
   addr.toLowerCase()
@@ -27,6 +27,30 @@ const fixStateCasing = (cityStateZip: string): string => {
     return `${state.toUpperCase()} ${zip}`;
   });
 };
+
+const DEFAULT_PENDING_REASON = "Awaiting additional documentation for 360-degree view.";
+
+const pickBestText = (...values: Array<string | null | undefined>) =>
+  values
+    .map(value => value?.trim() || "")
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)[0] || "";
+
+const pickFirstValue = <T,>(...values: Array<T | null | undefined | "">): T | null => {
+  for (const value of values) {
+    if (value !== null && value !== undefined && value !== "") {
+      return value as T;
+    }
+  }
+  return null;
+};
+
+const rowPriority = (row: any) =>
+  (row.address !== "CSV" ? 10 : 0)
+  + (row.status !== "PENDING" ? 4 : 0)
+  + (row.has_tax_data ? 2 : 0)
+  + (row.has_history_data ? 2 : 0)
+  + (row.mailing_address_1 ? 1 : 0);
 
 const mapRowToLead = (row: any): LeadRecord => ({
   id: row.id,
@@ -101,6 +125,8 @@ const Index = () => {
   const processingRef = useRef(false);
   const cancelledRef = useRef(false);
   const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
+  const activeJobRef = useRef<Job | null>(null);
+  const activeRequestControllerRef = useRef<AbortController | null>(null);
 
   const isProcessing = activeJob?.status === "processing" || activeJob?.status === "pending";
 
@@ -136,6 +162,7 @@ const Index = () => {
       if (jobs && jobs.length > 0) {
         const job = jobs[0] as Job;
         setActiveJob(job);
+          activeJobRef.current = job;
 
         const { data: files } = await supabase
           .from("job_files")
@@ -173,6 +200,10 @@ const Index = () => {
     checkPendingJobs();
   }, []);
 
+  useEffect(() => {
+    activeJobRef.current = activeJob;
+  }, [activeJob]);
+
   // --- Real-time subscription to job files ---
   useEffect(() => {
     if (!activeJob) return;
@@ -195,6 +226,7 @@ const Index = () => {
         (payload) => {
           const updated = payload.new as Job;
           setActiveJob(updated);
+          activeJobRef.current = updated;
           if (updated.status === "completed" || updated.status === "failed") {
             reloadLeads();
           }
@@ -575,7 +607,7 @@ const Index = () => {
           }
         } else {
           status = "PENDING";
-          analysisReason = "Awaiting additional documentation for 360-degree view.";
+          analysisReason = DEFAULT_PENDING_REASON;
         }
 
         // Delete old CSV-keyed record if address_key changed
@@ -621,6 +653,92 @@ const Index = () => {
     return { inserted: newLeads.length - dbDuplicates.length, dbDuplicates };
   };
 
+  const persistPendingPdfLeads = async (newLeads: LeadRecord[], fileName?: string): Promise<{ inserted: number; dbDuplicates: RejectedRecord[] }> => {
+    const existingRows = await fetchAllLeads();
+    const existingByKey = new Map<string, any>();
+    const existingByMail = new Map<string, any>();
+
+    for (const row of existingRows || []) {
+      existingByKey.set(row.address_key, row);
+      if (row.mailing_address_1) {
+        existingByMail.set(normalizeAddressKey(row.mailing_address_1), row);
+      }
+    }
+
+    const upsertMap = new Map<string, any>();
+    const dbDuplicates: RejectedRecord[] = [];
+
+    for (const lead of newLeads) {
+      const key = lead.addressKey || normalizeAddressKey(lead.address);
+      const mailKey = lead.mailingAddress1 ? normalizeAddressKey(lead.mailingAddress1) : "";
+      const existingSameKey = existingByKey.get(key);
+      const existingByMailRow = mailKey ? existingByMail.get(mailKey) : null;
+
+      const complementaryCsvMatch = Boolean(
+        existingByMailRow &&
+        existingByMailRow.address === "CSV" &&
+        lead.address &&
+        lead.address !== "CSV"
+      );
+
+      if (mailKey && existingByMailRow && existingByMailRow.address_key !== key && !complementaryCsvMatch) {
+        dbDuplicates.push({
+          id: crypto.randomUUID(),
+          rowIndex: -1,
+          classification: "duplicate",
+          reason: `Mailing address already exists in database: ${lead.mailingAddress1}`,
+          fileName: fileName || "unknown",
+          timestamp: new Date(),
+          rawData: {
+            address: lead.address,
+            ownerLastName: lead.ownerLastName,
+            mailingAddress1: lead.mailingAddress1,
+            mailingAddress2: lead.mailingAddress2,
+          },
+        });
+        continue;
+      }
+
+      const seedRow = upsertMap.get(key) || existingSameKey;
+      upsertMap.set(key, {
+        id: seedRow?.id || lead.id,
+        address: lead.address,
+        address_key: key,
+        owner_last_name: lead.ownerLastName || seedRow?.owner_last_name || "",
+        mailing_address_1: lead.mailingAddress1 || seedRow?.mailing_address_1 || "",
+        mailing_address_2: lead.mailingAddress2 || seedRow?.mailing_address_2 || "",
+        status: "PENDING",
+        analysis_reason: DEFAULT_PENDING_REASON,
+        off_market_date: lead.offMarketDate || seedRow?.off_market_date || null,
+        sale_date: lead.saleDate || seedRow?.sale_date || null,
+        last_recording_date: lead.lastRecordingDate || seedRow?.last_recording_date || null,
+        has_tax_data: Boolean(seedRow?.has_tax_data || lead.hasTaxData),
+        has_history_data: Boolean(seedRow?.has_history_data || lead.hasHistoryData),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    const upsertRows = Array.from(upsertMap.values());
+    const BATCH_SIZE = 500;
+    let totalFailed = 0;
+
+    for (let i = 0; i < upsertRows.length; i += BATCH_SIZE) {
+      const batch = upsertRows.slice(i, i + BATCH_SIZE);
+      const { error } = await supabase.from("leads").upsert(batch, { onConflict: "address_key" });
+      if (error) {
+        console.error(`Failed to persist pending PDF batch ${i / BATCH_SIZE + 1}:`, error);
+        totalFailed += batch.length;
+      }
+    }
+
+    if (totalFailed > 0) {
+      toast.error(`${totalFailed} rows failed while saving PDF records to pending`);
+    }
+
+    await reloadLeads();
+    return { inserted: upsertRows.length, dbDuplicates };
+  };
+
   // --- Retry helper with exponential backoff ---
   const withRetry = async <T,>(fn: () => Promise<T>, retries = 3): Promise<T> => {
     for (let attempt = 0; attempt < retries; attempt++) {
@@ -649,11 +767,47 @@ const Index = () => {
     if (error) throw error;
   };
 
+  const syncCurrentJobProgress = async (finalize = false) => {
+    const currentJob = activeJobRef.current;
+    if (!currentJob) return;
+
+    const { data: updatedFiles, error } = await supabase
+      .from("job_files")
+      .select("status")
+      .eq("job_id", currentJob.id);
+
+    if (error || !updatedFiles) return;
+
+    const completed = updatedFiles.filter(f => f.status === "completed" || f.status === "skipped").length;
+    const failed = updatedFiles.filter(f => f.status === "failed").length;
+    const done = completed + failed === updatedFiles.length;
+    const status: Job["status"] = finalize || done ? (failed > 0 ? "failed" : "completed") : "processing";
+
+    const nextJob = {
+      ...currentJob,
+      completed_files: completed,
+      failed_files: failed,
+      total_files: updatedFiles.length,
+      status,
+      created_at: currentJob.created_at,
+    } as Job;
+
+    await updateJob(currentJob.id, {
+      completed_files: completed,
+      failed_files: failed,
+      status,
+      updated_at: new Date().toISOString(),
+    });
+
+    activeJobRef.current = nextJob;
+    setActiveJob(nextJob);
+  };
+
   // --- Merge leads from multiple pages (client-side reconciliation) ---
   const mergePageLeads = (allLeads: any[]) => {
     const mergedByAddress = new Map<string, any>();
     for (const lead of allLeads) {
-      const key = lead.address.toLowerCase().replace(/[.,#]/g, "").replace(/\s+/g, " ").trim();
+      const key = normalizeAddressKey(lead.address);
       if (key === "unknown" || !key) continue;
       const existing = mergedByAddress.get(key);
       if (existing) {
@@ -688,102 +842,114 @@ const Index = () => {
   // --- Auto-reconciliation: match PENDING records after every upload ---
   const reconcilePendingRecords = async () => {
     const allRows = await fetchAllLeads();
-    const pendingRows = allRows.filter(r => r.status === "PENDING");
-    if (pendingRows.length === 0) return;
+    if (allRows.length === 0) return;
 
-    const byAddress = new Map<string, any>();
-    const byMail = new Map<string, any[]>();
+    const rowsByAddress = new Map<string, any[]>();
+    const csvByMail = new Map<string, any[]>();
+
     for (const row of allRows) {
-      byAddress.set(row.address_key, row);
-      if (row.mailing_address_1) {
-        const mk = normalizeAddressKey(row.mailing_address_1);
-        if (!byMail.has(mk)) byMail.set(mk, []);
-        byMail.get(mk)!.push(row);
+      if (row.address === "CSV") {
+        if (row.mailing_address_1) {
+          const mailKey = normalizeAddressKey(row.mailing_address_1);
+          if (!csvByMail.has(mailKey)) csvByMail.set(mailKey, []);
+          csvByMail.get(mailKey)!.push(row);
+        }
+        continue;
       }
+
+      const addressKey = row.address_key || normalizeAddressKey(row.address);
+      if (!rowsByAddress.has(addressKey)) rowsByAddress.set(addressKey, []);
+      rowsByAddress.get(addressKey)!.push(row);
     }
 
     const updates: any[] = [];
-    const deletes: string[] = [];
+    const deletes = new Set<string>();
 
-    for (const pending of pendingRows) {
-      // Try to find complementary data from other records
-      let taxData: any = null;
-      let historyData: any = null;
+    for (const rows of rowsByAddress.values()) {
+      const sortedRows = [...rows].sort((a, b) => rowPriority(b) - rowPriority(a));
+      const base = sortedRows[0];
+      const mailKey = base.mailing_address_1 ? normalizeAddressKey(base.mailing_address_1) : "";
+      const csvSibling = mailKey
+        ? (csvByMail.get(mailKey) || []).find(row => !deletes.has(row.id)) || null
+        : null;
 
-      // If this is a CSV record (address="CSV"), look for PDF records that matched by property address
-      // If this is a PDF record, look for CSV records by mailing address
-      if (pending.address === "CSV" && pending.mailing_address_1) {
-        const mk = normalizeAddressKey(pending.mailing_address_1);
-        const siblings = byMail.get(mk) || [];
-        for (const s of siblings) {
-          if (s.id === pending.id) continue;
-          if (s.has_tax_data && s.address !== "CSV") taxData = s;
-          if (s.has_history_data) historyData = s;
-        }
-      } else if (pending.address !== "CSV") {
-        // Look for matches by address key
-        const siblings = allRows.filter(r => r.id !== pending.id && r.address_key === pending.address_key);
-        for (const s of siblings) {
-          if (s.has_tax_data) taxData = s;
-          if (s.has_history_data) historyData = s;
-        }
-      }
+      const participants = csvSibling ? [csvSibling, ...sortedRows] : sortedRows;
+      const hasTax = participants.some(row => row.has_tax_data);
+      const hasHistory = participants.some(row => row.has_history_data);
+      const shouldProcess = participants.length > 1 || base.status === "PENDING" || (hasTax && hasHistory);
 
-      const hasTax = pending.has_tax_data || !!taxData;
-      const hasHistory = pending.has_history_data || !!historyData;
+      if (!shouldProcess) continue;
+
+      const ownerLastName = pickBestText(...participants.map(row => row.owner_last_name));
+      const mailingAddress1 = pickBestText(...participants.map(row => row.mailing_address_1));
+      const mailingAddress2 = pickBestText(...participants.map(row => row.mailing_address_2));
+      const offMarketDate = pickFirstValue(...participants.map(row => row.off_market_date));
+      const saleDate = pickFirstValue(...participants.map(row => row.sale_date));
+      const lastRecordingDate = pickFirstValue(...participants.map(row => row.last_recording_date));
+
+      let status: LeadRecord["status"] = "PENDING";
+      let analysisReason = DEFAULT_PENDING_REASON;
 
       if (hasTax && hasHistory) {
-        const ownerLastName = pending.owner_last_name || taxData?.owner_last_name || "";
-        const mailingAddress1 = pending.mailing_address_1 || taxData?.mailing_address_1 || "";
-        const mailingAddress2 = pending.mailing_address_2 || taxData?.mailing_address_2 || "";
-        const offMarketDate = pending.off_market_date || historyData?.off_market_date || null;
-        const saleDate = pending.sale_date || historyData?.sale_date || null;
-        const lastRecordingDate = pending.last_recording_date || historyData?.last_recording_date || null;
-        const newAddress = (pending.address === "CSV" && taxData?.address && taxData.address !== "CSV") ? taxData.address : pending.address;
-        const newAddressKey = (pending.address === "CSV" && taxData?.address && taxData.address !== "CSV") ? normalizeAddressKey(taxData.address) : pending.address_key;
-
         const offDate = offMarketDate ? new Date(offMarketDate) : null;
         const sDate = saleDate ? new Date(saleDate) : null;
         const rDate = lastRecordingDate ? new Date(lastRecordingDate) : null;
-        let status = "GOOD";
-        let analysisReason = "No sale record found after off-market date";
+
         if (offDate && ((rDate && rDate > offDate) || (sDate && sDate > offDate))) {
           status = "BAD";
           analysisReason = `Sale/recording date is after off-market date of ${offMarketDate}`;
+        } else {
+          status = "GOOD";
+          analysisReason = "No sale record found after off-market date";
         }
-
-        if (newAddressKey !== pending.address_key) {
-          deletes.push(pending.id);
+      } else {
+        const stableSource = participants.find(row => row.id !== base.id && row.status && row.status !== "PENDING");
+        if (stableSource) {
+          status = stableSource.status;
+          analysisReason = stableSource.analysis_reason || DEFAULT_PENDING_REASON;
         }
+      }
 
-        updates.push({
-          id: newAddressKey !== pending.address_key ? crypto.randomUUID() : pending.id,
-          address: newAddress, address_key: newAddressKey,
-          owner_last_name: ownerLastName, mailing_address_1: mailingAddress1, mailing_address_2: mailingAddress2,
-          status, analysis_reason: analysisReason, off_market_date: offMarketDate,
-          sale_date: saleDate, last_recording_date: lastRecordingDate,
-          has_tax_data: true, has_history_data: true, updated_at: new Date().toISOString(),
-        });
+      updates.push({
+        id: base.id,
+        address: base.address,
+        address_key: base.address_key,
+        owner_last_name: ownerLastName,
+        mailing_address_1: mailingAddress1,
+        mailing_address_2: mailingAddress2,
+        status,
+        analysis_reason: analysisReason,
+        off_market_date: offMarketDate,
+        sale_date: saleDate,
+        last_recording_date: lastRecordingDate,
+        has_tax_data: hasTax,
+        has_history_data: hasHistory,
+        updated_at: new Date().toISOString(),
+      });
 
-        // Clean up merged source records
-        if (taxData && taxData.id !== pending.id) deletes.push(taxData.id);
-        if (historyData && historyData.id !== pending.id && historyData.id !== taxData?.id) deletes.push(historyData.id);
+      for (const row of participants) {
+        if (row.id !== base.id) {
+          deletes.add(row.id);
+        }
       }
     }
 
-    if (deletes.length > 0) {
-      for (let i = 0; i < deletes.length; i += 200) {
-        await supabase.from("leads").delete().in("id", deletes.slice(i, i + 200));
+    if (deletes.size > 0) {
+      const deleteIds = Array.from(deletes);
+      for (let i = 0; i < deleteIds.length; i += 200) {
+        await supabase.from("leads").delete().in("id", deleteIds.slice(i, i + 200));
       }
     }
+
     if (updates.length > 0) {
       for (let i = 0; i < updates.length; i += 500) {
         await supabase.from("leads").upsert(updates.slice(i, i + 500), { onConflict: "address_key" });
       }
     }
-    if (updates.length > 0) {
-      console.log(`[Reconciliation] Matched ${updates.length} PENDING records`);
-      toast.success(`Auto-matched ${updates.length} pending record${updates.length > 1 ? "s" : ""} with new data`);
+
+    if (updates.length > 0 || deletes.size > 0) {
+      console.log(`[Reconciliation] Consolidated ${updates.length} record(s)`);
+      toast.success(`Consolidated ${updates.length} record${updates.length > 1 ? "s" : ""} after pending import`);
       await reloadLeads();
     }
   };
@@ -798,14 +964,8 @@ const Index = () => {
 
     const nextItem = fileQueueRef.current[0];
     if (!nextItem) {
-      if (activeJob) {
-        await supabase.from("processing_jobs").update({
-          status: "completed",
-          updated_at: new Date().toISOString(),
-        }).eq("id", activeJob.id);
-        // Run auto-reconciliation after all files processed
-        await reconcilePendingRecords();
-      }
+      await reconcilePendingRecords();
+      await syncCurrentJobProgress(true);
       return;
     }
 
@@ -813,32 +973,28 @@ const Index = () => {
     const { file, jobFileId, hash } = nextItem;
     const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
 
-    // Hashing phase
-    await withRetry(() => updateJobFile(jobFileId, { status: "hashing", updated_at: new Date().toISOString() }));
-
     try {
+      await withRetry(() => updateJobFile(jobFileId, { status: "hashing", updated_at: new Date().toISOString() }));
+
       if (isCSV) {
         await handleImportCSV(file);
         await withRetry(() => updateJobFile(jobFileId, { status: "completed", updated_at: new Date().toISOString() }));
       } else {
-        // Splitting phase
         await withRetry(() => updateJobFile(jobFileId, { status: "splitting", updated_at: new Date().toISOString() }));
 
-        let pageCount = 1;
-        try { pageCount = await getPageCount(file); } catch {}
+        const pages = await splitPdfToPages(file);
+        const pageCount = pages.length;
 
         await withRetry(() => updateJobFile(jobFileId, { total_pages: pageCount, status: "processing", updated_at: new Date().toISOString() }));
 
-        const base64 = await fileToBase64(file);
-
-        // Process ONE PAGE AT A TIME with timeout to avoid getting stuck
         const allPageLeads: any[] = [];
         for (let p = 1; p <= pageCount; p++) {
           if (cancelledRef.current) throw new Error("Cancelled by user");
 
-          // Create AbortController with 90s timeout per page
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 90_000);
+          activeRequestControllerRef.current = controller;
+          const timeoutId = window.setTimeout(() => controller.abort("timeout"), 90_000);
+          const currentPage = pages[p - 1];
 
           try {
             const response = await fetch(
@@ -850,11 +1006,17 @@ const Index = () => {
                   "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
                   "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
                 },
-                body: JSON.stringify({ name: file.name, base64, pageNum: p, totalPages: pageCount, job_file_id: jobFileId }),
+                body: JSON.stringify({
+                  name: file.name,
+                  base64: currentPage.base64,
+                  mimeType: currentPage.mimeType,
+                  pageNum: p,
+                  totalPages: pageCount,
+                  job_file_id: jobFileId,
+                }),
                 signal: controller.signal,
               }
             );
-            clearTimeout(timeoutId);
 
             if (!response.ok) {
               const status = response.status;
@@ -870,15 +1032,21 @@ const Index = () => {
               allPageLeads.push(...data.leads);
             }
           } catch (err: any) {
-            clearTimeout(timeoutId);
             if (err.name === "AbortError") {
+              if (controller.signal.reason === "cancelled" || cancelledRef.current) {
+                throw new Error("Cancelled by user");
+              }
               console.error(`Page ${p} of ${file.name} timed out after 90s`);
-              continue; // skip this page, try next
+              continue;
             }
-            throw err; // re-throw non-timeout errors
+            throw err;
+          } finally {
+            window.clearTimeout(timeoutId);
+            if (activeRequestControllerRef.current === controller) {
+              activeRequestControllerRef.current = null;
+            }
           }
 
-          // Update page progress
           await supabase.from("job_files").update({
             processed_pages: p,
             updated_at: new Date().toISOString(),
@@ -889,11 +1057,12 @@ const Index = () => {
 
         if (mergedLeads.length > 0) {
           await withRetry(() => updateJobFile(jobFileId, { status: "committing", updated_at: new Date().toISOString() }));
-          const { dbDuplicates: pdfDupes } = await mergeAndPersist(mergedLeads, file.name);
+          const { inserted, dbDuplicates: pdfDupes } = await persistPendingPdfLeads(mergedLeads, file.name);
           if (pdfDupes.length > 0) {
             setRejectedRecords(prev => { const next = [...prev, ...pdfDupes]; persistRejected(next); return next; });
           }
-          await withRetry(() => updateJobFile(jobFileId, { status: "completed", leads_found: mergedLeads.length, updated_at: new Date().toISOString() }));
+          await reconcilePendingRecords();
+          await withRetry(() => updateJobFile(jobFileId, { status: "completed", leads_found: inserted, updated_at: new Date().toISOString() }));
         } else {
           const reason = "No readable address or data found in PDF";
           await withRetry(() => updateJobFile(jobFileId, { status: "failed", error_message: reason, updated_at: new Date().toISOString() }));
@@ -907,18 +1076,7 @@ const Index = () => {
         await withRetry(() => upsertHash({ sha256: hash, file_name: file.name, file_size: file.size }));
       }
 
-      // Update job progress
-      if (activeJob) {
-        const { data: updatedFiles } = await supabase.from("job_files").select("status").eq("job_id", activeJob.id);
-        if (updatedFiles) {
-          const completed = updatedFiles.filter(f => f.status === "completed" || f.status === "skipped").length;
-          const failed = updatedFiles.filter(f => f.status === "failed").length;
-          await supabase.from("processing_jobs").update({
-            completed_files: completed, failed_files: failed, status: "processing",
-            updated_at: new Date().toISOString(),
-          }).eq("id", activeJob.id);
-        }
-      }
+      await syncCurrentJobProgress();
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Unexpected error";
       try {
@@ -927,7 +1085,9 @@ const Index = () => {
         }).eq("id", jobFileId);
       } catch { /* best effort */ }
       addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
+      await syncCurrentJobProgress();
     } finally {
+      activeRequestControllerRef.current = null;
       fileQueueRef.current = fileQueueRef.current.slice(1);
       processingRef.current = false;
       processNextFile();
@@ -987,6 +1147,7 @@ const Index = () => {
 
     const job = jobData as Job;
     setActiveJob(job);
+    activeJobRef.current = job;
 
     // 3. Create job_file records
     const jobFileInserts = validFiles.map(({ file, hash }) => ({
@@ -1035,6 +1196,7 @@ const Index = () => {
   const handleCancelJob = useCallback(async () => {
     if (!activeJob) return;
     cancelledRef.current = true;
+    activeRequestControllerRef.current?.abort("cancelled");
     fileQueueRef.current = [];
     processingRef.current = false;
 
