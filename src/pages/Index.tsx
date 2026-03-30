@@ -708,15 +708,17 @@ const Index = () => {
       }
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Unexpected error";
-      await supabase.from("job_files").update({
-        status: "failed", error_message: reason, updated_at: new Date().toISOString(),
-      }).eq("id", jobFileId);
+      try {
+        await supabase.from("job_files").update({
+          status: "failed", error_message: reason, updated_at: new Date().toISOString(),
+        }).eq("id", jobFileId);
+      } catch { /* best effort */ }
       addFailedUpload({ id: jobFileId, fileName: file.name, reason, timestamp: new Date() });
+    } finally {
+      fileQueueRef.current = fileQueueRef.current.slice(1);
+      processingRef.current = false;
+      processNextFile();
     }
-
-    fileQueueRef.current = fileQueueRef.current.slice(1);
-    processingRef.current = false;
-    processNextFile();
   }, [activeJob]);
 
   // --- Handle file drop ---
