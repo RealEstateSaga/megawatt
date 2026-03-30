@@ -458,6 +458,27 @@ const Index = () => {
     for (const lead of newLeads) {
       const key = lead.addressKey || normalizeAddressKey(lead.address);
       const mailKey = lead.mailingAddress1 ? normalizeAddressKey(lead.mailingAddress1) : "";
+
+      // --- Tax/History PDF matching: find CSV record by mailing address ---
+      // If this lead has a real property address (not "CSV") and the mailing address
+      // matches an existing CSV-keyed record, update that record instead of creating a new one.
+      let matchedExistingKey: string | null = null;
+      if (mailKey && lead.address && lead.address !== "CSV") {
+        const existingByMailRow = existingByMail.get(mailKey);
+        if (existingByMailRow && existingByMailRow.address === "CSV") {
+          // This tax/history PDF's mailing address matches a CSV record — merge into it
+          matchedExistingKey = existingByMailRow.address_key;
+        }
+      }
+
+      // Also check if a history PDF matches by property address (non-CSV existing record)
+      if (!matchedExistingKey) {
+        const existingByAddr = existingByKey.get(key);
+        if (existingByAddr) {
+          matchedExistingKey = key;
+        }
+      }
+
       if (mailKey) {
         if (seenMailKeys.has(mailKey)) {
           dbDuplicates.push({
@@ -472,22 +493,26 @@ const Index = () => {
           continue;
         }
         seenMailKeys.add(mailKey);
-        const existingByMailRow = existingByMail.get(mailKey);
-        if (existingByMailRow && existingByMailRow.address_key !== key) {
-          dbDuplicates.push({
-            id: crypto.randomUUID(),
-            rowIndex: -1,
-            classification: "duplicate",
-            reason: `Mailing address already exists in database: ${lead.mailingAddress1}`,
-            fileName: fileName || "unknown",
-            timestamp: new Date(),
-            rawData: { address: lead.address, ownerLastName: lead.ownerLastName, mailingAddress1: lead.mailingAddress1, mailingAddress2: lead.mailingAddress2 },
-          });
-          continue;
+
+        // Only flag as duplicate if there's NO matched key (truly duplicate, not a merge)
+        if (!matchedExistingKey) {
+          const existingByMailRow = existingByMail.get(mailKey);
+          if (existingByMailRow && existingByMailRow.address_key !== key) {
+            dbDuplicates.push({
+              id: crypto.randomUUID(),
+              rowIndex: -1,
+              classification: "duplicate",
+              reason: `Mailing address already exists in database: ${lead.mailingAddress1}`,
+              fileName: fileName || "unknown",
+              timestamp: new Date(),
+              rawData: { address: lead.address, ownerLastName: lead.ownerLastName, mailingAddress1: lead.mailingAddress1, mailingAddress2: lead.mailingAddress2 },
+            });
+            continue;
+          }
         }
       }
 
-      const existing = existingByKey.get(key);
+      const existing = matchedExistingKey ? existingByKey.get(matchedExistingKey) : null;
       if (existing) {
         const hasTax = existing.has_tax_data || lead.hasTaxData;
         const hasHistory = existing.has_history_data || lead.hasHistoryData;
@@ -498,9 +523,16 @@ const Index = () => {
         const saleDate = lead.saleDate || existing.sale_date || null;
         const lastRecordingDate = lead.lastRecordingDate || existing.last_recording_date || null;
 
-        let status: LeadRecord["status"] = lead.status !== "PENDING" ? lead.status : "PENDING";
+        // Update address from "CSV" to the real property address when tax data provides it
+        const newAddress = (existing.address === "CSV" && lead.address && lead.address !== "CSV")
+          ? lead.address : (existing.address || lead.address);
+        // Update address_key when address changes from CSV
+        const newAddressKey = (existing.address === "CSV" && lead.address && lead.address !== "CSV")
+          ? normalizeAddressKey(lead.address) : existing.address_key;
+
+        let status: LeadRecord["status"] = lead.status !== "PENDING" ? lead.status : (existing.status !== "PENDING" ? existing.status : "PENDING");
         let analysisReason = lead.analysisReason;
-        if (status === "PENDING" && hasTax && hasHistory) {
+        if (hasTax && hasHistory) {
           const offDate = offMarketDate ? new Date(offMarketDate) : null;
           const sDate = saleDate ? new Date(saleDate) : null;
           const rDate = lastRecordingDate ? new Date(lastRecordingDate) : null;
@@ -511,10 +543,20 @@ const Index = () => {
             status = "GOOD";
             analysisReason = "No sale record found after off-market date";
           }
+        } else {
+          status = "PENDING";
+          analysisReason = "Awaiting additional documentation for 360-degree view.";
         }
 
-        upsertMap.set(key, {
-          id: existing.id, address: lead.address || existing.address, address_key: key,
+        // Delete old CSV-keyed record if address_key changed
+        if (newAddressKey !== existing.address_key) {
+          // We'll delete old and insert new
+          await supabase.from("leads").delete().eq("id", existing.id);
+        }
+
+        upsertMap.set(newAddressKey, {
+          id: newAddressKey !== existing.address_key ? crypto.randomUUID() : existing.id,
+          address: newAddress, address_key: newAddressKey,
           owner_last_name: ownerLastName, mailing_address_1: mailingAddress1, mailing_address_2: mailingAddress2,
           status, analysis_reason: analysisReason, off_market_date: offMarketDate,
           sale_date: saleDate, last_recording_date: lastRecordingDate,
