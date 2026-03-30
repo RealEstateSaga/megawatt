@@ -231,16 +231,27 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader }: Lea
           </div>
           <div className="flex items-center gap-2">
             {selectedIds.size > 0 && (
-              <Button
-                onClick={handleDelete}
-                variant="destructive"
-                size="sm"
-                className="h-8"
-                disabled={isDeleting}
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                Delete {selectedIds.size} row{selectedIds.size > 1 ? "s" : ""}
-              </Button>
+              <>
+                <Button
+                  onClick={downloadSelected}
+                  variant="outline"
+                  size="sm"
+                  className="h-8"
+                >
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  Download {selectedIds.size} row{selectedIds.size > 1 ? "s" : ""}
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  variant="destructive"
+                  size="sm"
+                  className="h-8"
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                  Delete {selectedIds.size} row{selectedIds.size > 1 ? "s" : ""}
+                </Button>
+              </>
             )}
             {!emptyState && (
               <div className="relative">
