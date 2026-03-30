@@ -139,7 +139,31 @@ const Index = () => {
           .eq("job_id", job.id)
           .order("created_at", { ascending: true });
 
-        if (files) setJobFiles(files as JobFile[]);
+        if (files) {
+          setJobFiles(files as JobFile[]);
+          // Check for queued files that can't resume (File objects lost on refresh)
+          const stuckQueued = files.filter(f => f.status === "queued");
+          if (stuckQueued.length > 0) {
+            // Mark them as failed so the user knows to re-drop
+            for (const f of stuckQueued) {
+              await supabase.from("job_files").update({
+                status: "failed",
+                error_message: "Page was refreshed — please re-drop this file to process",
+                updated_at: new Date().toISOString(),
+              }).eq("id", f.id);
+            }
+            // Update job counts
+            const completed = files.filter(f => f.status === "completed" || f.status === "skipped").length;
+            const failed = files.filter(f => f.status === "failed").length + stuckQueued.length;
+            await supabase.from("processing_jobs").update({
+              completed_files: completed,
+              failed_files: failed,
+              status: "failed",
+              updated_at: new Date().toISOString(),
+            }).eq("id", job.id);
+            toast.warning(`${stuckQueued.length} file(s) need to be re-uploaded (processing was interrupted). Please re-drop them.`);
+          }
+        }
       }
     };
     checkPendingJobs();
