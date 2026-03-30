@@ -11,6 +11,7 @@ interface JobProgressPanelProps {
   files: JobFile[];
   onDismiss: () => void;
   onRetryFailed?: () => void;
+  onCancelJob?: () => void;
 }
 
 const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed }: JobProgressPanelProps) => {
