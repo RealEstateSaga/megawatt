@@ -94,6 +94,7 @@ const Index = () => {
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [jobFiles, setJobFiles] = useState<JobFile[]>([]);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
+  const [rejectedRecords, setRejectedRecords] = useState<RejectedRecord[]>(() => loadPersistedRejected());
   const processingRef = useRef(false);
   const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
 
