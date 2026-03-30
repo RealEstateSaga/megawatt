@@ -242,7 +242,16 @@ const Index = () => {
       const combinedIdx = headers.findIndex(h => h.includes("city state zip"));
       const propAddrIdx = headers.findIndex(h => h.includes("property address") || h === "address");
 
-      if (mailAddrIdx === -1) { toast.error("CSV must have a 'Mail Address' column"); return; }
+      // --- HEADER INTEGRITY CHECK ---
+      const schemaErrors: string[] = [];
+      if (lastNameIdx === -1) schemaErrors.push("Owner1LastName / Last Name");
+      if (mailAddrIdx === -1) schemaErrors.push("Owner Mail Address / Mail Address");
+      if (schemaErrors.length > 0) {
+        const reason = `Invalid Schema: Missing required headers — ${schemaErrors.join(", ")}`;
+        addFailedUpload({ id: crypto.randomUUID(), fileName: file.name, reason, timestamp: new Date() });
+        toast.error(reason);
+        return;
+      }
 
       const parseCSVRow = (line: string): string[] => {
         const result: string[] = [];
@@ -278,9 +287,26 @@ const Index = () => {
         }
 
         const mailAddress = cols[mailAddrIdx] || "";
-        const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || "CSV") : "CSV";
+        const address = propAddrIdx >= 0 ? (cols[propAddrIdx] || "") : "";
+        const lastName = lastNameIdx >= 0 ? (cols[lastNameIdx] || "").trim() : "";
 
-        if (!mailAddress && address === "CSV") {
+        // --- MANDATORY FIELD COMPLETION (Rule 4) ---
+        if (!lastName && !address) {
+          rowClassifications.push({ rowIndex, classification: "failed", reason: "Missing Mandatory Data: both Last Name and Address are empty" });
+          continue;
+        }
+
+        // --- ADDRESS FIELD SANITATION (Rule 3) ---
+        const invalidAddressPatterns = /\(no\s*mail\)|^nan$/i;
+        const nullPattern = /^null$/i;
+        if (mailAddress && (invalidAddressPatterns.test(mailAddress.trim()) || nullPattern.test(mailAddress.trim()))) {
+          rowClassifications.push({ rowIndex, classification: "failed", reason: `Invalid Address String: "${mailAddress}"` });
+          continue;
+        }
+
+        const effectiveAddress = address || "CSV";
+
+        if (!mailAddress && effectiveAddress === "CSV") {
           rowClassifications.push({ rowIndex, classification: "failed", reason: "No mail address and no property address" });
           continue;
         }
@@ -292,20 +318,29 @@ const Index = () => {
         }
         if (mailKey) seenMailingAddresses.add(mailKey);
 
-        const lastName = lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "";
         const statusRaw = statusIdx >= 0 ? (cols[statusIdx] || "").toUpperCase() : "GOOD";
         const status: "GOOD" | "BAD" | "PENDING" = statusRaw === "BAD" ? "BAD" : statusRaw === "PENDING" ? "PENDING" : "GOOD";
 
+        // --- ZIP CODE DATA TYPE VALIDATION (Rule 2) ---
         let cityStateZip = "";
         if (combinedIdx >= 0) {
           cityStateZip = fixStateCasing(cols[combinedIdx] || "");
         } else if (cityIdx >= 0 && stateIdx >= 0 && zipIdx >= 0) {
-          cityStateZip = `${cols[cityIdx] || ""} ${abbreviateState(cols[stateIdx] || "")} ${cols[zipIdx] || ""}`.trim();
+          let rawZip = (cols[zipIdx] || "").trim();
+          // Auto-clean trailing .0 (e.g. 55343.0 → 55343)
+          if (/^\d+\.0$/.test(rawZip)) {
+            rawZip = rawZip.replace(/\.0$/, "");
+          } else if (/\.\d+/.test(rawZip) && /^\d/.test(rawZip)) {
+            // Zip still has a non-.0 decimal — malformed
+            rowClassifications.push({ rowIndex, classification: "failed", reason: `Malformed Zip: "${cols[zipIdx]}" contains a decimal` });
+            continue;
+          }
+          cityStateZip = `${cols[cityIdx] || ""} ${abbreviateState(cols[stateIdx] || "")} ${rawZip}`.trim();
         }
 
         newLeads.push({
-          id: crypto.randomUUID(), address,
-          addressKey: address === "CSV" ? normalizeAddressKey(`csv-${mailAddress}-${cityStateZip}`) : normalizeAddressKey(address),
+          id: crypto.randomUUID(), address: effectiveAddress,
+          addressKey: effectiveAddress === "CSV" ? normalizeAddressKey(`csv-${mailAddress}-${cityStateZip}`) : normalizeAddressKey(effectiveAddress),
           ownerLastName: lastName, mailingAddress1: mailAddress, mailingAddress2: cityStateZip,
           status, analysisReason: status === "GOOD" ? "Imported from CSV as GOOD" : status === "BAD" ? "Imported from CSV as BAD" : "Awaiting additional documentation for 360-degree view.",
           offMarketDate: null, saleDate: null, lastRecordingDate: null,
