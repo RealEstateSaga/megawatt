@@ -167,7 +167,7 @@ const LeadTable = ({ leads, onDeleteLeads, onUpdateLastName, fileUploader, activ
     URL.revokeObjectURL(url);
   };
 
-  const downloadCSV = () => buildCSV(leads.filter(l => l.status === "GOOD"));
+  const downloadCSV = () => buildCSV(leads);
 
   const downloadSelected = () => {
     const selected = sorted.filter(l => selectedIds.has(l.id));
