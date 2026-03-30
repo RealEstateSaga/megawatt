@@ -1,0 +1,3 @@
+UPDATE processing_jobs SET status = 'failed', updated_at = NOW() WHERE status IN ('pending', 'processing');
+UPDATE job_files SET status = 'failed', error_message = 'Cancelled: stuck processing', updated_at = NOW() WHERE status IN ('queued', 'processing', 'hashing', 'splitting', 'committing');
+DELETE FROM file_hashes WHERE sha256 IN (SELECT file_hash FROM job_files WHERE error_message = 'Cancelled: stuck processing');

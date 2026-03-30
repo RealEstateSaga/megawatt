@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye, RotateCcw, Hash, SplitSquareVertical, Brain, Database } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, Clock, FileText, Eye, RotateCcw, Hash, SplitSquareVertical, Brain, Database, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,10 @@ interface JobProgressPanelProps {
   files: JobFile[];
   onDismiss: () => void;
   onRetryFailed?: () => void;
+  onCancelJob?: () => void;
 }
 
-const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed }: JobProgressPanelProps) => {
+const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed, onCancelJob }: JobProgressPanelProps) => {
   const [expanded, setExpanded] = useState(false);
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
 
@@ -83,6 +84,12 @@ const JobProgressPanel = ({ job, files, onDismiss, onRetryFailed }: JobProgressP
               Job Progress
             </span>
             <div className="flex items-center gap-1">
+              {!isDone && onCancelJob && (
+                <Button onClick={onCancelJob} variant="destructive" size="sm" className="h-6 text-xs gap-1">
+                  <X className="h-3 w-3" />
+                  Cancel
+                </Button>
+              )}
               {failed > 0 && onRetryFailed && (
                 <Button onClick={onRetryFailed} variant="outline" size="sm" className="h-6 text-xs gap-1">
                   <RotateCcw className="h-3 w-3" />
