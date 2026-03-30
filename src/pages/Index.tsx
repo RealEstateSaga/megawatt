@@ -7,7 +7,6 @@ import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
 import LeadTable from "@/components/LeadTable";
 import RejectedRecordsTable from "@/components/RejectedRecordsTable";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { LeadRecord, FailedUpload, RejectedRecord } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
 import { abbreviateState } from "@/lib/stateAbbreviations";
@@ -95,6 +94,7 @@ const Index = () => {
   const [jobFiles, setJobFiles] = useState<JobFile[]>([]);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>(() => loadPersistedFailures());
   const [rejectedRecords, setRejectedRecords] = useState<RejectedRecord[]>(() => loadPersistedRejected());
+  const [activeTab, setActiveTab] = useState<string>("master");
   const processingRef = useRef(false);
   const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
 
@@ -796,40 +796,48 @@ const Index = () => {
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">Loading leads...</p>
         </div>
+      ) : activeTab === "master" ? (
+        <LeadTable
+          leads={leads}
+          onDeleteLeads={handleDeleteLeads}
+          onUpdateLastName={handleUpdateLastName}
+          onImportCSV={handleImportCSV}
+          fileUploader={fileUploaderElement}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          rejectedCount={rejectedRecords.length}
+        />
       ) : (
-        <Tabs defaultValue="master" className="flex-1 flex flex-col min-h-0">
-          <div className="px-6 pt-2 bg-card border-b border-border">
-            <TabsList className="h-9">
-              <TabsTrigger value="master" className="text-sm">
-                Master List
-                {leads.length > 0 && <span className="ml-1.5 text-xs text-muted-foreground">({leads.length})</span>}
-              </TabsTrigger>
-              <TabsTrigger value="rejected" className="text-sm">
-                Rejected Records
-                {rejectedRecords.length > 0 && (
-                  <span className="ml-1.5 text-xs text-destructive font-semibold">({rejectedRecords.length})</span>
-                )}
-              </TabsTrigger>
-            </TabsList>
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Reuse the same sticky header style */}
+          <div className="sticky top-0 z-20 bg-card border-b border-border flex-shrink-0">
+            <div className="px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-4">
+                <h1 className="text-lg font-bold tracking-tight text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Lead Pro
+                </h1>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setActiveTab("master")}
+                    className="px-3 py-1 rounded text-xs font-semibold transition-colors bg-muted text-muted-foreground hover:bg-muted-foreground/20"
+                  >
+                    Master List ({leads.length})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("rejected")}
+                    className="px-3 py-1 rounded text-xs font-semibold transition-colors bg-foreground text-background"
+                  >
+                    Rejected ({rejectedRecords.length})
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <TabsContent value="master" className="flex-1 flex flex-col min-h-0 mt-0">
-            <LeadTable
-              leads={leads}
-              onDeleteLeads={handleDeleteLeads}
-              onUpdateLastName={handleUpdateLastName}
-              onImportCSV={handleImportCSV}
-              fileUploader={fileUploaderElement}
-            />
-          </TabsContent>
-
-          <TabsContent value="rejected" className="flex-1 flex flex-col min-h-0 mt-0">
-            <RejectedRecordsTable
-              records={rejectedRecords}
-              onClear={() => { setRejectedRecords([]); persistRejected([]); }}
-            />
-          </TabsContent>
-        </Tabs>
+          <RejectedRecordsTable
+            records={rejectedRecords}
+            onClear={() => { setRejectedRecords([]); persistRejected([]); }}
+          />
+        </div>
       )}
 
       <FailedUploadsSidebar
