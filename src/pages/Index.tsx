@@ -1104,6 +1104,7 @@ const Index = () => {
           files={jobFiles}
           onDismiss={dismissJob}
           onRetryFailed={handleRetryFailed}
+          onCancelJob={handleCancelJob}
         />
       )}
     </div>
