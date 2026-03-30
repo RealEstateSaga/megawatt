@@ -418,11 +418,21 @@ const Index = () => {
         return;
       }
 
-      await mergeAndPersist(newLeads);
+      const { dbDuplicates } = await mergeAndPersist(newLeads, file.name);
+
+      // Capture cross-DB duplicates into Rejected tab
+      if (dbDuplicates.length > 0) {
+        setRejectedRecords(prev => {
+          const next = [...prev, ...dbDuplicates];
+          persistRejected(next);
+          return next;
+        });
+      }
 
       // Show detailed success toast
-      const parts: string[] = [`${rowsInserted} inserted`];
-      if (rowsDuplicate > 0) parts.push(`${rowsDuplicate} duplicates skipped`);
+      const totalDupes = rowsDuplicate + dbDuplicates.length;
+      const parts: string[] = [`${rowsInserted - dbDuplicates.length} inserted`];
+      if (totalDupes > 0) parts.push(`${totalDupes} duplicates skipped`);
       if (rowsFailed > 0) parts.push(`${rowsFailed} failed`);
       toast.success(`CSV Import Complete: ${parts.join(", ")} (${totalRowsDetected} total rows)`);
     } catch (err) {
@@ -432,7 +442,7 @@ const Index = () => {
   };
 
   // --- Merge & Persist ---
-  const mergeAndPersist = async (newLeads: LeadRecord[]) => {
+  const mergeAndPersist = async (newLeads: LeadRecord[], fileName?: string): Promise<{ inserted: number; dbDuplicates: RejectedRecord[] }> => {
     const existingRows = await fetchAllLeads();
     const existingByKey = new Map<string, any>();
     const existingByMail = new Map<string, any>();
@@ -443,15 +453,38 @@ const Index = () => {
 
     const upsertMap = new Map<string, any>();
     const seenMailKeys = new Set<string>();
+    const dbDuplicates: RejectedRecord[] = [];
 
     for (const lead of newLeads) {
       const key = lead.addressKey || normalizeAddressKey(lead.address);
       const mailKey = lead.mailingAddress1 ? normalizeAddressKey(lead.mailingAddress1) : "";
       if (mailKey) {
-        if (seenMailKeys.has(mailKey)) continue;
+        if (seenMailKeys.has(mailKey)) {
+          dbDuplicates.push({
+            id: crypto.randomUUID(),
+            rowIndex: -1,
+            classification: "duplicate",
+            reason: `Duplicate mailing address across files: ${lead.mailingAddress1}`,
+            fileName: fileName || "unknown",
+            timestamp: new Date(),
+            rawData: { address: lead.address, ownerLastName: lead.ownerLastName, mailingAddress1: lead.mailingAddress1, mailingAddress2: lead.mailingAddress2 },
+          });
+          continue;
+        }
         seenMailKeys.add(mailKey);
         const existingByMailRow = existingByMail.get(mailKey);
-        if (existingByMailRow && existingByMailRow.address_key !== key) continue;
+        if (existingByMailRow && existingByMailRow.address_key !== key) {
+          dbDuplicates.push({
+            id: crypto.randomUUID(),
+            rowIndex: -1,
+            classification: "duplicate",
+            reason: `Mailing address already exists in database: ${lead.mailingAddress1}`,
+            fileName: fileName || "unknown",
+            timestamp: new Date(),
+            rawData: { address: lead.address, ownerLastName: lead.ownerLastName, mailingAddress1: lead.mailingAddress1, mailingAddress2: lead.mailingAddress2 },
+          });
+          continue;
+        }
       }
 
       const existing = existingByKey.get(key);
@@ -513,7 +546,7 @@ const Index = () => {
     }
     if (totalFailed > 0) toast.error(`${totalFailed} rows failed to save — please retry`);
     await reloadLeads();
-    return newLeads.length;
+    return { inserted: newLeads.length - dbDuplicates.length, dbDuplicates };
   };
 
   // --- Retry helper with exponential backoff ---
@@ -643,7 +676,10 @@ const Index = () => {
 
         if (mergedLeads.length > 0) {
           await withRetry(() => updateJobFile(jobFileId, { status: "committing", updated_at: new Date().toISOString() }));
-          await mergeAndPersist(mergedLeads);
+          const { dbDuplicates: pdfDupes } = await mergeAndPersist(mergedLeads, file.name);
+          if (pdfDupes.length > 0) {
+            setRejectedRecords(prev => { const next = [...prev, ...pdfDupes]; persistRejected(next); return next; });
+          }
           await withRetry(() => updateJobFile(jobFileId, { status: "completed", leads_found: mergedLeads.length, updated_at: new Date().toISOString() }));
         } else {
           const reason = "No readable address or data found in PDF";
