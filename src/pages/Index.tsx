@@ -345,6 +345,35 @@ const Index = () => {
       }
 
       // --- STEP 8: SUCCESS CONDITION ---
+      // Store rejected records (duplicates + failed) for the Rejected tab
+      const rejectedFromImport: RejectedRecord[] = rowClassifications
+        .filter(r => r.classification === "duplicate" || r.classification === "failed")
+        .map(r => {
+          const cols = parseCSVRow(lines[r.rowIndex + 1]);
+          return {
+            id: crypto.randomUUID(),
+            rowIndex: r.rowIndex,
+            classification: r.classification as "duplicate" | "failed",
+            reason: r.reason,
+            fileName: file.name,
+            timestamp: new Date(),
+            rawData: {
+              address: propAddrIdx >= 0 ? (cols[propAddrIdx] || "") : "",
+              ownerLastName: lastNameIdx >= 0 ? (cols[lastNameIdx] || "") : "",
+              mailingAddress1: cols[mailAddrIdx] || "",
+              mailingAddress2: combinedIdx >= 0 ? (cols[combinedIdx] || "") : (cityIdx >= 0 && stateIdx >= 0 && zipIdx >= 0 ? `${cols[cityIdx] || ""} ${cols[stateIdx] || ""} ${cols[zipIdx] || ""}`.trim() : ""),
+            },
+          };
+        });
+
+      if (rejectedFromImport.length > 0) {
+        setRejectedRecords(prev => {
+          const next = [...prev, ...rejectedFromImport];
+          persistRejected(next);
+          return next;
+        });
+      }
+
       if (rowsInserted === 0) {
         toast.error(`No new rows to import. ${rowsDuplicate} duplicates, ${rowsFailed} failed.`);
         return;
@@ -357,16 +386,6 @@ const Index = () => {
       if (rowsDuplicate > 0) parts.push(`${rowsDuplicate} duplicates skipped`);
       if (rowsFailed > 0) parts.push(`${rowsFailed} failed`);
       toast.success(`CSV Import Complete: ${parts.join(", ")} (${totalRowsDetected} total rows)`);
-
-      // Log failed rows for debugging
-      if (rowsFailed > 0) {
-        const failedRows = rowClassifications.filter(r => r.classification === "failed");
-        console.warn("[CSV Validation] Failed rows:", failedRows);
-      }
-      if (rowsDuplicate > 0) {
-        const dupRows = rowClassifications.filter(r => r.classification === "duplicate");
-        console.log("[CSV Validation] Duplicate rows:", dupRows);
-      }
     } catch (err) {
       console.error("CSV import error:", err);
       toast.error("Failed to parse CSV file");
