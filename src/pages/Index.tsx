@@ -498,7 +498,7 @@ const Index = () => {
         const saleDate = lead.saleDate || existing.sale_date || null;
         const lastRecordingDate = lead.lastRecordingDate || existing.last_recording_date || null;
 
-        let status: "GOOD" | "BAD" | "PENDING" = lead.status !== "PENDING" ? lead.status : "PENDING";
+        let status: LeadRecord["status"] = lead.status !== "PENDING" ? lead.status : "PENDING";
         let analysisReason = lead.analysisReason;
         if (status === "PENDING" && hasTax && hasHistory) {
           const offDate = offMarketDate ? new Date(offMarketDate) : null;
