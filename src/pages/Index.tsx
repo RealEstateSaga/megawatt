@@ -96,6 +96,7 @@ const Index = () => {
   const [rejectedRecords, setRejectedRecords] = useState<RejectedRecord[]>(() => loadPersistedRejected());
   const [activeTab, setActiveTab] = useState<LeadTab>("good");
   const processingRef = useRef(false);
+  const cancelledRef = useRef(false);
   const fileQueueRef = useRef<{ file: File; jobFileId: string; hash: string }[]>([]);
 
   const isProcessing = activeJob?.status === "processing" || activeJob?.status === "pending";
