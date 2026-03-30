@@ -535,7 +535,19 @@ const Index = () => {
 
   // --- Handle file drop ---
   const handleFilesSelected = useCallback(async (files: File[]) => {
-    // 1. Hash all files and check against DB
+    // Route CSVs to the CSV importer, PDFs to the processing pipeline
+    const csvFiles = files.filter(f => f.name.toLowerCase().endsWith(".csv") || f.type === "text/csv");
+    const pdfFiles = files.filter(f => f.type === "application/pdf");
+
+    // Process CSVs immediately via the CSV import path
+    for (const csv of csvFiles) {
+      await handleImportCSV(csv);
+    }
+
+    // If no PDFs, we're done
+    if (pdfFiles.length === 0) return;
+
+    const filesToProcess = pdfFiles;
     const validFiles: { file: File; hash: string }[] = [];
     for (const file of files) {
       const hash = await hashFile(file);
