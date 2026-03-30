@@ -242,7 +242,16 @@ const Index = () => {
       const combinedIdx = headers.findIndex(h => h.includes("city state zip"));
       const propAddrIdx = headers.findIndex(h => h.includes("property address") || h === "address");
 
-      if (mailAddrIdx === -1) { toast.error("CSV must have a 'Mail Address' column"); return; }
+      // --- HEADER INTEGRITY CHECK ---
+      const schemaErrors: string[] = [];
+      if (lastNameIdx === -1) schemaErrors.push("Owner1LastName / Last Name");
+      if (mailAddrIdx === -1) schemaErrors.push("Owner Mail Address / Mail Address");
+      if (schemaErrors.length > 0) {
+        const reason = `Invalid Schema: Missing required headers — ${schemaErrors.join(", ")}`;
+        addFailedUpload({ id: crypto.randomUUID(), fileName: file.name, reason, timestamp: new Date() });
+        toast.error(reason);
+        return;
+      }
 
       const parseCSVRow = (line: string): string[] => {
         const result: string[] = [];
