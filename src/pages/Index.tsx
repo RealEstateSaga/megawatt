@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 import { toast } from "sonner";
-import PasswordGate from "@/components/PasswordGate";
+
 import FileUploader from "@/components/FileUploader";
 import JobProgressPanel from "@/components/JobProgressPanel";
 import FailedUploadsSidebar from "@/components/FailedUploadsSidebar";
@@ -74,7 +74,7 @@ const loadPersistedFailures = (): FailedUpload[] => {
 };
 
 const Index = () => {
-  const [authed, setAuthed] = useState(() => localStorage.getItem("lp_auth") === "1");
+  const [entered, setEntered] = useState(false);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
@@ -641,7 +641,17 @@ const Index = () => {
     });
   }, [jobFiles]);
 
-  if (!authed) return <PasswordGate onUnlock={() => setAuthed(true)} />;
+  if (!entered) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <button
+        onClick={() => setEntered(true)}
+        className="px-10 py-4 text-2xl font-bold tracking-widest bg-primary text-primary-foreground rounded-lg shadow-lg hover:opacity-90 transition-opacity"
+        style={{ fontFamily: "'Playfair Display', serif" }}
+      >
+        LeadPro
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
