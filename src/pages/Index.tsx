@@ -125,10 +125,7 @@ const Index = () => {
       {view === "upload" && (
         <div className="max-w-4xl mx-auto p-6 space-y-4">
           <div>
-            <h2 className="text-lg font-medium mb-1">Paste Raw Data</h2>
-            <p className="text-sm text-muted-foreground">
-              Paste your tax record data below. The AI will extract owner names and mailing addresses, remove duplicates, and flag any rows it can't confidently parse.
-            </p>
+            <h2 className="text-lg font-medium mb-1">Real Estate Data</h2>
           </div>
           <Textarea
             value={pasteText}
