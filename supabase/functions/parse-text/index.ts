@@ -190,11 +190,42 @@ const STANDARD_ADDRESS_REGEX = new RegExp(
   "gi",
 );
 const PO_BOX_REGEX = /\d+\s+P\.?\s*O\.?\s+Box(?:\s+(?:#?[A-Za-z0-9-]+))?/gi;
-const STATE_REGEX = new RegExp(`(${statePattern})(\\s*)(\\d{5})`, "gi");
+const RECORD_END_REGEX = new RegExp(
+  `(${statePattern})\\s*(\\d{5})(?:\\s*\\d{4}-\\d{2}-\\d{2})?(?:\\s*Yes)?(?=(?:[A-Z0-9]|$))`,
+  "g",
+);
+const RECORD_STATE_REGEX = new RegExp(`^(.*?)(?:\\s*)(${statePattern})\\s*(\\d{5})$`, "i");
+const LEADING_ARTIFACT_REGEX = /^(?:(?:\d{4}-\d{2}-\d{2})\s*|Yes\s*)+/i;
+const TRAILING_ARTIFACT_REGEX = /(?:\d{4}-\d{2}-\d{2}|Yes)+$/i;
 
 const normalizeWhitespace = (value: string) => value.replace(/\s+/g, " ").trim();
 
 const normalizeState = (value: string) => STATE_MAP[value] ?? value.toUpperCase();
+
+const stripArtifacts = (value: string) =>
+  normalizeWhitespace(
+    value
+      .replace(LEADING_ARTIFACT_REGEX, " ")
+      .replace(TRAILING_ARTIFACT_REGEX, " ")
+      .replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ")
+      .replace(/\bYes\b/gi, " "),
+  );
+
+const addAddressBoundarySpacing = (value: string) => {
+  const suffixBoundaryRegex = new RegExp(
+    `((?:${suffixPattern})(?:\\s+(?:N|S|E|W|NE|NW|SE|SW))?)(?=[A-Z])`,
+    "g",
+  );
+
+  return normalizeWhitespace(
+    value
+      .replace(suffixBoundaryRegex, "$1 ")
+      .replace(/(County Road\s+\d+[A-Za-z]?)(?=[A-Z])/g, "$1 ")
+      .replace(/(PO\s*Box)(?=[A-Z])/gi, "$1 ")
+      .replace(/(#[A-Za-z0-9-]+)(?=[A-Z])/g, "$1 ")
+      .replace(/\b(N|S|E|W|NE|NW|SE|SW)(?=[A-Z][a-z])/g, "$1 "),
+  );
+};
 
 const cleanInput = (text: string) => {
   let cleaned = text.replace(/[\r\n\t]+/g, " ");
@@ -204,9 +235,11 @@ const cleanInput = (text: string) => {
   }
 
   cleaned = cleaned
-    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ")
-    .replace(/\bYes\b/gi, " ")
-    .replace(/(\d{5})(?=[A-Z])/g, "$1 ");
+    .replace(/·/g, " ")
+    .replace(RECORD_END_REGEX, "$1 $2|||")
+    .replace(/(\d{5})(?=\d{4}-\d{2}-\d{2})/g, "$1 ")
+    .replace(/(\d{4}-\d{2}-\d{2})(?=[A-Z])/g, "$1 ")
+    .replace(/Yes(?=[A-Z])/g, "Yes ");
 
   return normalizeWhitespace(cleaned);
 };
@@ -235,7 +268,7 @@ const collectAddressCandidates = (value: string) => {
 const isValidCity = (value: string) => CITY_PATTERN.test(value) && !/\d/.test(value) && !(value in STATE_MAP);
 
 const makeFailRecord = (fragment: string, state: string, zip: string): ParsedRecord => ({
-  owner_last_name: normalizeWhitespace(fragment).slice(0, 120),
+  owner_last_name: stripArtifacts(fragment).slice(0, 120),
   mail_address: "",
   mail_city: "",
   mail_state: state,
@@ -244,7 +277,7 @@ const makeFailRecord = (fragment: string, state: string, zip: string): ParsedRec
 });
 
 const parseSegment = (prefix: string, state: string, zip: string): ParsedRecord => {
-  const segment = normalizeWhitespace(prefix);
+  const segment = addAddressBoundarySpacing(stripArtifacts(prefix));
   const candidates = collectAddressCandidates(segment);
   let best:
     | {
@@ -256,8 +289,8 @@ const parseSegment = (prefix: string, state: string, zip: string): ParsedRecord 
     | null = null;
 
   for (const candidate of candidates) {
-    const owner = normalizeWhitespace(segment.slice(0, candidate.start));
-    const city = normalizeWhitespace(segment.slice(candidate.end));
+    const owner = stripArtifacts(segment.slice(0, candidate.start));
+    const city = stripArtifacts(segment.slice(candidate.end));
     if (!owner || !candidate.text || !city || !isValidCity(city)) continue;
 
     const cityWords = city.split(" ").length;
@@ -281,22 +314,24 @@ const parseSegment = (prefix: string, state: string, zip: string): ParsedRecord 
 };
 
 const dedupeRecords = (records: ParsedRecord[]) => {
-  const seen = new Set<string>();
+  const byKey = new Map<string, ParsedRecord>();
 
-  return records.filter((record) => {
+  for (const record of records) {
     const key = [
       record.owner_last_name.toLowerCase(),
       record.mail_address.toLowerCase(),
       record.mail_city.toLowerCase(),
       record.mail_state,
       record.mail_zip,
-      record.status,
     ].join("|");
 
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    const existing = byKey.get(key);
+    if (!existing || (existing.status === "Fail" && record.status === "Pass")) {
+      byKey.set(key, record);
+    }
+  }
+
+  return [...byKey.values()];
 };
 
 const parseRawText = (text: string) => {
@@ -304,32 +339,20 @@ const parseRawText = (text: string) => {
   if (!cleaned) return [] as ParsedRecord[];
 
   const records: ParsedRecord[] = [];
-  let cursor = 0;
+  const rows = cleaned
+    .split("|||")
+    .map((row) => stripArtifacts(row))
+    .filter(Boolean);
 
-  for (const match of cleaned.matchAll(STATE_REGEX)) {
-    const stateName = match[1];
-    const zip = match[3];
-    const stateStart = match.index ?? 0;
-    const recordEnd = stateStart + match[0].length;
-    const prefix = cleaned.slice(cursor, stateStart).trim();
-
-    if (prefix) {
-      records.push(parseSegment(prefix, normalizeState(stateName), zip));
+  for (const row of rows) {
+    const match = row.match(RECORD_STATE_REGEX);
+    if (!match) {
+      if (row.length > 8) records.push(makeFailRecord(row, "", ""));
+      continue;
     }
 
-    cursor = recordEnd;
-  }
-
-  const leftover = normalizeWhitespace(cleaned.slice(cursor));
-  if (leftover.length > 8) {
-    records.push({
-      owner_last_name: leftover.slice(0, 120),
-      mail_address: "",
-      mail_city: "",
-      mail_state: "",
-      mail_zip: "",
-      status: "Fail",
-    });
+    const [, prefix, stateName, zip] = match;
+    records.push(parseSegment(prefix, normalizeState(stateName), zip));
   }
 
   return dedupeRecords(records);
