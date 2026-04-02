@@ -221,7 +221,7 @@ const stripArtifacts = (value: string) =>
 
 const addAddressBoundarySpacing = (value: string) => {
   const suffixBoundaryRegex = new RegExp(
-    `((?:${suffixPattern})(?:\\s+(?:NE|NW|SE|SW|N|S|E|W)\\b)?(?:\\s+(?:${UNIT_PREFIX_PATTERN}\\s*)?${UNIT_VALUE_PATTERN})?)(?=[A-Z])`,
+    `((?:${suffixPattern})(?:\\s+(?:NE|NW|SE|SW|N|S|E|W)\\b)?(?:\\s+(?:(?:${UNIT_PREFIX_PATTERN}\\s*[A-Za-z0-9-]{1,6})|(?:#[A-Za-z0-9-]{1,6})))?)(?=[A-Z])`,
     "g",
   );
 
