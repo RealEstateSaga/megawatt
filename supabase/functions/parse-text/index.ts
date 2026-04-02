@@ -231,7 +231,8 @@ const addAddressBoundarySpacing = (value: string) => {
       .replace(suffixBoundaryRegex, "$1 ")
       .replace(/(County Road\s+\d+[A-Za-z]?)(?=[A-Z])/g, "$1 ")
       .replace(/(PO\s*Box)(?=[A-Z])/gi, "$1 ")
-      .replace(/(#[A-Za-z0-9-]{1,6})(?=[A-Z][a-z])/g, "$1 "),
+      .replace(/(#[A-Za-z0-9-]{1,6})(?=[A-Z][a-z])/g, "$1 ")
+      .replace(/\b(NE|NW|SE|SW|N|S|E|W)(?=[A-Z][a-z])/g, "$1 "),
   );
 };
 
