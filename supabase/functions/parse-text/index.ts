@@ -221,19 +221,19 @@ const stripArtifacts = (value: string) =>
 
 const addAddressBoundarySpacing = (value: string) => {
   const suffixBoundaryRegex = new RegExp(
-    `((?:${suffixPattern})(?:\\s+${DIRECTION_PATTERN})?(?:\\s+(?:${UNIT_PREFIX_PATTERN}\\s*)?${UNIT_VALUE_PATTERN})?)(?=[A-Z])`,
+    `((?:${suffixPattern})(?:\\s+(?:NE|NW|SE|SW|N|S|E|W))?(?:\\s+(?:${UNIT_PREFIX_PATTERN}\\s*)?${UNIT_VALUE_PATTERN})?)(?=[A-Z])`,
     "g",
   );
 
   return normalizeWhitespace(
     value
       .replace(/([A-Za-z])(?=\d)/g, "$1 ")
+      .replace(/\b(NE|NW|SE|SW)(?=[A-Z])/g, "$1 ")
       .replace(suffixBoundaryRegex, "$1 ")
       .replace(/(County Road\s+\d+[A-Za-z]?)(?=[A-Z])/g, "$1 ")
       .replace(/(PO\s*Box)(?=[A-Z])/gi, "$1 ")
       .replace(/(#[A-Za-z0-9-]{1,6})(?=[A-Z][a-z])/g, "$1 ")
-      .replace(/\b(NE|NW|SE|SW)(?=[A-Z])/g, "$1 ")
-      .replace(/\b(?<!(?:N|S))([NESW])(?=[A-Z][a-z])/g, "$1 "),
+      .replace(/\b([NSEW])(?=[A-Z][a-z])/g, "$1 "),
   );
 };
 
