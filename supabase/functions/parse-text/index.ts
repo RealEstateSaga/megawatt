@@ -171,8 +171,22 @@ const HEADER_PATTERNS = [
 ];
 
 const CITY_PATTERN = /^[A-Za-z][A-Za-z'.-]*(?:\s+[A-Za-z][A-Za-z'.-]*){0,4}$/;
+const DIRECTION_PATTERN = String.raw`(?:N|S|E|W|NE|NW|SE|SW)`;
+const UNIT_PREFIX_PATTERN = String.raw`(?:#|Apt\.?|Apartment|Unit|Ste\.?|Suite|Lot|Fl\.?|Floor|Bldg\.?|Building|Trlr|Trailer|Rm\.?|Room)`;
+const UNIT_VALUE_PATTERN = String.raw`(?:#?[A-Za-z0-9-]{1,6})`;
+
+const DIRECTIONAL_TOKENS = new Set(["N", "S", "E", "W", "NE", "NW", "SE", "SW"]);
+const UNIT_PREFIX_TOKENS = new Set(
+  ["#", "Apt", "Apartment", "Unit", "Ste", "Suite", "Lot", "Fl", "Floor", "Bldg", "Building", "Trlr", "Trailer", "Rm", "Room"].map((token) => token.toUpperCase()),
+);
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const normalizeToken = (token: string) => token.replace(/[^A-Za-z0-9#]/g, "").toUpperCase();
+
+const ADDRESS_SUFFIX_TERMINALS = new Set(
+  ADDRESS_SUFFIXES.map((suffix) => normalizeToken(suffix.split(" ").at(-1) ?? suffix)),
+);
 
 const statePattern = Object.keys(STATE_MAP)
   .sort((a, b) => b.length - a.length)
@@ -184,12 +198,6 @@ const suffixPattern = ADDRESS_SUFFIXES
   .map(escapeRegExp)
   .join("|");
 
-const ADDRESS_WORD = String.raw`(?:[A-Za-z][A-Za-z'./-]*|\d+(?:st|nd|rd|th)?|#?[A-Za-z0-9-]+)`;
-const STANDARD_ADDRESS_REGEX = new RegExp(
-  String.raw`\d+[A-Za-z]?(?:\s+(?:${ADDRESS_WORD})){0,6}\s+(?:${suffixPattern})(?:\s+(?:${ADDRESS_WORD}|N|S|E|W|NE|NW|SE|SW)){0,3}`,
-  "gi",
-);
-const PO_BOX_REGEX = /\d+\s+P\.?\s*O\.?\s+Box(?:\s+(?:#?[A-Za-z0-9-]+))?/gi;
 const RECORD_END_REGEX = new RegExp(
   `(${statePattern})\\s*(\\d{5})(?:\\s*\\d{4}-\\d{2}-\\d{2})?(?:\\s*Yes)?(?=(?:[A-Z0-9]|$))`,
   "g",
@@ -213,17 +221,17 @@ const stripArtifacts = (value: string) =>
 
 const addAddressBoundarySpacing = (value: string) => {
   const suffixBoundaryRegex = new RegExp(
-    `((?:${suffixPattern})(?:\\s+(?:N|S|E|W|NE|NW|SE|SW))?)(?=[A-Z])`,
+    `((?:${suffixPattern})(?:\\s+${DIRECTION_PATTERN})?(?:\\s+(?:${UNIT_PREFIX_PATTERN}\\s*)?${UNIT_VALUE_PATTERN})?)(?=[A-Z])`,
     "g",
   );
 
   return normalizeWhitespace(
     value
+      .replace(/([A-Za-z])(?=\d)/g, "$1 ")
       .replace(suffixBoundaryRegex, "$1 ")
       .replace(/(County Road\s+\d+[A-Za-z]?)(?=[A-Z])/g, "$1 ")
       .replace(/(PO\s*Box)(?=[A-Z])/gi, "$1 ")
-      .replace(/(#[A-Za-z0-9-]+)(?=[A-Z])/g, "$1 ")
-      .replace(/\b(N|S|E|W|NE|NW|SE|SW)(?=[A-Z][a-z])/g, "$1 "),
+      .replace(/(#[A-Za-z0-9-]{1,6})(?=[A-Z][a-z])/g, "$1 "),
   );
 };
 
@@ -245,24 +253,63 @@ const cleanInput = (text: string) => {
 };
 
 const collectAddressCandidates = (value: string) => {
-  const candidates: Array<{ start: number; end: number; text: string }> = [];
-  const seen = new Set<string>();
+  const tokens = normalizeWhitespace(value).split(" ").filter(Boolean);
+  const candidates: Array<{ owner: string; address: string; city: string; score: number }> = [];
 
-  for (const regex of [PO_BOX_REGEX, STANDARD_ADDRESS_REGEX]) {
-    regex.lastIndex = 0;
-    for (const match of value.matchAll(regex)) {
-      const text = normalizeWhitespace(match[0]);
-      const start = match.index ?? -1;
-      const end = start + match[0].length;
-      const key = `${start}-${end}-${text}`;
-      if (start > 0 && !seen.has(key)) {
-        seen.add(key);
-        candidates.push({ start, end, text });
+  const isAddressStartToken = (token: string) => /^\d+[A-Za-z]?$/.test(token);
+  const isDirectionToken = (token: string) => DIRECTIONAL_TOKENS.has(normalizeToken(token));
+  const isUnitPrefixToken = (token: string) => UNIT_PREFIX_TOKENS.has(normalizeToken(token));
+  const isStandaloneUnitToken = (token: string) => /^#[A-Za-z0-9-]{1,6}$/.test(token);
+  const isUnitValueToken = (token: string) => /^#?[A-Za-z0-9-]{1,6}$/.test(token);
+  const isPoToken = (token: string) => normalizeToken(token) === "PO";
+
+  for (let start = 1; start < tokens.length - 1; start += 1) {
+    if (!isAddressStartToken(tokens[start])) continue;
+
+    for (let index = start + 1; index < tokens.length; index += 1) {
+      const normalized = normalizeToken(tokens[index]);
+      let end = -1;
+
+      if (normalized === "BOX" && index > start && isPoToken(tokens[index - 1])) {
+        end = index;
+      } else if (ADDRESS_SUFFIX_TERMINALS.has(normalized)) {
+        end = index;
+
+        if (
+          normalized === "ROAD" &&
+          index > start &&
+          normalizeToken(tokens[index - 1]) === "COUNTY" &&
+          isAddressStartToken(tokens[index + 1] ?? "")
+        ) {
+          end = index + 1;
+        }
+
+        if (isDirectionToken(tokens[end + 1] ?? "")) {
+          end += 1;
+        }
+
+        if (isUnitPrefixToken(tokens[end + 1] ?? "") && isUnitValueToken(tokens[end + 2] ?? "")) {
+          end += 2;
+        } else if (isStandaloneUnitToken(tokens[end + 1] ?? "")) {
+          end += 1;
+        }
       }
+
+      if (end < start || end >= tokens.length - 1) continue;
+
+      const owner = stripArtifacts(tokens.slice(0, start).join(" "));
+      const address = stripArtifacts(tokens.slice(start, end + 1).join(" "));
+      const city = stripArtifacts(tokens.slice(end + 1).join(" "));
+
+      if (!owner || !address || !city || !isValidCity(city)) continue;
+
+      const cityWords = city.split(" ").length;
+      const score = start * 10 + end - cityWords * 3 - (owner.length > 80 ? 10 : 0);
+      candidates.push({ owner, address, city, score });
     }
   }
 
-  return candidates.sort((a, b) => a.start - b.start);
+  return candidates.sort((a, b) => b.score - a.score);
 };
 
 const isValidCity = (value: string) => CITY_PATTERN.test(value) && !/\d/.test(value) && !(value in STATE_MAP);
@@ -279,27 +326,7 @@ const makeFailRecord = (fragment: string, state: string, zip: string): ParsedRec
 const parseSegment = (prefix: string, state: string, zip: string): ParsedRecord => {
   const segment = addAddressBoundarySpacing(stripArtifacts(prefix));
   const candidates = collectAddressCandidates(segment);
-  let best:
-    | {
-        owner: string;
-        address: string;
-        city: string;
-        score: number;
-      }
-    | null = null;
-
-  for (const candidate of candidates) {
-    const owner = stripArtifacts(segment.slice(0, candidate.start));
-    const city = stripArtifacts(segment.slice(candidate.end));
-    if (!owner || !candidate.text || !city || !isValidCity(city)) continue;
-
-    const cityWords = city.split(" ").length;
-    const score = candidate.start * 2 - cityWords * 5 - (owner.length > 80 ? 10 : 0);
-
-    if (!best || score >= best.score) {
-      best = { owner, address: candidate.text, city, score };
-    }
-  }
+  const best = candidates[0] ?? null;
 
   if (!best) return makeFailRecord(segment, state, zip);
 
