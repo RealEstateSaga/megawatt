@@ -2,28 +2,25 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RecordTable } from "@/components/RecordTable";
 import { UploadView } from "@/components/UploadView";
 import { downloadRecordsCSV } from "@/lib/csv-utils";
 import type { MailRecord } from "@/lib/types";
 
-type View = "lists" | "upload";
+type View = "new" | "completed" | "upload";
 
 const Index = () => {
   const [view, setView] = useState<View>("upload");
   const [records, setRecords] = useState<MailRecord[]>([]);
-  const [activeTab, setActiveTab] = useState<"new" | "completed">("new");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const newRecords = records.filter((r) => r.list === "new");
   const completedRecords = records.filter((r) => r.list === "completed");
-  const currentRecords = activeTab === "new" ? newRecords : completedRecords;
+  const currentRecords = view === "new" ? newRecords : completedRecords;
 
   const handleRecordsAdded = useCallback((newRecs: MailRecord[], targetList: "new" | "completed") => {
     setRecords((prev) => [...prev, ...newRecs]);
-    setActiveTab(targetList);
-    setView("lists");
+    setView(targetList);
   }, []);
 
   const handleToggleSelect = useCallback((id: string) => {
@@ -44,13 +41,13 @@ const Index = () => {
   }, []);
 
   const handleMove = useCallback(() => {
-    const targetList = activeTab === "new" ? "completed" : "new";
+    const targetList = view === "new" ? "completed" : "new";
     setRecords((prev) =>
       prev.map((r) => (selectedIds.has(r.id) ? { ...r, list: targetList } : r))
     );
     toast.success(`Moved ${selectedIds.size} records to ${targetList === "new" ? "New" : "Completed"}`);
     setSelectedIds(new Set());
-  }, [activeTab, selectedIds]);
+  }, [view, selectedIds]);
 
   const handleDownload = useCallback(() => {
     const passRecords = currentRecords.filter((r) => r.status === "Pass");
@@ -62,32 +59,40 @@ const Index = () => {
     toast.success(`Downloaded ${count} records`);
   }, [currentRecords]);
 
-  // Clear selection when switching tabs
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab as "new" | "completed");
+  const handleViewChange = (v: View) => {
+    setView(v);
     setSelectedIds(new Set());
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
       <div className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold tracking-tight">DataLead Pro</h1>
         <div className="flex items-center gap-2">
           <Button
-            variant={view === "lists" ? "default" : "outline"}
+            variant={view === "new" ? "default" : "outline"}
             size="sm"
-            onClick={() => setView("lists")}
+            onClick={() => handleViewChange("new")}
           >
-            Lists
-            {records.length > 0 && (
-              <span className="ml-1.5 text-xs opacity-70">({records.length})</span>
+            New
+            {newRecords.length > 0 && (
+              <span className="ml-1.5 text-xs opacity-70">({newRecords.length})</span>
+            )}
+          </Button>
+          <Button
+            variant={view === "completed" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleViewChange("completed")}
+          >
+            Completed
+            {completedRecords.length > 0 && (
+              <span className="ml-1.5 text-xs opacity-70">({completedRecords.length})</span>
             )}
           </Button>
           <Button
             variant={view === "upload" ? "default" : "outline"}
             size="sm"
-            onClick={() => setView("upload")}
+            onClick={() => handleViewChange("upload")}
           >
             <Upload className="h-4 w-4 mr-1.5" />
             Upload
@@ -95,48 +100,22 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Upload View */}
       {view === "upload" && (
         <UploadView allRecords={records} onRecordsAdded={handleRecordsAdded} />
       )}
 
-      {/* List View */}
-      {view === "lists" && (
+      {(view === "new" || view === "completed") && (
         <div className="p-6">
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList>
-              <TabsTrigger value="new">
-                New {newRecords.length > 0 && `(${newRecords.length})`}
-              </TabsTrigger>
-              <TabsTrigger value="completed">
-                Completed {completedRecords.length > 0 && `(${completedRecords.length})`}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="new">
-              <RecordTable
-                records={newRecords}
-                listType="new"
-                selectedIds={selectedIds}
-                onToggleSelect={handleToggleSelect}
-                onSelectAll={handleSelectAll}
-                onDeselectAll={handleDeselectAll}
-                onMove={handleMove}
-                onDownload={handleDownload}
-              />
-            </TabsContent>
-            <TabsContent value="completed">
-              <RecordTable
-                records={completedRecords}
-                listType="completed"
-                selectedIds={selectedIds}
-                onToggleSelect={handleToggleSelect}
-                onSelectAll={handleSelectAll}
-                onDeselectAll={handleDeselectAll}
-                onMove={handleMove}
-                onDownload={handleDownload}
-              />
-            </TabsContent>
-          </Tabs>
+          <RecordTable
+            records={currentRecords}
+            listType={view}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onSelectAll={handleSelectAll}
+            onDeselectAll={handleDeselectAll}
+            onMove={handleMove}
+            onDownload={handleDownload}
+          />
         </div>
       )}
     </div>
