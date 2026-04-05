@@ -1,97 +1,72 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Download, Upload, List, Loader2 } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { RecordTable } from "@/components/RecordTable";
+import { UploadView } from "@/components/UploadView";
+import { downloadRecordsCSV } from "@/lib/csv-utils";
 import type { MailRecord } from "@/lib/types";
 
-type View = "list" | "upload";
+type View = "lists" | "upload";
 
 const Index = () => {
   const [view, setView] = useState<View>("upload");
   const [records, setRecords] = useState<MailRecord[]>([]);
-  const [pasteText, setPasteText] = useState("");
-  const [processing, setProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"new" | "completed">("new");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const handleSubmit = async () => {
-    if (!pasteText.trim()) {
-      toast.error("Paste some data first");
-      return;
-    }
+  const newRecords = records.filter((r) => r.list === "new");
+  const completedRecords = records.filter((r) => r.list === "completed");
+  const currentRecords = activeTab === "new" ? newRecords : completedRecords;
 
-    setProcessing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("parse-text", {
-        body: { text: pasteText },
-      });
+  const handleRecordsAdded = useCallback((newRecs: MailRecord[], targetList: "new" | "completed") => {
+    setRecords((prev) => [...prev, ...newRecs]);
+    setActiveTab(targetList);
+    setView("lists");
+  }, []);
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
-      const parsed: MailRecord[] = (data.records || []).map((r: any) => ({
-        id: crypto.randomUUID(),
-        ownerLastName: r.owner_last_name || "",
-        mailAddress: r.mail_address || "",
-        mailCity: r.mail_city || "",
-        mailState: r.mail_state || "",
-        mailZip: r.mail_zip || "",
-        status: r.status === "Pass" ? "Pass" : "Fail",
-      }));
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds(new Set(currentRecords.map((r) => r.id)));
+  }, [currentRecords]);
 
-      // Deduplicate against existing records
-      const existing = new Set(
-        records.map(r => `${r.ownerLastName.toLowerCase()}|${r.mailAddress.toLowerCase()}|${r.mailZip}`)
-      );
-      const newRecords = parsed.filter(r => {
-        const key = `${r.ownerLastName.toLowerCase()}|${r.mailAddress.toLowerCase()}|${r.mailZip}`;
-        if (existing.has(key)) return false;
-        existing.add(key);
-        return true;
-      });
+  const handleDeselectAll = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
 
-      const merged = [...records, ...newRecords];
-      setRecords(merged);
-      setPasteText("");
-      setView("list");
+  const handleMove = useCallback(() => {
+    const targetList = activeTab === "new" ? "completed" : "new";
+    setRecords((prev) =>
+      prev.map((r) => (selectedIds.has(r.id) ? { ...r, list: targetList } : r))
+    );
+    toast.success(`Moved ${selectedIds.size} records to ${targetList === "new" ? "New" : "Completed"}`);
+    setSelectedIds(new Set());
+  }, [activeTab, selectedIds]);
 
-      const passCount = newRecords.filter(r => r.status === "Pass").length;
-      const failCount = newRecords.filter(r => r.status === "Fail").length;
-      const dupeCount = parsed.length - newRecords.length;
-      toast.success(`Processed ${newRecords.length} records (${passCount} Pass, ${failCount} Fail${dupeCount > 0 ? `, ${dupeCount} duplicates removed` : ""})`);
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e.message || "Failed to process data");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleDownload = () => {
-    const passRecords = records.filter(r => r.status === "Pass");
+  const handleDownload = useCallback(() => {
+    const passRecords = currentRecords.filter((r) => r.status === "Pass");
     if (passRecords.length === 0) {
       toast.error("No passing records to download");
       return;
     }
-    const header = "Owner Last Name,Mail Address,Mail City,Mail State,Mail Zip";
-    const rows = passRecords.map(r =>
-      [r.ownerLastName, r.mailAddress, r.mailCity, r.mailState, r.mailZip]
-        .map(v => `"${(v || "").replace(/"/g, '""')}"`)
-        .join(",")
-    );
-    const csv = [header, ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `mailing-list-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(`Downloaded ${passRecords.length} records`);
-  };
+    const count = downloadRecordsCSV(passRecords);
+    toast.success(`Downloaded ${count} records`);
+  }, [currentRecords]);
 
-  const passCount = records.filter(r => r.status === "Pass").length;
-  const failCount = records.filter(r => r.status === "Fail").length;
+  // Clear selection when switching tabs
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as "new" | "completed");
+    setSelectedIds(new Set());
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -100,12 +75,11 @@ const Index = () => {
         <h1 className="text-xl font-semibold tracking-tight">DataLead Pro</h1>
         <div className="flex items-center gap-2">
           <Button
-            variant={view === "list" ? "default" : "outline"}
+            variant={view === "lists" ? "default" : "outline"}
             size="sm"
-            onClick={() => setView("list")}
+            onClick={() => setView("lists")}
           >
-            <List className="h-4 w-4 mr-1.5" />
-            List
+            Lists
             {records.length > 0 && (
               <span className="ml-1.5 text-xs opacity-70">({records.length})</span>
             )}
@@ -123,93 +97,46 @@ const Index = () => {
 
       {/* Upload View */}
       {view === "upload" && (
-        <div className="max-w-4xl mx-auto p-6 space-y-4">
-          <div>
-            <h2 className="text-lg font-medium mb-1">Real Estate Data</h2>
-          </div>
-          <Textarea
-            value={pasteText}
-            onChange={e => setPasteText(e.target.value)}
-            placeholder="Paste your data here..."
-            className="min-h-[400px] font-mono text-xs leading-relaxed"
-            disabled={processing}
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {pasteText.length > 0 ? `${pasteText.length.toLocaleString()} characters` : ""}
-            </span>
-            <Button onClick={handleSubmit} disabled={processing || !pasteText.trim()} size="lg">
-              {processing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                "Submit"
-              )}
-            </Button>
-          </div>
-        </div>
+        <UploadView allRecords={records} onRecordsAdded={handleRecordsAdded} />
       )}
 
       {/* List View */}
-      {view === "list" && (
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-medium">Mailing List</h2>
-              {records.length > 0 && (
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="text-accent font-medium">{passCount} Pass</span>
-                  <span className="text-destructive font-medium">{failCount} Fail</span>
-                </div>
-              )}
-            </div>
-            {passCount > 0 && (
-              <Button variant="outline" size="sm" onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-1.5" />
-                Download CSV
-              </Button>
-            )}
-          </div>
-
-          {records.length === 0 ? (
-            <div className="text-center py-20 text-muted-foreground">
-              <Upload className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">No records yet. Go to Upload to paste your data.</p>
-            </div>
-          ) : (
-            <div className="border border-border rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50 border-b border-border">
-                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Status</th>
-                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Owner Last Name</th>
-                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Mail Address</th>
-                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">City</th>
-                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">State</th>
-                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Zip</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map(r => (
-                    <tr key={r.id} className="border-b border-border last:border-0 hover:bg-muted/30">
-                      <td className="px-4 py-2">
-                        <span className={`text-xs font-semibold ${r.status === "Pass" ? "text-accent" : "text-destructive"}`}>
-                          {r.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2">{r.ownerLastName}</td>
-                      <td className="px-4 py-2">{r.mailAddress}</td>
-                      <td className="px-4 py-2">{r.mailCity}</td>
-                      <td className="px-4 py-2">{r.mailState}</td>
-                      <td className="px-4 py-2">{r.mailZip}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+      {view === "lists" && (
+        <div className="p-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList>
+              <TabsTrigger value="new">
+                New {newRecords.length > 0 && `(${newRecords.length})`}
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed {completedRecords.length > 0 && `(${completedRecords.length})`}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="new">
+              <RecordTable
+                records={newRecords}
+                listType="new"
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
+                onSelectAll={handleSelectAll}
+                onDeselectAll={handleDeselectAll}
+                onMove={handleMove}
+                onDownload={handleDownload}
+              />
+            </TabsContent>
+            <TabsContent value="completed">
+              <RecordTable
+                records={completedRecords}
+                listType="completed"
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
+                onSelectAll={handleSelectAll}
+                onDeselectAll={handleDeselectAll}
+                onMove={handleMove}
+                onDownload={handleDownload}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </div>
