@@ -10,7 +10,7 @@ import type { MailRecord } from "@/lib/types";
 type View = "new" | "completed" | "upload";
 
 const Index = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem("dlp_auth") === "1");
   const [view, setView] = useState<View>("upload");
   const [records, setRecords] = useState<MailRecord[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
