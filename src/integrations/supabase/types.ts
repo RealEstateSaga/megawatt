@@ -98,6 +98,7 @@ export type Database = {
           has_tax_data: boolean
           id: string
           last_recording_date: string | null
+          list: string
           mailing_address_1: string | null
           mailing_address_2: string | null
           off_market_date: string | null
@@ -115,6 +116,7 @@ export type Database = {
           has_tax_data?: boolean
           id?: string
           last_recording_date?: string | null
+          list?: string
           mailing_address_1?: string | null
           mailing_address_2?: string | null
           off_market_date?: string | null
@@ -132,6 +134,7 @@ export type Database = {
           has_tax_data?: boolean
           id?: string
           last_recording_date?: string | null
+          list?: string
           mailing_address_1?: string | null
           mailing_address_2?: string | null
           off_market_date?: string | null
