@@ -10,6 +10,7 @@ import type { MailRecord } from "@/lib/types";
 type View = "new" | "completed" | "upload";
 
 const Index = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
   const [view, setView] = useState<View>("upload");
   const [records, setRecords] = useState<MailRecord[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -48,7 +49,7 @@ const Index = () => {
     setRecords((prev) =>
       prev.map((r) => (selectedIds.has(r.id) ? { ...r, list: targetList } : r))
     );
-    toast.success(`Moved ${selectedIds.size} records to ${targetList === "new" ? "New" : "Completed"}`);
+    toast.success(`Moved ${selectedIds.size} records to ${targetList === "new" ? "New" : "Complete"}`);
     setSelectedIds(new Set());
   }, [view, selectedIds]);
 
@@ -67,6 +68,20 @@ const Index = () => {
     setSelectedIds(new Set());
   };
 
+  if (!loggedIn) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center relative">
+        <h1 className="text-5xl font-bold text-muted-foreground/50 tracking-tight">DataLeadPro</h1>
+        <button
+          onClick={() => setLoggedIn(true)}
+          className="absolute bottom-6 right-6 text-sm text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
+        >
+          Pro
+        </button>
+      </div>
+    );
+  }
+
   const showListActions = view === "new" || view === "completed";
 
   return (
@@ -77,6 +92,7 @@ const Index = () => {
           <Button
             variant={view === "new" ? "default" : "outline"}
             size="sm"
+            className="w-28 justify-center"
             onClick={() => handleViewChange("new")}
           >
             New
@@ -87,9 +103,10 @@ const Index = () => {
           <Button
             variant={view === "completed" ? "default" : "outline"}
             size="sm"
+            className="w-28 justify-center"
             onClick={() => handleViewChange("completed")}
           >
-            Completed
+            Complete
             {completedRecords.length > 0 && (
               <span className="ml-1.5 text-xs opacity-70">({completedRecords.length})</span>
             )}
@@ -97,6 +114,7 @@ const Index = () => {
           <Button
             variant={view === "upload" ? "default" : "outline"}
             size="sm"
+            className="w-28 justify-center"
             onClick={() => handleViewChange("upload")}
           >
             <Upload className="h-4 w-4 mr-1.5" />
@@ -108,7 +126,7 @@ const Index = () => {
               {view === "new" ? (
                 <>
                   <ArrowRight className="h-4 w-4 mr-1.5" />
-                  Move to Completed ({selectedIds.size})
+                  Move to Complete ({selectedIds.size})
                 </>
               ) : (
                 <>
