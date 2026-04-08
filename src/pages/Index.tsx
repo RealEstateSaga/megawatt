@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Upload, Download, ArrowRight, ArrowLeft } from "lucide-react";
+import { Upload, Download, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecordTable } from "@/components/RecordTable";
 import { UploadView } from "@/components/UploadView";
 import { downloadRecordsCSV } from "@/lib/csv-utils";
+import { useRecords } from "@/hooks/use-records";
 import type { MailRecord } from "@/lib/types";
 
 type View = "new" | "completed" | "upload";
@@ -12,8 +13,8 @@ type View = "new" | "completed" | "upload";
 const Index = () => {
   const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem("dlp_auth") === "1");
   const [view, setView] = useState<View>("upload");
-  const [records, setRecords] = useState<MailRecord[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { records, loading, addRecords, moveRecords } = useRecords();
 
   const newRecords = records.filter((r) => r.list === "new");
   const completedRecords = records.filter((r) => r.list === "completed");
@@ -22,10 +23,10 @@ const Index = () => {
   const passCount = currentRecords.filter((r) => r.status === "Pass").length;
   const failCount = currentRecords.filter((r) => r.status === "Fail").length;
 
-  const handleRecordsAdded = useCallback((newRecs: MailRecord[], targetList: "new" | "completed") => {
-    setRecords((prev) => [...prev, ...newRecs]);
+  const handleRecordsAdded = useCallback(async (newRecs: MailRecord[], targetList: "new" | "completed") => {
+    await addRecords(newRecs.map((r) => ({ ...r, list: targetList })));
     setView(targetList);
-  }, []);
+  }, [addRecords]);
 
   const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -44,14 +45,12 @@ const Index = () => {
     setSelectedIds(new Set());
   }, []);
 
-  const handleMove = useCallback(() => {
+  const handleMove = useCallback(async () => {
     const targetList = view === "new" ? "completed" : "new";
-    setRecords((prev) =>
-      prev.map((r) => (selectedIds.has(r.id) ? { ...r, list: targetList } : r))
-    );
+    await moveRecords(selectedIds, targetList);
     toast.success(`Moved ${selectedIds.size} records to ${targetList === "new" ? "New" : "Complete"}`);
     setSelectedIds(new Set());
-  }, [view, selectedIds]);
+  }, [view, selectedIds, moveRecords]);
 
   const handleDownload = useCallback(() => {
     const passRecords = currentRecords.filter((r) => r.status === "Pass");
@@ -152,11 +151,18 @@ const Index = () => {
           )}
       </div>
 
+      {loading && showListActions && (
+        <div className="flex items-center justify-center py-20 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          Loading records...
+        </div>
+      )}
+
       {view === "upload" && (
         <UploadView allRecords={records} onRecordsAdded={handleRecordsAdded} />
       )}
 
-      {showListActions && (
+      {showListActions && !loading && (
         <RecordTable
           records={currentRecords}
           listType={view}
