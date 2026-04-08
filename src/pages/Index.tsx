@@ -86,13 +86,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <div className="sticky top-0 z-20 border-b border-border bg-card px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="sticky top-0 z-20 border-b border-border bg-card px-4 py-2 flex items-center gap-2 flex-wrap">
           <h1 className="text-lg font-semibold tracking-tight mr-3">DataLead Pro</h1>
           <Button
             variant={view === "new" ? "default" : "outline"}
             size="sm"
-            className="w-28 justify-center"
+            className="min-w-[7rem] justify-center whitespace-nowrap"
             onClick={() => handleViewChange("new")}
           >
             New
@@ -103,7 +102,7 @@ const Index = () => {
           <Button
             variant={view === "completed" ? "default" : "outline"}
             size="sm"
-            className="w-28 justify-center"
+            className="min-w-[7rem] justify-center whitespace-nowrap"
             onClick={() => handleViewChange("completed")}
           >
             Complete
@@ -114,15 +113,23 @@ const Index = () => {
           <Button
             variant={view === "upload" ? "default" : "outline"}
             size="sm"
-            className="w-28 justify-center"
+            className="min-w-[7rem] justify-center whitespace-nowrap"
             onClick={() => handleViewChange("upload")}
           >
             <Upload className="h-4 w-4 mr-1.5" />
             Upload
           </Button>
 
+          {showListActions && currentRecords.length > 0 && (
+            <div className="flex items-center gap-3 text-sm ml-2">
+              <span className="text-accent font-medium">{passCount} Pass</span>
+              <span className="text-destructive font-medium">{failCount} Fail</span>
+              <span className="text-muted-foreground">({currentRecords.length} total)</span>
+            </div>
+          )}
+
           {showListActions && selectedIds.size > 0 && (
-            <Button variant="outline" size="sm" onClick={handleMove}>
+            <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={handleMove}>
               {view === "new" ? (
                 <>
                   <ArrowRight className="h-4 w-4 mr-1.5" />
@@ -138,20 +145,11 @@ const Index = () => {
           )}
 
           {showListActions && currentRecords.some((r) => r.status === "Pass") && (
-            <Button variant="outline" size="sm" onClick={handleDownload}>
+            <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={handleDownload}>
               <Download className="h-4 w-4 mr-1.5" />
               Download CSV
             </Button>
           )}
-        </div>
-
-        {showListActions && currentRecords.length > 0 && (
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-accent font-medium">{passCount} Pass</span>
-            <span className="text-destructive font-medium">{failCount} Fail</span>
-            <span className="text-muted-foreground">({currentRecords.length} total)</span>
-          </div>
-        )}
       </div>
 
       {view === "upload" && (
