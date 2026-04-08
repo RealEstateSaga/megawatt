@@ -10,7 +10,7 @@ import type { MailRecord } from "@/lib/types";
 type View = "new" | "completed" | "upload";
 
 const Index = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem("dlp_auth") === "1");
   const [view, setView] = useState<View>("upload");
   const [records, setRecords] = useState<MailRecord[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -73,7 +73,7 @@ const Index = () => {
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center relative">
         <h1 className="text-5xl font-bold text-muted-foreground/50 tracking-tight">DataLeadPro</h1>
         <button
-          onClick={() => setLoggedIn(true)}
+          onClick={() => { localStorage.setItem("dlp_auth", "1"); setLoggedIn(true); }}
           className="absolute bottom-6 right-6 text-sm text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
         >
           Pro
