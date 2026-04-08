@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
+import { Upload, Download, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecordTable } from "@/components/RecordTable";
 import { UploadView } from "@/components/UploadView";
@@ -17,6 +17,9 @@ const Index = () => {
   const newRecords = records.filter((r) => r.list === "new");
   const completedRecords = records.filter((r) => r.list === "completed");
   const currentRecords = view === "new" ? newRecords : completedRecords;
+
+  const passCount = currentRecords.filter((r) => r.status === "Pass").length;
+  const failCount = currentRecords.filter((r) => r.status === "Fail").length;
 
   const handleRecordsAdded = useCallback((newRecs: MailRecord[], targetList: "new" | "completed") => {
     setRecords((prev) => [...prev, ...newRecs]);
@@ -64,11 +67,13 @@ const Index = () => {
     setSelectedIds(new Set());
   };
 
+  const showListActions = view === "new" || view === "completed";
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">DataLead Pro</h1>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="sticky top-0 z-20 border-b border-border bg-card px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <h1 className="text-lg font-semibold tracking-tight mr-3">DataLead Pro</h1>
           <Button
             variant={view === "new" ? "default" : "outline"}
             size="sm"
@@ -97,26 +102,53 @@ const Index = () => {
             <Upload className="h-4 w-4 mr-1.5" />
             Upload
           </Button>
+
+          {showListActions && selectedIds.size > 0 && (
+            <Button variant="outline" size="sm" onClick={handleMove}>
+              {view === "new" ? (
+                <>
+                  <ArrowRight className="h-4 w-4 mr-1.5" />
+                  Move to Completed ({selectedIds.size})
+                </>
+              ) : (
+                <>
+                  <ArrowLeft className="h-4 w-4 mr-1.5" />
+                  Move to New ({selectedIds.size})
+                </>
+              )}
+            </Button>
+          )}
+
+          {showListActions && currentRecords.some((r) => r.status === "Pass") && (
+            <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Download className="h-4 w-4 mr-1.5" />
+              Download CSV
+            </Button>
+          )}
         </div>
+
+        {showListActions && currentRecords.length > 0 && (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-accent font-medium">{passCount} Pass</span>
+            <span className="text-destructive font-medium">{failCount} Fail</span>
+            <span className="text-muted-foreground">({currentRecords.length} total)</span>
+          </div>
+        )}
       </div>
 
       {view === "upload" && (
         <UploadView allRecords={records} onRecordsAdded={handleRecordsAdded} />
       )}
 
-      {(view === "new" || view === "completed") && (
-        <div className="p-6">
-          <RecordTable
-            records={currentRecords}
-            listType={view}
-            selectedIds={selectedIds}
-            onToggleSelect={handleToggleSelect}
-            onSelectAll={handleSelectAll}
-            onDeselectAll={handleDeselectAll}
-            onMove={handleMove}
-            onDownload={handleDownload}
-          />
-        </div>
+      {showListActions && (
+        <RecordTable
+          records={currentRecords}
+          listType={view}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+        />
       )}
     </div>
   );
