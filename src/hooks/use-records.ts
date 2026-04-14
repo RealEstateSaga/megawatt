@@ -11,7 +11,7 @@ function toMailRecord(row: any): MailRecord {
     mailCity: "", // parsed from mailing_address_2
     mailState: "",
     mailZip: "",
-    status: row.status === "Pass" ? "Pass" : "Fail",
+    status: row.status === "GOOD" || row.status === "Pass" ? "Pass" : "Fail",
     list: row.list === "completed" ? "completed" : "new",
   };
 }
@@ -76,7 +76,7 @@ export function useRecords() {
       owner_last_name: r.ownerLastName,
       mailing_address_1: r.mailAddress,
       mailing_address_2: [r.mailCity, r.mailState, r.mailZip].filter(Boolean).join(", "),
-      status: r.status,
+      status: r.status === "Pass" ? "GOOD" : "BAD",
       list: r.list,
     }));
 

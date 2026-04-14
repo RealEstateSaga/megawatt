@@ -62,7 +62,7 @@ export const UploadView = ({ allRecords, onRecordsAdded }: UploadViewProps) => {
         mailCity: r.mail_city || "",
         mailState: r.mail_state || "",
         mailZip: r.mail_zip || "",
-        status: r.status === "Pass" ? "Pass" : "Fail",
+        status: (r.status === "Pass" || r.status === "GOOD") ? "Pass" : "Fail",
         list: targetList,
       }));
 
