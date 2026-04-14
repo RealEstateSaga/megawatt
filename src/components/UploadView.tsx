@@ -139,16 +139,16 @@ export const UploadView = ({ allRecords, onRecordsAdded }: UploadViewProps) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-4">
+    <div className="w-full px-6 py-4 flex flex-col flex-1">
 
       {/* Paste area */}
-      <div className="relative">
+      <div className="relative flex-1 flex flex-col">
         <Textarea
           value={pasteText}
           onChange={(e) => setPasteText(e.target.value)}
           onPaste={handlePaste}
           placeholder="Paste your data here — table structure from spreadsheets will be detected automatically..."
-          className="min-h-[350px] font-mono text-xs leading-relaxed"
+          className="flex-1 min-h-[calc(100vh-10rem)] font-mono text-xs leading-relaxed resize-none"
           disabled={processing}
         />
         {hasTableData && pasteText.trim() && (
