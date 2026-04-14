@@ -151,7 +151,6 @@ export const UploadView = ({ allRecords, onRecordsAdded }: UploadViewProps) => {
           className="flex-1 min-h-[calc(100vh-10rem)] font-mono text-xs leading-relaxed resize-none"
           disabled={processing}
         />
-        />
         {hasTableData && pasteText.trim() && (
           <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded bg-primary/10 text-primary text-xs font-medium">
             <Table className="h-3 w-3" />
