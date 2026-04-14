@@ -140,26 +140,6 @@ export const UploadView = ({ allRecords, onRecordsAdded }: UploadViewProps) => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-4">
-      <div>
-        <h2 className="text-lg font-medium mb-1">Real Estate Data</h2>
-      </div>
-
-      {/* CSV Upload */}
-      <div className="flex items-center gap-3 p-4 border border-dashed border-border rounded-lg bg-muted/20">
-        <FileUp className="h-5 w-5 text-muted-foreground" />
-        <div className="flex-1">
-          <p className="text-sm font-medium">Upload CSV File</p>
-          <p className="text-xs text-muted-foreground">Import a previously downloaded mailing list CSV</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleCsvUpload("new")} disabled={processing}>
-            To New
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => handleCsvUpload("completed")} disabled={processing}>
-            To Completed
-          </Button>
-        </div>
-      </div>
 
       {/* Paste area */}
       <div className="relative">
