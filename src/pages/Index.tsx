@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Upload, Download, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { Upload, Download, ArrowRight, ArrowLeft, Loader2, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecordTable } from "@/components/RecordTable";
 import { UploadView } from "@/components/UploadView";
-import { downloadRecordsCSV } from "@/lib/csv-utils";
+import { downloadRecordsCSV, parseCsvRecords, makeDedupeKey } from "@/lib/csv-utils";
 import { useRecords } from "@/hooks/use-records";
 import type { MailRecord } from "@/lib/types";
 
@@ -67,10 +67,41 @@ const Index = () => {
     setSelectedIds(new Set());
   };
 
+  const handleCsvUpload = useCallback((targetList: "new" | "completed") => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = parseCsvRecords(text);
+        if (parsed.length === 0) {
+          toast.error("No records found in CSV");
+          return;
+        }
+        const existingKeys = new Set(records.map((r) => makeDedupeKey(r)));
+        const newRecs = parsed.filter((r) => {
+          const key = makeDedupeKey(r);
+          if (existingKeys.has(key)) return false;
+          existingKeys.add(key);
+          return true;
+        });
+        await addRecords(newRecs.map((r) => ({ ...r, list: targetList })));
+        setView(targetList);
+        toast.success(`Added ${newRecs.length} records to ${targetList === "new" ? "New" : "Complete"}`);
+      } catch (err: any) {
+        console.error(err);
+        toast.error("Failed to parse CSV file");
+      }
+    };
+    input.click();
+  }, [records, addRecords]);
+
   if (!loggedIn) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center relative">
-        <h1 className="text-5xl font-bold text-muted-foreground/50 tracking-tight">DataLeadPro</h1>
         <button
           onClick={() => { localStorage.setItem("dlp_auth", "1"); setLoggedIn(true); }}
           className="absolute bottom-6 right-6 text-sm text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
@@ -86,7 +117,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <div className="sticky top-0 z-20 border-b border-border bg-card px-4 py-2 flex items-center gap-2 flex-wrap">
-          <h1 className="text-lg font-semibold tracking-tight mr-3">DataLead Pro</h1>
           <Button
             variant={view === "new" ? "default" : "outline"}
             size="sm"
@@ -118,6 +148,21 @@ const Index = () => {
             <Upload className="h-4 w-4 mr-1.5" />
             Upload
           </Button>
+
+          {/* CSV Upload in header */}
+          <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
+            <FileUp className="h-4 w-4 text-muted-foreground" />
+            <div className="hidden sm:block">
+              <p className="text-xs font-medium leading-tight">Upload CSV</p>
+              <p className="text-[10px] text-muted-foreground leading-tight">Import mailing list</p>
+            </div>
+            <Button variant="outline" size="sm" className="text-xs" onClick={() => handleCsvUpload("new")}>
+              To New
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs" onClick={() => handleCsvUpload("completed")}>
+              To Completed
+            </Button>
+          </div>
 
           {showListActions && currentRecords.length > 0 && (
             <div className="flex items-center gap-3 text-sm ml-2">
