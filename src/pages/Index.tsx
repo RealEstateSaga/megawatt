@@ -149,20 +149,24 @@ const Index = () => {
             Upload
           </Button>
 
-          {/* CSV Upload in header */}
-          <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
-            <FileUp className="h-4 w-4 text-muted-foreground" />
-            <div className="hidden sm:block">
-              <p className="text-xs font-medium leading-tight">Upload CSV</p>
-              <p className="text-[10px] text-muted-foreground leading-tight">Import mailing list</p>
-            </div>
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => handleCsvUpload("new")}>
-              To New
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => handleCsvUpload("completed")}>
-              To Completed
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-w-[7rem] justify-center whitespace-nowrap"
+            onClick={() => handleCsvUpload("new")}
+          >
+            <FileUp className="h-4 w-4 mr-1.5" />
+            CSV to New
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-w-[7rem] justify-center whitespace-nowrap"
+            onClick={() => handleCsvUpload("completed")}
+          >
+            <FileUp className="h-4 w-4 mr-1.5" />
+            CSV to Complete
+          </Button>
 
           {showListActions && currentRecords.length > 0 && (
             <div className="flex items-center gap-3 text-sm ml-2">

@@ -73,14 +73,20 @@ export function parseHtmlTable(html: string): MailRecord[] | null {
 
   if (headerIdx >= 0) {
     const headers = allCellSets[headerIdx].map((h) => h.toLowerCase());
-    const findCol = (keywords: string[]) =>
-      headers.findIndex((h) => keywords.some((kw) => h.includes(kw)));
+    const findCol = (keywordSets: string[][]) => {
+      for (const keywords of keywordSets) {
+        const idx = headers.findIndex((h) => keywords.every((kw) => h.includes(kw)));
+        if (idx >= 0) return idx;
+      }
+      return -1;
+    };
 
-    const nameCol = findCol(["last name", "owner"]);
-    const addrCol = findCol(["mail address", "mailing address", "address"]);
-    const cityCol = findCol(["city"]);
-    const stateCol = findCol(["state"]);
-    const zipCol = findCol(["zip", "postal"]);
+    // Prioritize more specific matches first
+    const nameCol = findCol([["last name"], ["owner name"], ["owner"]]);
+    const addrCol = findCol([["mail address"], ["mailing address"], ["address"]]);
+    const cityCol = findCol([["city"]]);
+    const stateCol = findCol([["state"]]);
+    const zipCol = findCol([["zip"], ["postal"]]);
 
     if (nameCol >= 0 && addrCol >= 0) {
       colMap = { name: nameCol, address: addrCol, city: cityCol, state: stateCol, zip: zipCol };
