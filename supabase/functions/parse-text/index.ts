@@ -370,7 +370,7 @@ const parseRawText = (text: string) => {
   for (const row of rows) {
     const match = row.match(RECORD_STATE_REGEX);
     if (!match) {
-      if (row.length > 8) records.push(makeFailRecord(row, "", ""));
+      if (row.length > 8) records.push(makeFallbackRecord(row, "", ""));
       continue;
     }
 
