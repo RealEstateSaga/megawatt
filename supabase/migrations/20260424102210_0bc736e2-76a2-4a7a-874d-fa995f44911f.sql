@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD CONSTRAINT leads_address_key_unique UNIQUE (address_key);

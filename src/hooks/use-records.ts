@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { MailRecord } from "@/lib/types";
+import { makeDedupeKey } from "@/lib/csv-utils";
 
 function toMailRecord(row: any): MailRecord {
   return {
     id: row.id,
     ownerLastName: row.owner_last_name || "",
     mailAddress: row.mailing_address_1 || "",
-    mailCity: "", // parsed from mailing_address_2
+    mailCity: "",
     mailState: "",
     mailZip: "",
     status: row.status === "GOOD" || row.status === "Pass" ? "Pass" : "Fail",
@@ -23,15 +24,19 @@ function parseAddress2(addr2: string | null): { city: string; state: string; zip
   return { city: addr2, state: "", zip: "" };
 }
 
+export interface AddResult {
+  inserted: number;
+  duplicates: number;
+  duplicateKeys: string[];
+}
+
 export function useRecords() {
   const [records, setRecords] = useState<MailRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load from DB on mount
   useEffect(() => {
     (async () => {
       try {
-        // Fetch all leads - handle pagination for >1000 rows
         let allRows: any[] = [];
         let from = 0;
         const pageSize = 1000;
@@ -68,11 +73,28 @@ export function useRecords() {
     })();
   }, []);
 
-  const addRecords = useCallback(async (newRecs: MailRecord[]) => {
-    // Insert into DB
-    const rows = newRecs.map((r) => ({
+  const addRecords = useCallback(async (newRecs: MailRecord[]): Promise<AddResult> => {
+    // Client-side dedupe within this batch
+    const seen = new Set<string>();
+    const unique: MailRecord[] = [];
+    const batchDupes: string[] = [];
+    for (const r of newRecs) {
+      const k = makeDedupeKey(r);
+      if (seen.has(k)) {
+        batchDupes.push(k);
+        continue;
+      }
+      seen.add(k);
+      unique.push(r);
+    }
+
+    if (unique.length === 0) {
+      return { inserted: 0, duplicates: batchDupes.length, duplicateKeys: batchDupes };
+    }
+
+    const rows = unique.map((r) => ({
       address: r.mailAddress || "N/A",
-      address_key: `${r.ownerLastName.toLowerCase().trim()}|${r.mailAddress.toLowerCase().trim()}|${r.mailZip.trim()}`,
+      address_key: makeDedupeKey(r),
       owner_last_name: r.ownerLastName,
       mailing_address_1: r.mailAddress,
       mailing_address_2: [r.mailCity, r.mailState, r.mailZip].filter(Boolean).join(", "),
@@ -80,26 +102,44 @@ export function useRecords() {
       list: r.list,
     }));
 
-    const { data, error } = await supabase.from("leads").insert(rows).select("id");
+    // Upsert with ignoreDuplicates → DB enforces uniqueness on address_key.
+    // Returned data only contains rows that were actually inserted.
+    const { data, error } = await supabase
+      .from("leads")
+      .upsert(rows, { onConflict: "address_key", ignoreDuplicates: true })
+      .select("id, address_key, owner_last_name, mailing_address_1, mailing_address_2, status, list");
+
     if (error) {
       console.error("Failed to save records", error);
-      toast.error("Failed to save records to database");
-      return;
+      toast.error(`Database error: ${error.message}`);
+      return { inserted: 0, duplicates: batchDupes.length, duplicateKeys: batchDupes };
     }
 
-    // Map returned IDs back to records
-    const savedRecs = newRecs.map((r, i) => ({
-      ...r,
-      id: data?.[i]?.id || r.id,
-    }));
+    const insertedRows = data || [];
+    const insertedKeys = new Set(insertedRows.map((r: any) => r.address_key));
+    const dbDupes = unique.filter((r) => !insertedKeys.has(makeDedupeKey(r))).map((r) => makeDedupeKey(r));
+
+    // Map inserted DB rows back to MailRecord with parsed city/state/zip
+    const savedRecs: MailRecord[] = insertedRows.map((row: any) => {
+      const { city, state, zip } = parseAddress2(row.mailing_address_2);
+      const rec = toMailRecord(row);
+      rec.mailCity = city;
+      rec.mailState = state;
+      rec.mailZip = zip;
+      return rec;
+    });
 
     setRecords((prev) => [...prev, ...savedRecs]);
+
+    return {
+      inserted: savedRecs.length,
+      duplicates: batchDupes.length + dbDupes.length,
+      duplicateKeys: [...batchDupes, ...dbDupes],
+    };
   }, []);
 
   const moveRecords = useCallback(async (ids: Set<string>, targetList: "new" | "completed") => {
     const idArray = Array.from(ids);
-
-    // Update in DB - batch in chunks
     for (let i = 0; i < idArray.length; i += 100) {
       const chunk = idArray.slice(i, i + 100);
       const { error } = await supabase
@@ -114,5 +154,23 @@ export function useRecords() {
     );
   }, []);
 
-  return { records, loading, addRecords, moveRecords };
+  const deleteRecords = useCallback(async (ids: Set<string>) => {
+    const idArray = Array.from(ids);
+    if (idArray.length === 0) return 0;
+
+    for (let i = 0; i < idArray.length; i += 100) {
+      const chunk = idArray.slice(i, i + 100);
+      const { error } = await supabase.from("leads").delete().in("id", chunk);
+      if (error) {
+        console.error("Failed to delete records", error);
+        toast.error(`Delete failed: ${error.message}`);
+        return 0;
+      }
+    }
+
+    setRecords((prev) => prev.filter((r) => !ids.has(r.id)));
+    return idArray.length;
+  }, []);
+
+  return { records, loading, addRecords, moveRecords, deleteRecords };
 }
