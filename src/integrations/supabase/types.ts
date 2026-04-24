@@ -92,55 +92,31 @@ export type Database = {
         Row: {
           address: string
           address_key: string
-          analysis_reason: string | null
           created_at: string
-          has_history_data: boolean
-          has_tax_data: boolean
           id: string
-          last_recording_date: string | null
-          list: string
           mailing_address_1: string | null
           mailing_address_2: string | null
-          off_market_date: string | null
           owner_last_name: string | null
-          sale_date: string | null
-          status: string
           updated_at: string
         }
         Insert: {
           address: string
           address_key: string
-          analysis_reason?: string | null
           created_at?: string
-          has_history_data?: boolean
-          has_tax_data?: boolean
           id?: string
-          last_recording_date?: string | null
-          list?: string
           mailing_address_1?: string | null
           mailing_address_2?: string | null
-          off_market_date?: string | null
           owner_last_name?: string | null
-          sale_date?: string | null
-          status?: string
           updated_at?: string
         }
         Update: {
           address?: string
           address_key?: string
-          analysis_reason?: string | null
           created_at?: string
-          has_history_data?: boolean
-          has_tax_data?: boolean
           id?: string
-          last_recording_date?: string | null
-          list?: string
           mailing_address_1?: string | null
           mailing_address_2?: string | null
-          off_market_date?: string | null
           owner_last_name?: string | null
-          sale_date?: string | null
-          status?: string
           updated_at?: string
         }
         Relationships: []

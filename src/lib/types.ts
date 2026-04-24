@@ -5,6 +5,4 @@ export interface MailRecord {
   mailCity: string;
   mailState: string;
   mailZip: string;
-  status: "Pass" | "Fail";
-  list: "new" | "completed";
 }

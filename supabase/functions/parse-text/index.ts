@@ -11,7 +11,6 @@ type ParsedRecord = {
   mail_city: string;
   mail_state: string;
   mail_zip: string;
-  status: "Pass" | "Fail";
 };
 
 const STATE_MAP: Record<string, string> = {
@@ -316,13 +315,12 @@ const collectAddressCandidates = (value: string) => {
 
 const isValidCity = (value: string) => CITY_PATTERN.test(value) && !/\d/.test(value) && !(value in STATE_MAP);
 
-const makeFailRecord = (fragment: string, state: string, zip: string): ParsedRecord => ({
+const makeFallbackRecord = (fragment: string, state: string, zip: string): ParsedRecord => ({
   owner_last_name: stripArtifacts(fragment).slice(0, 120),
   mail_address: "",
   mail_city: "",
   mail_state: state,
   mail_zip: zip,
-  status: "Fail",
 });
 
 const parseSegment = (prefix: string, state: string, zip: string): ParsedRecord => {
@@ -330,7 +328,7 @@ const parseSegment = (prefix: string, state: string, zip: string): ParsedRecord 
   const candidates = collectAddressCandidates(segment);
   const best = candidates[0] ?? null;
 
-  if (!best) return makeFailRecord(segment, state, zip);
+  if (!best) return makeFallbackRecord(segment, state, zip);
 
   return {
     owner_last_name: best.owner,
@@ -338,7 +336,6 @@ const parseSegment = (prefix: string, state: string, zip: string): ParsedRecord 
     mail_city: best.city,
     mail_state: state,
     mail_zip: zip,
-    status: "Pass",
   };
 };
 
@@ -354,10 +351,7 @@ const dedupeRecords = (records: ParsedRecord[]) => {
       record.mail_zip,
     ].join("|");
 
-    const existing = byKey.get(key);
-    if (!existing || (existing.status === "Fail" && record.status === "Pass")) {
-      byKey.set(key, record);
-    }
+    if (!byKey.has(key)) byKey.set(key, record);
   }
 
   return [...byKey.values()];
@@ -376,7 +370,7 @@ const parseRawText = (text: string) => {
   for (const row of rows) {
     const match = row.match(RECORD_STATE_REGEX);
     if (!match) {
-      if (row.length > 8) records.push(makeFailRecord(row, "", ""));
+      if (row.length > 8) records.push(makeFallbackRecord(row, "", ""));
       continue;
     }
 

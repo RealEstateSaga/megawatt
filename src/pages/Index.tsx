@@ -1,38 +1,29 @@
 import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Download, ArrowRight, ArrowLeft, Loader2, FileUp, Trash2, ChevronDown, ChevronRight, Table as TableIcon } from "lucide-react";
+import { Download, Loader2, FileUp, Trash2, Table as TableIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadRecordsCSV, parseCsvRecords, makeDedupeKey } from "@/lib/csv-utils";
+import { downloadRecordsCSV, parseCsvRecords } from "@/lib/csv-utils";
 import { parseHtmlTable } from "@/lib/html-table-parser";
 import { useRecords, type AddResult } from "@/hooks/use-records";
 import type { MailRecord } from "@/lib/types";
 
-type ListView = "new" | "completed";
-
 const Index = () => {
   const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem("dlp_auth") === "1");
-  const [view, setView] = useState<ListView>("new");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [pasteOpen, setPasteOpen] = useState(true);
   const [pasteText, setPasteText] = useState("");
   const [pasteHtml, setPasteHtml] = useState<string | null>(null);
   const [hasTableData, setHasTableData] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const { records, loading, addRecords, moveRecords, deleteRecords } = useRecords();
+  const { records, loading, addRecords, deleteRecords } = useRecords();
 
-  const newRecords = useMemo(() => records.filter((r) => r.list === "new"), [records]);
-  const completedRecords = useMemo(() => records.filter((r) => r.list === "completed"), [records]);
-  const currentRecords = view === "new" ? newRecords : completedRecords;
+  const sortedRecords = useMemo(() => records, [records]);
 
-  const passCount = currentRecords.filter((r) => r.status === "Pass").length;
-  const failCount = currentRecords.filter((r) => r.status === "Fail").length;
-
-  const reportAddResult = (result: AddResult, target: ListView) => {
+  const reportAddResult = (result: AddResult) => {
     if (result.inserted > 0 && result.duplicates === 0) {
-      toast.success(`Added ${result.inserted} record${result.inserted === 1 ? "" : "s"} to ${target === "new" ? "New" : "Complete"}`);
+      toast.success(`Added ${result.inserted} record${result.inserted === 1 ? "" : "s"}`);
     } else if (result.inserted > 0 && result.duplicates > 0) {
       toast.success(
         `Added ${result.inserted} new · skipped ${result.duplicates} duplicate${result.duplicates === 1 ? "" : "s"}`,
@@ -59,7 +50,7 @@ const Index = () => {
     }
   }, []);
 
-  const handlePasteSubmit = async (target: ListView) => {
+  const handlePasteSubmit = async () => {
     if (!pasteText.trim()) {
       toast.error("Paste some data first");
       return;
@@ -87,8 +78,6 @@ const Index = () => {
           mailCity: r.mail_city || "",
           mailState: r.mail_state || "",
           mailZip: r.mail_zip || "",
-          status: (r.status === "Pass" || r.status === "GOOD") ? "Pass" : "Fail",
-          list: target,
         }));
       }
 
@@ -97,9 +86,8 @@ const Index = () => {
         return;
       }
 
-      const result = await addRecords(parsed.map((r) => ({ ...r, list: target })));
-      reportAddResult(result, target);
-      setView(target);
+      const result = await addRecords(parsed);
+      reportAddResult(result);
       setPasteText("");
       setPasteHtml(null);
       setHasTableData(false);
@@ -111,7 +99,7 @@ const Index = () => {
     }
   };
 
-  const handleCsvUpload = useCallback((target: ListView) => {
+  const handleCsvUpload = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".csv";
@@ -126,9 +114,8 @@ const Index = () => {
           toast.error("No records found in CSV");
           return;
         }
-        const result = await addRecords(parsed.map((r) => ({ ...r, list: target })));
-        reportAddResult(result, target);
-        setView(target);
+        const result = await addRecords(parsed);
+        reportAddResult(result);
       } catch (err: any) {
         console.error(err);
         toast.error("Failed to parse CSV file");
@@ -147,17 +134,10 @@ const Index = () => {
     });
   };
 
-  const allSelected = currentRecords.length > 0 && selectedIds.size === currentRecords.length;
+  const allSelected = sortedRecords.length > 0 && selectedIds.size === sortedRecords.length;
   const handleSelectAllToggle = () => {
     if (allSelected) setSelectedIds(new Set());
-    else setSelectedIds(new Set(currentRecords.map((r) => r.id)));
-  };
-
-  const handleMove = async () => {
-    const target = view === "new" ? "completed" : "new";
-    await moveRecords(selectedIds, target);
-    toast.success(`Moved ${selectedIds.size} record${selectedIds.size === 1 ? "" : "s"} to ${target === "new" ? "New" : "Complete"}`);
-    setSelectedIds(new Set());
+    else setSelectedIds(new Set(sortedRecords.map((r) => r.id)));
   };
 
   const handleDeleteSelected = async () => {
@@ -175,18 +155,12 @@ const Index = () => {
   };
 
   const handleDownload = () => {
-    const passRecords = currentRecords.filter((r) => r.status === "Pass");
-    if (passRecords.length === 0) {
-      toast.error("No passing records to download");
+    if (sortedRecords.length === 0) {
+      toast.error("No records to download");
       return;
     }
-    const count = downloadRecordsCSV(passRecords);
+    const count = downloadRecordsCSV(sortedRecords);
     toast.success(`Downloaded ${count} records`);
-  };
-
-  const handleViewChange = (v: ListView) => {
-    setView(v);
-    setSelectedIds(new Set());
   };
 
   if (!loggedIn) {
@@ -206,122 +180,57 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Header / toolbar */}
       <div className="sticky top-0 z-20 border-b border-border bg-card px-4 py-2 flex items-center gap-2 flex-wrap">
-        <Button
-          variant={view === "new" ? "default" : "outline"}
-          size="sm"
-          className="min-w-[7rem] justify-center whitespace-nowrap"
-          onClick={() => handleViewChange("new")}
-        >
-          New {newRecords.length > 0 && <span className="ml-1.5 text-xs opacity-70">({newRecords.length})</span>}
+        <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={handleCsvUpload}>
+          <FileUp className="h-4 w-4 mr-1.5" />
+          Upload CSV
         </Button>
-        <Button
-          variant={view === "completed" ? "default" : "outline"}
-          size="sm"
-          className="min-w-[7rem] justify-center whitespace-nowrap"
-          onClick={() => handleViewChange("completed")}
-        >
-          Complete {completedRecords.length > 0 && <span className="ml-1.5 text-xs opacity-70">({completedRecords.length})</span>}
+        <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={handleDownload}>
+          <Download className="h-4 w-4 mr-1.5" />
+          Download CSV
         </Button>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="whitespace-nowrap"
-          onClick={() => handleCsvUpload("new")}
-        >
-          <FileUp className="h-4 w-4 mr-1.5" />
-          CSV → New
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="whitespace-nowrap"
-          onClick={() => handleCsvUpload("completed")}
-        >
-          <FileUp className="h-4 w-4 mr-1.5" />
-          CSV → Complete
-        </Button>
-
-        {currentRecords.length > 0 && (
-          <div className="flex items-center gap-3 text-sm ml-2">
-            <span className="text-accent font-medium">{passCount} Pass</span>
-            <span className="text-destructive font-medium">{failCount} Fail</span>
-            <span className="text-muted-foreground">({currentRecords.length} total)</span>
-          </div>
+        {sortedRecords.length > 0 && (
+          <span className="text-sm text-muted-foreground ml-2">
+            {sortedRecords.length} record{sortedRecords.length === 1 ? "" : "s"}
+          </span>
         )}
 
-        <div className="ml-auto flex items-center gap-2 flex-wrap">
+        <div className="ml-auto flex items-center gap-2">
           {selectedIds.size > 0 && (
-            <>
-              <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={handleMove}>
-                {view === "new" ? <ArrowRight className="h-4 w-4 mr-1.5" /> : <ArrowLeft className="h-4 w-4 mr-1.5" />}
-                Move to {view === "new" ? "Complete" : "New"} ({selectedIds.size})
-              </Button>
-              <Button variant="destructive" size="sm" className="whitespace-nowrap" onClick={handleDeleteSelected}>
-                <Trash2 className="h-4 w-4 mr-1.5" />
-                Delete ({selectedIds.size})
-              </Button>
-            </>
-          )}
-          {currentRecords.some((r) => r.status === "Pass") && (
-            <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={handleDownload}>
-              <Download className="h-4 w-4 mr-1.5" />
-              Download CSV
+            <Button variant="destructive" size="sm" className="whitespace-nowrap" onClick={handleDeleteSelected}>
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Delete ({selectedIds.size})
             </Button>
           )}
         </div>
       </div>
 
-      {/* Paste area (collapsible) */}
-      <div className="border-b border-border bg-card/50">
-        <button
-          onClick={() => setPasteOpen((v) => !v)}
-          className="w-full px-4 py-2 flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {pasteOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          Paste data
+      {/* Paste area */}
+      <div className="border-b border-border bg-card/50 px-4 py-3 space-y-2">
+        <div className="relative">
+          <Textarea
+            value={pasteText}
+            onChange={(e) => setPasteText(e.target.value)}
+            onPaste={handlePaste}
+            placeholder="Paste your spreadsheet or text data here — table structure detected automatically..."
+            className="min-h-[180px] font-mono text-xs leading-relaxed resize-y"
+            disabled={processing}
+          />
           {hasTableData && pasteText.trim() && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">
+            <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">
               <TableIcon className="h-3 w-3" /> Table detected
-            </span>
-          )}
-          {pasteText.length > 0 && (
-            <span className="text-xs text-muted-foreground/70 ml-auto">
-              {pasteText.length.toLocaleString()} chars
-            </span>
-          )}
-        </button>
-        {pasteOpen && (
-          <div className="px-4 pb-3 space-y-2">
-            <Textarea
-              value={pasteText}
-              onChange={(e) => setPasteText(e.target.value)}
-              onPaste={handlePaste}
-              placeholder="Paste your spreadsheet or text data here — table structure detected automatically..."
-              className="min-h-[180px] font-mono text-xs leading-relaxed resize-y"
-              disabled={processing}
-            />
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePasteSubmit("completed")}
-                disabled={processing || !pasteText.trim()}
-              >
-                {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Submit to Complete
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => handlePasteSubmit("new")}
-                disabled={processing || !pasteText.trim()}
-              >
-                {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Submit to New
-              </Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {pasteText.length > 0 ? `${pasteText.length.toLocaleString()} characters` : ""}
+          </span>
+          <Button size="sm" onClick={handlePasteSubmit} disabled={processing || !pasteText.trim()}>
+            {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+            Submit
+          </Button>
+        </div>
       </div>
 
       {/* Records table */}
@@ -330,23 +239,18 @@ const Index = () => {
           <Loader2 className="h-6 w-6 animate-spin mr-2" />
           Loading records...
         </div>
-      ) : currentRecords.length === 0 ? (
+      ) : sortedRecords.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
-          <p className="text-sm">
-            {view === "new"
-              ? "No records yet. Paste data above or import a CSV."
-              : "No completed records yet."}
-          </p>
+          <p className="text-sm">No records yet. Paste data above or upload a CSV.</p>
         </div>
       ) : (
-        <div className="border-x border-b border-border overflow-auto" style={{ maxHeight: "calc(100vh - 220px)" }}>
+        <div className="border-x border-b border-border overflow-auto" style={{ maxHeight: "calc(100vh - 320px)" }}>
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10">
               <tr className="bg-muted border-b border-border">
                 <th className="px-4 py-2.5 w-10">
                   <Checkbox checked={allSelected} onCheckedChange={handleSelectAllToggle} />
                 </th>
-                <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Status</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Owner Last Name</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Mail Address</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">City</th>
@@ -356,15 +260,10 @@ const Index = () => {
               </tr>
             </thead>
             <tbody>
-              {currentRecords.map((r) => (
+              {sortedRecords.map((r) => (
                 <tr key={r.id} className="border-b border-border last:border-0 hover:bg-muted/30">
                   <td className="px-4 py-2">
                     <Checkbox checked={selectedIds.has(r.id)} onCheckedChange={() => toggleSelect(r.id)} />
-                  </td>
-                  <td className="px-4 py-2">
-                    <span className={`text-xs font-semibold ${r.status === "Pass" ? "text-accent" : "text-destructive"}`}>
-                      {r.status}
-                    </span>
                   </td>
                   <td className="px-4 py-2">{r.ownerLastName}</td>
                   <td className="px-4 py-2">{r.mailAddress}</td>
