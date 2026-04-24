@@ -4,22 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import type { MailRecord } from "@/lib/types";
 import { makeDedupeKey } from "@/lib/csv-utils";
 
-function parseAddress2(addr2: string | null): { city: string; state: string; zip: string } {
-  if (!addr2) return { city: "", state: "", zip: "" };
-  const match = addr2.trim().match(/^(.+?),?\s+([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
-  if (match) return { city: match[1].replace(/,\s*$/, ""), state: match[2], zip: match[3] };
-  return { city: addr2, state: "", zip: "" };
-}
-
 function toMailRecord(row: any): MailRecord {
-  const { city, state, zip } = parseAddress2(row.mailing_address_2);
   return {
     id: row.id,
     ownerLastName: row.owner_last_name || "",
-    mailAddress: row.mailing_address_1 || "",
-    mailCity: city,
-    mailState: state,
-    mailZip: zip,
+    mailAddress: row.mail_address || "",
+    mailCity: row.mail_city || "",
+    mailState: row.mail_state || "",
+    mailZip: row.mail_zip || "",
   };
 }
 
@@ -43,7 +35,7 @@ export function useRecords() {
         while (hasMore) {
           const { data, error } = await supabase
             .from("leads")
-            .select("id, owner_last_name, mailing_address_1, mailing_address_2, address_key")
+            .select("id, owner_last_name, mail_address, mail_city, mail_state, mail_zip, address_key")
             .range(from, from + pageSize - 1);
 
           if (error) throw error;
@@ -85,14 +77,16 @@ export function useRecords() {
       address: r.mailAddress || "N/A",
       address_key: makeDedupeKey(r),
       owner_last_name: r.ownerLastName,
-      mailing_address_1: r.mailAddress,
-      mailing_address_2: [r.mailCity, r.mailState, r.mailZip].filter(Boolean).join(", "),
+      mail_address: r.mailAddress,
+      mail_city: r.mailCity,
+      mail_state: r.mailState,
+      mail_zip: r.mailZip,
     }));
 
     const { data, error } = await supabase
       .from("leads")
       .upsert(rows, { onConflict: "address_key", ignoreDuplicates: true })
-      .select("id, address_key, owner_last_name, mailing_address_1, mailing_address_2");
+      .select("id, address_key, owner_last_name, mail_address, mail_city, mail_state, mail_zip");
 
     if (error) {
       console.error("Failed to save records", error);

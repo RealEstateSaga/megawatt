@@ -94,8 +94,10 @@ export type Database = {
           address_key: string
           created_at: string
           id: string
-          mailing_address_1: string | null
-          mailing_address_2: string | null
+          mail_address: string | null
+          mail_city: string | null
+          mail_state: string | null
+          mail_zip: string | null
           owner_last_name: string | null
           updated_at: string
         }
@@ -104,8 +106,10 @@ export type Database = {
           address_key: string
           created_at?: string
           id?: string
-          mailing_address_1?: string | null
-          mailing_address_2?: string | null
+          mail_address?: string | null
+          mail_city?: string | null
+          mail_state?: string | null
+          mail_zip?: string | null
           owner_last_name?: string | null
           updated_at?: string
         }
@@ -114,8 +118,10 @@ export type Database = {
           address_key?: string
           created_at?: string
           id?: string
-          mailing_address_1?: string | null
-          mailing_address_2?: string | null
+          mail_address?: string | null
+          mail_city?: string | null
+          mail_state?: string | null
+          mail_zip?: string | null
           owner_last_name?: string | null
           updated_at?: string
         }
