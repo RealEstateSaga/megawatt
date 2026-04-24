@@ -32,12 +32,7 @@ function normalizeState(state: string): string {
   return trimmed;
 }
 
-/**
- * Try to parse HTML clipboard content containing a <table>.
- * Returns structured MailRecord[] if a table is found, or null if no table detected.
- */
 export function parseHtmlTable(html: string): MailRecord[] | null {
-  // Check if there's a table in the HTML
   if (!/<table[\s>]/i.test(html)) return null;
 
   const parser = new DOMParser();
@@ -45,7 +40,6 @@ export function parseHtmlTable(html: string): MailRecord[] | null {
   const tables = doc.querySelectorAll("table");
   if (tables.length === 0) return null;
 
-  // Use the largest table
   let bestTable = tables[0];
   for (const t of tables) {
     if (t.rows.length > bestTable.rows.length) bestTable = t;
@@ -54,12 +48,10 @@ export function parseHtmlTable(html: string): MailRecord[] | null {
   const rows = Array.from(bestTable.rows);
   if (rows.length < 2) return null;
 
-  // Detect column mapping from header or first row
   const allCellSets = rows.map((row) =>
     Array.from(row.cells).map((cell) => cell.textContent?.trim() || "")
   );
 
-  // Find header row index
   let headerIdx = -1;
   for (let i = 0; i < Math.min(3, allCellSets.length); i++) {
     if (isHeaderRow(allCellSets[i])) {
@@ -68,7 +60,6 @@ export function parseHtmlTable(html: string): MailRecord[] | null {
     }
   }
 
-  // Map columns by header keywords
   let colMap: { name: number; address: number; city: number; state: number; zip: number } | null = null;
 
   if (headerIdx >= 0) {
@@ -81,7 +72,6 @@ export function parseHtmlTable(html: string): MailRecord[] | null {
       return -1;
     };
 
-    // Prioritize more specific matches first
     const nameCol = findCol([["last name"], ["owner name"], ["owner"]]);
     const addrCol = findCol([["mail address"], ["mailing address"], ["address"]]);
     const cityCol = findCol([["city"]]);
@@ -93,14 +83,10 @@ export function parseHtmlTable(html: string): MailRecord[] | null {
     }
   }
 
-  // If no header detected, try heuristic: look for common column patterns
-  // Typical: [checkbox?, corp?, LastName, Address, City, State, Zip, Date?]
   if (!colMap && allCellSets.length > 0) {
     const sampleRow = allCellSets[headerIdx >= 0 ? headerIdx + 1 : 0] || allCellSets[0];
-    // Try to detect by data patterns - look for state column
     for (let i = 0; i < sampleRow.length; i++) {
       if (STATE_MAP[sampleRow[i]] || /^[A-Z]{2}$/.test(sampleRow[i])) {
-        // Found state column, work backwards
         const stateCol = i;
         const cityCol = i - 1;
         const addrCol = i - 2;
@@ -139,8 +125,6 @@ export function parseHtmlTable(html: string): MailRecord[] | null {
       mailCity,
       mailState,
       mailZip,
-      status: ownerLastName && mailAddress ? "Pass" : "Fail",
-      list: "new",
     });
   }
 

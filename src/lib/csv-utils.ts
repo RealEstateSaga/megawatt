@@ -3,18 +3,15 @@ import type { MailRecord } from "./types";
 /**
  * Parse a CSV file that matches our download format:
  * Owner Last Name,Mail Address,Mail City,Mail State,Mail Zip
- * No headers expected — every line is data.
  */
 export function parseCsvRecords(csvText: string): MailRecord[] {
   const records: MailRecord[] = [];
   const lines = csvText.split(/\r?\n/).filter((l) => l.trim());
 
   for (const line of lines) {
-    // Handle quoted CSV fields
     const fields = parseCSVLine(line);
     if (fields.length < 3) continue;
 
-    // Try to detect our 5-column format: LastName, Address, City, State, Zip
     let ownerLastName = "";
     let mailAddress = "";
     let mailCity = "";
@@ -24,7 +21,6 @@ export function parseCsvRecords(csvText: string): MailRecord[] {
     if (fields.length >= 5) {
       [ownerLastName, mailAddress, mailCity, mailState, mailZip] = fields;
     } else if (fields.length === 3) {
-      // Format: LastName, Address, "City ST Zip"
       ownerLastName = fields[0].trim();
       mailAddress = fields[1].trim();
       const cityStateZip = fields[2].trim();
@@ -40,7 +36,6 @@ export function parseCsvRecords(csvText: string): MailRecord[] {
       continue;
     }
 
-    // Skip header rows
     if (/owner.*last.*name/i.test(ownerLastName)) continue;
 
     ownerLastName = ownerLastName.trim();
@@ -58,8 +53,6 @@ export function parseCsvRecords(csvText: string): MailRecord[] {
       mailCity,
       mailState,
       mailZip,
-      status: "Pass",
-      list: "new",
     });
   }
 
