@@ -5,33 +5,33 @@ import { EASE, DUR, SPRING } from "../../engine/motion";
 const steps = [
   {
     number: "01",
-    title: "Discovery",
+    title: "Audit",
     description:
-      "Deep-dive into your business, audience, and competitive landscape. We audit everything before we design anything.",
+      "We assess your current marketing infrastructure, channels, tools, and competitive position before recommending anything.",
   },
   {
     number: "02",
     title: "Strategy",
     description:
-      "Positioning, architecture, and a creative brief that makes every subsequent decision obvious.",
+      "Positioning, channel architecture, and a coordinated plan that aligns every moving part to a single business objective.",
   },
   {
     number: "03",
-    title: "Design",
+    title: "Build",
     description:
-      "Interface systems, motion principles, and visual language — refined until it's undeniable.",
+      "Websites, cloud systems, CRM platforms, and creative assets — engineered for performance and long-term adaptability.",
   },
   {
     number: "04",
-    title: "Build",
+    title: "Activate",
     description:
-      "Production engineering with obsessive attention to performance, accessibility, and code quality.",
+      "Campaigns, automation workflows, and media systems deployed across the channels that drive qualified growth.",
   },
   {
     number: "05",
-    title: "Launch",
+    title: "Optimize",
     description:
-      "Coordinated go-live with QA across all devices, browsers, and network conditions.",
+      "Continuous performance tracking, testing, and refinement aligned to revenue outcomes, not vanity metrics.",
   },
 ];
 
