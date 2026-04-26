@@ -66,7 +66,7 @@ export default function Process() {
           >
             The 1MW
             <br />
-            <span className="italic text-accent">Process</span>
+            <span className="italic text-accent">Engagement</span>
           </motion.h2>
         </div>
 
