@@ -45,20 +45,11 @@ export default function Work() {
         >
           <div className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-6 text-left">
             <p className="text-fluid-sm text-light/80 leading-relaxed max-w-3xl">
-              One megawatt — one million watts — is a universal benchmark for
-              power. The domain 1MW.com carries that same sense of scale and
-              rarity. As a three-character .com, it is among the most
-              sought-after pieces of digital real estate in existence: a name
-              that signals power, progress, and precision.
-            </p>
-            <p className="text-fluid-sm text-light/80 leading-relaxed max-w-3xl">
-              That is the standard 1MW holds itself to. Founded by Mike Wilen,
-              the firm was built to bring that same force to shaping ideas,
-              solving complex challenges, and delivering results that move the
-              needle.
-            </p>
-            <p className="text-fluid-sm text-light/80 leading-relaxed max-w-3xl">
-              One million watts. All in.
+              1MW.com is one of the rarest three-character domains in existence.
+              A megawatt is a universal measure of power. The firm behind it
+              operates the same way. Founded by Mike Wilen, 1MW is the in-house
+              marketing and advertising engine for a connected portfolio of
+              real estate brands, built to generate force, not just activity.
             </p>
           </div>
         </motion.div>
