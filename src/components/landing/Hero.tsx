@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
 import { useSite } from "../../context/SiteContext";
 import { copy } from "../../content/copy";
+import logo from "../../assets/1mw-logo.svg";
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -55,18 +56,17 @@ export default function Hero() {
           {copy.hero.system}
         </motion.p>
 
-        {/* "1MW" — the only focal point */}
-        <h1 className="font-display leading-[0.88] tracking-[-0.02em] text-off mb-10"
-            style={{ fontSize: "clamp(6rem, 22vw, 18rem)" }}>
+        {/* 1MW logo — the only focal point */}
+        <h1 className="mb-10 flex justify-center" aria-label="1MW">
           <div className="overflow-hidden">
-            <motion.span
-              className="block"
+            <motion.img
+              src={logo}
+              alt="1MW"
+              className="h-12 w-auto block"
               initial={{ y: "110%" }}
               animate={{ y: 0 }}
               transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
-            >
-              1MW
-            </motion.span>
+            />
           </div>
         </h1>
 

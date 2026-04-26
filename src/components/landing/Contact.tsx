@@ -123,10 +123,10 @@ export default function Contact() {
           transition={{ delay: 0.65 }}
         >
           <a
-            href="mailto:hello@1mw.studio"
+            href="mailto:hello@1mw.com"
             className="font-mono text-fluid-xs text-muted/40 hover:text-muted transition-colors duration-300 tracking-wider"
           >
-            hello@1mw.studio
+            hello@1mw.com
           </a>
         </motion.div>
       </div>
