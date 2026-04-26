@@ -47,9 +47,9 @@ export default function LandingSite() {
         <Work />
         <Process />
 
-        {/* STATE 4: VALIDATION */}
-        <Stats />
-        <Testimonials />
+        {/* STATE 4: VALIDATION — Stats and Testimonials hidden until updated figures and real client quotes are confirmed */}
+        {/* <Stats /> */}
+        {/* <Testimonials /> */}
 
         {/* STATE 5: CONVERSION */}
         <Contact />
