@@ -165,12 +165,12 @@ const Index = () => {
 
   if (!loggedIn) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center relative">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <button
           onClick={() => { localStorage.setItem("dlp_auth", "1"); setLoggedIn(true); }}
-          className="absolute bottom-6 right-6 text-sm text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
+          className="px-6 py-2 text-sm border border-border rounded-md hover:bg-muted transition-colors"
         >
-          Pro
+          Enter
         </button>
       </div>
     );
