@@ -1,10 +1,12 @@
 import { useMotionValue, useAnimationFrame, motion } from "framer-motion";
 
 const items = [
-  "Brand Strategy", "Web Design", "Motion Design", "Development",
-  "UI Systems", "Art Direction", "Digital Campaigns", "Interaction Design",
-  "Brand Strategy", "Web Design", "Motion Design", "Development",
-  "UI Systems", "Art Direction", "Digital Campaigns", "Interaction Design",
+  "Strategy", "Web Design", "Cloud Infrastructure", "Performance Marketing",
+  "SEO", "Paid Media", "CRM & Automation", "Email Marketing",
+  "Systems Integration", "AI",
+  "Strategy", "Web Design", "Cloud Infrastructure", "Performance Marketing",
+  "SEO", "Paid Media", "CRM & Automation", "Email Marketing",
+  "Systems Integration", "AI",
 ];
 
 export default function Marquee() {
