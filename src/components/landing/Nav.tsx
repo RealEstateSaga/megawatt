@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSite, type NarrativeState } from "../../context/SiteContext";
 import { EASE, DUR } from "../../engine/motion";
+import logo from "../../assets/1mw-logo.svg";
 
 const links = ["Work", "Services", "About", "Process", "Contact"];
 
@@ -36,8 +37,8 @@ export default function Nav() {
         transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
       >
         {/* Logo */}
-        <a href="#" className="font-display text-off text-xl tracking-tight font-bold">
-          1MW
+        <a href="#" aria-label="1MW home" className="flex items-center">
+          <img src={logo} alt="1MW" className="h-12 w-auto" />
         </a>
 
         {/* Desktop links */}
