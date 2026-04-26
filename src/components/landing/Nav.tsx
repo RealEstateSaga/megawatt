@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSite, type NarrativeState } from "../context/SiteContext";
-import { EASE, DUR } from "../engine/motion";
+import { useSite, type NarrativeState } from "../../context/SiteContext";
+import { EASE, DUR } from "../../engine/motion";
 
 const links = ["Work", "Services", "About", "Process", "Contact"];
 

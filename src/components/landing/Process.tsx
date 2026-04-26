@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useSpring } from "framer-motion";
-import { EASE, DUR, SPRING } from "../engine/motion";
+import { EASE, DUR, SPRING } from "../../engine/motion";
 
 const steps = [
   {

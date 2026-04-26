@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import { SPRING } from "../engine/motion";
+import { SPRING } from "../../engine/motion";
 
 type CursorState = "default" | "hover" | "view";
 

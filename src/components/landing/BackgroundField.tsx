@@ -1,5 +1,5 @@
 import { motion, useTransform, useMotionTemplate } from "framer-motion";
-import { useSite } from "../context/SiteContext";
+import { useSite } from "../../context/SiteContext";
 
 /**
  * BackgroundField — passive ambient atmospheric layer.

@@ -1,5 +1,5 @@
 import { motion, useMotionTemplate, useTransform } from "framer-motion";
-import { useSite } from "../context/SiteContext";
+import { useSite } from "../../context/SiteContext";
 
 /**
  * Global cursor lighting field.

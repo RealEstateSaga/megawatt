@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { EASE, DUR } from "../engine/motion";
-import { copy } from "../content/copy";
+import { EASE, DUR } from "../../engine/motion";
+import { copy } from "../../content/copy";
 import SectionWrapper from "./SectionWrapper";
 
 /**

@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { EASE, DUR } from "../engine/motion";
-import { useSite } from "../context/SiteContext";
-import { copy } from "../content/copy";
+import { EASE, DUR } from "../../engine/motion";
+import { useSite } from "../../context/SiteContext";
+import { copy } from "../../content/copy";
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);

@@ -1,9 +1,9 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { EASE, DUR, SPRING } from "../engine/motion";
-import { useSite } from "../context/SiteContext";
-import { copy } from "../content/copy";
-import { ctaClasses } from "../content/ctaConfig";
+import { EASE, DUR, SPRING } from "../../engine/motion";
+import { useSite } from "../../context/SiteContext";
+import { copy } from "../../content/copy";
+import { ctaClasses } from "../../content/ctaConfig";
 import SectionWrapper from "./SectionWrapper";
 
 /**

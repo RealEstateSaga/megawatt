@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { EASE, DUR } from "../engine/motion";
+import { EASE, DUR } from "../../engine/motion";
 
 const footerLinks = {
   Studio: ["About", "Services", "Work", "Process"],

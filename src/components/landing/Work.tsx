@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion, useMotionValue, useMotionTemplate } from "framer-motion";
-import { EASE, DUR } from "../engine/motion";
+import { EASE, DUR } from "../../engine/motion";
 
 const projects = [
   {

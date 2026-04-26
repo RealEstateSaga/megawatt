@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { EASE, DUR } from "../engine/motion";
-import { copy } from "../content/copy";
+import { EASE, DUR } from "../../engine/motion";
+import { copy } from "../../content/copy";
 
 const testimonials = copy.validation.testimonials;
 

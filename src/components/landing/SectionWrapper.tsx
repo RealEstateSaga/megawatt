@@ -1,8 +1,8 @@
 import { useRef, type ReactNode } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useSite } from "../context/SiteContext";
-import type { NarrativeState } from "../context/SiteContext";
-import { EASE, DUR } from "../engine/motion";
+import { useSite } from "../../context/SiteContext";
+import type { NarrativeState } from "../../context/SiteContext";
+import { EASE, DUR } from "../../engine/motion";
 
 interface SectionWrapperProps {
   children: ReactNode;

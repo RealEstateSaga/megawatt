@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { motion, useMotionValue, useMotionTemplate, useSpring } from "framer-motion";
-import { EASE, DUR, SPRING } from "../engine/motion";
-import { copy } from "../content/copy";
-import { useMotionIntensity } from "../hooks/useMotionIntensity";
+import { EASE, DUR, SPRING } from "../../engine/motion";
+import { copy } from "../../content/copy";
+import { useMotionIntensity } from "../../hooks/useMotionIntensity";
 import SectionWrapper from "./SectionWrapper";
 
 /**
