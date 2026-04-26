@@ -43,14 +43,8 @@ export default function Work() {
           viewport={{ once: true }}
           transition={{ duration: DUR.slow, ease: EASE.cinematic }}
         >
-          <div
-            className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-8"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(26,26,46,0.4) 0%, transparent 60%)",
-            }}
-          >
-            <p className="font-display text-fluid-xl text-off leading-relaxed max-w-4xl">
+          <div className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-6 text-left">
+            <p className="text-fluid-sm text-light/80 leading-relaxed max-w-3xl">
               One megawatt — one million watts — is a universal benchmark for
               power. The domain 1MW.com carries that same sense of scale and
               rarity. As a three-character .com, it is among the most
@@ -63,7 +57,7 @@ export default function Work() {
               solving complex challenges, and delivering results that move the
               needle.
             </p>
-            <p className="font-display text-fluid-lg italic text-accent leading-tight">
+            <p className="text-fluid-sm text-light/80 leading-relaxed max-w-3xl">
               One million watts. All in.
             </p>
           </div>
