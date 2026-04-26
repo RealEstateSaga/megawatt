@@ -47,14 +47,14 @@ export const CTA_BY_STATE: Record<NarrativeState, CTADefinition> = {
   },
   validation: {
     label: "Request a breakdown",
-    href: "mailto:hello@1mw.studio",
+    href: "mailto:hello@1mw.com",
     style: "filled",
     intensity: "high",
     primary: true,
   },
   conversion: {
     label: "Start now",
-    href: "mailto:hello@1mw.studio",
+    href: "mailto:hello@1mw.com",
     style: "direct",
     intensity: "direct",
     primary: true,

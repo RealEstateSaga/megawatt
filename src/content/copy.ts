@@ -117,7 +117,7 @@ export const copy = {
     actions: [
       {
         label: "Start a Project",
-        href: "mailto:hello@1mw.studio",
+        href: "mailto:hello@1mw.com",
         primary: true,
       },
       {
@@ -127,7 +127,7 @@ export const copy = {
       },
       {
         label: "Request a Breakdown",
-        href: "mailto:hello@1mw.studio",
+        href: "mailto:hello@1mw.com",
         primary: false,
       },
     ],
