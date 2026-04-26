@@ -2,9 +2,7 @@ import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
 import logo from "../../assets/1mw-logo.svg";
 
-const footerLinks = {
-  Studio: ["About", "Services", "Work", "Process"],
-};
+const navLinks = ["About", "Services", "Work", "Process"];
 
 export default function Footer() {
   return (
@@ -34,36 +32,26 @@ export default function Footer() {
           </a>
         </motion.div>
 
-        {/* Links grid */}
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
-          <div className="md:col-span-1">
-            <img src={logo} alt="1MW" className="h-6 w-auto mb-4" />
-            <p className="font-mono text-fluid-xs text-light leading-relaxed">
-              Premium creative studio.
-              <br />
-              Building digital futures.
-            </p>
-          </div>
-
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
-              <p className="font-mono text-fluid-xs text-accent tracking-widest uppercase mb-4">
-                {category}
-              </p>
-              <ul className="flex flex-col gap-3">
-                {links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="font-mono text-fluid-xs text-muted hover:text-off transition-colors duration-200 tracking-wide"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        {/* Brand block */}
+        <div className="mb-16">
+          <img src={logo} alt="1MW" className="h-6 w-auto mb-4" />
+          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-3">
+            {navLinks.map((link) => (
+              <a
+                key={link}
+                href={`#${link.toLowerCase()}`}
+                className="font-mono text-fluid-xs text-light hover:text-off transition-colors duration-200 tracking-wide"
+              >
+                {link}
+              </a>
+            ))}
+          </nav>
+          <a
+            href="mailto:hello@1mw.com"
+            className="font-mono text-fluid-xs text-muted hover:text-off transition-colors duration-200"
+          >
+            hello@1mw.com
+          </a>
         </div>
 
         {/* Bottom bar */}
