@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    /* ── shadcn / leadpro palette (light, utility) ─────────────────── */
     --background: 210 11% 98%;
     --foreground: 215 20% 15%;
 
@@ -55,6 +56,22 @@
     --sidebar-border: 215 20% 26%;
     --sidebar-ring: 145 50% 45%;
   }
+
+  /* ── 1MW landing scope: overrides shadcn vars only inside the landing tree.
+        Leadpro/shadcn surfaces are unaffected.                             */
+  .landing-root {
+    --background: 0 0% 3%;          /* #080808 */
+    --foreground: 60 20% 95%;       /* #f5f5f0 off */
+    --card: 0 0% 6%;                /* #0f0f0f surface */
+    --card-foreground: 60 20% 95%;
+    --muted: 0 0% 20%;              /* #333333 */
+    --muted-foreground: 0 0% 60%;
+    --accent: 36 45% 61%;           /* #c9a96e gold */
+    --accent-foreground: 0 0% 3%;
+    --border: 0 0% 10%;             /* #1a1a1a */
+    --input: 0 0% 10%;
+    --ring: 36 45% 61%;
+  }
 }
 
 @layer base {
@@ -65,4 +82,42 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+}
+
+/* ── Landing-only cursor + page chrome ──────────────────────────────── */
+.landing-cursor,
+.landing-cursor * {
+  cursor: none !important;
+}
+
+/* When landing is mounted, force document background dark to avoid white flash */
+body:has(.landing-root) {
+  background: #080808;
+}
+
+/* ── Leadpro-only scope reset (defaults, kept for future explicit use) */
+.leadpro-root {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  cursor: auto;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Fluid type utilities used by the landing components ─────────────── */
+@layer utilities {
+  .text-fluid-xs { font-size: clamp(0.75rem, 1.5vw, 0.875rem); }
+  .text-fluid-sm { font-size: clamp(0.875rem, 1.8vw, 1rem); }
+  .text-fluid-base { font-size: clamp(1rem, 2vw, 1.125rem); }
+  .text-fluid-lg { font-size: clamp(1.125rem, 2.5vw, 1.5rem); }
+  .text-fluid-xl { font-size: clamp(1.5rem, 3.5vw, 2.25rem); }
+  .text-fluid-2xl { font-size: clamp(2rem, 5vw, 3.5rem); }
+  .text-fluid-3xl { font-size: clamp(2.5rem, 7vw, 5rem); }
+  .text-fluid-4xl { font-size: clamp(3rem, 10vw, 8rem); }
+  .text-fluid-5xl { font-size: clamp(4rem, 14vw, 12rem); }
+}
+
+/* Selection inside landing */
+.landing-root ::selection {
+  background: rgba(201, 169, 110, 0.3);
+  color: #f5f5f0;
 }
