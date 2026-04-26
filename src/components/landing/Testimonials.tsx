@@ -33,9 +33,9 @@ export default function Testimonials() {
               viewport={{ once: true }}
               transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.1 }}
             >
-              Proof, Not
+              Results, Not
               <br />
-              <span className="italic text-off/30">Promises</span>
+              <span className="italic text-off/30">Rhetoric</span>
             </motion.h2>
           </div>
 

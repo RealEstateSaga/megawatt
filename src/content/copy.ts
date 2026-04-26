@@ -1,66 +1,92 @@
 /**
  * Content Engine — single source of truth for all site messaging.
- *
- * Structured as narrative state blocks so any section can pull its copy
- * without coupling messaging to layout decisions. AI tools (Figma, etc.)
- * can modify this file without touching component logic.
  */
 
 export const copy = {
   // ─── STATE 1: ORIENTATION ───────────────────────────────────────────────────
   hero: {
-    system: "Marketing Operating System",
+    system: "Marketing & Advertising",
     headline: "1MW",
     subtext:
-      "Marketing and advertising operating system for modern attention markets.",
-    // Scroll intensity variants: slow = clarity, fast = outcome
+      "1MW unifies your consumer-facing presence across data, creativity, media, technology, and AI — built for measurable growth and long-term scalability.",
     subtextFast:
-      "Attention is the asset. We engineer the systems that capture it.",
+      "1MW unifies your consumer-facing presence across data, creativity, media, technology, and AI — built for measurable growth and long-term scalability.",
   },
 
   // ─── STATE 2: REFRAMING ─────────────────────────────────────────────────────
   reframing: {
-    label: "The Shift",
-    statement: "Marketing is no longer messaging.",
-    clarification: "It is engineered attention systems.",
+    label: "What We Build",
+    statement: "Not a vendor.",
+    clarification: "A marketing infrastructure.",
     supporting:
-      "The brands dominating attention today are not louder. They are more precise. 1MW builds the operating systems that make precision scalable, measurable, and compounding.",
-    cta: "Understand the system",
+      "1MW combines data, creativity, media, technology, and artificial intelligence to deliver high-impact marketing systems that shape how brands engage audiences across every channel. Not isolated services — a fully integrated marketing infrastructure designed for measurable growth and long-term scalability.",
+    cta: "See what we build",
   },
 
   // ─── STATE 3: MECHANISM ─────────────────────────────────────────────────────
   mechanism: {
-    label: "How It Works",
-    headline: "The System",
+    label: "What We Do",
+    headline: "Six Systems. One Engine.",
     pillars: [
       {
-        id: "strategy",
+        id: "full-spectrum",
         number: "01",
-        title: "Strategy",
-        definition: "Defines positioning systems that compress decision time.",
-        outcome: "Clarity that converts faster than content.",
-        tags: ["Positioning", "Architecture", "Brief"],
-        cta: "Build your strategy",
+        title: "Full-Spectrum Marketing",
+        definition:
+          "Aligns marketing, creative, and media execution into a single coordinated system built around your business objectives.",
+        outcome: "Strategy, execution, and impact as one continuous system.",
+        tags: ["Strategy", "Execution", "Impact"],
+        cta: "Build the system",
       },
       {
-        id: "creative",
+        id: "cloud",
         number: "02",
-        title: "Creative Systems",
+        title: "Cloud & Digital Infrastructure",
         definition:
-          "Builds narrative environments that increase attention retention.",
-        outcome: "Environments that hold attention longer.",
-        tags: ["Identity", "Motion", "Systems"],
-        cta: "See creative work",
+          "Full transition to scalable cloud environments. Microsoft 365, Google Workspace, domain configuration, and unified storage built for security and operational clarity.",
+        outcome: "Fast, stable, and fully integrated from day one.",
+        tags: ["Cloud", "Integration", "Stability"],
+        cta: "Build your infrastructure",
       },
       {
-        id: "media",
+        id: "web",
         number: "03",
-        title: "Media + AI",
+        title: "Website Design & Digital Experience",
         definition:
-          "Optimizes distribution and creative performance in real time.",
-        outcome: "Performance that compounds over time.",
-        tags: ["Distribution", "AI", "Analytics"],
-        cta: "Explore media systems",
+          "Custom-built websites engineered for speed, usability, and conversion. Every build is a core business asset — strategically effective, not just visually strong.",
+        outcome: "Designed for clarity. Built to convert.",
+        tags: ["Design", "Websites", "Redesign"],
+        cta: "Start your build",
+      },
+      {
+        id: "performance",
+        number: "04",
+        title: "Performance Marketing & SEO",
+        definition:
+          "Data-led campaigns across search, paid media, and conversion strategy. Every initiative tracked and aligned with revenue outcomes — not vanity metrics.",
+        outcome: "Qualified traffic. Measurable growth.",
+        tags: ["Search", "Paid", "Conversion"],
+        cta: "Launch a campaign",
+      },
+      {
+        id: "crm",
+        number: "05",
+        title: "CRM, Automation & Email",
+        definition:
+          "Intelligent customer communication systems that increase lifetime value. CRM platforms, automation workflows, and personalized email strategies that keep brands connected at every stage.",
+        outcome: "Convert. Retain. Re-engage.",
+        tags: ["Automation", "Email", "Intelligence"],
+        cta: "Build your CRM system",
+      },
+      {
+        id: "integration",
+        number: "06",
+        title: "Integration & Ecosystems",
+        definition:
+          "CRM, analytics, advertising, and automation tools connected into a unified operational ecosystem. No fragmentation. No blind spots. Faster decisions.",
+        outcome: "All your systems. One source of truth.",
+        tags: ["Integration", "Data", "Efficiency"],
+        cta: "Connect your stack",
       },
     ],
   },
@@ -69,10 +95,10 @@ export const copy = {
   validation: {
     label: "Built for Performance",
     statements: [
-      "Built for high-velocity acquisition systems.",
-      "Designed for measurable attention growth.",
-      "Engineered for modern media environments.",
-      "Deployed across channels that matter.",
+      "Built for brands that compete across every channel.",
+      "Designed to unify data, creativity, and media into one system.",
+      "Engineered for measurable growth — not vanity metrics.",
+      "Deployed across search, paid, email, web, and cloud infrastructure.",
     ],
     metrics: [
       { value: "47+", label: "Systems Deployed" },
@@ -110,10 +136,10 @@ export const copy = {
 
   // ─── STATE 5: CONVERSION ────────────────────────────────────────────────────
   conversion: {
-    label: "Ready When You Are",
+    label: "Let's Build It.",
     primary:
-      "Work with 1MW to build marketing systems that scale attention and performance.",
-    availability: "Accepting new projects — Q2 2026",
+      "One conversation is all it takes to map your full marketing infrastructure.",
+    availability: "Selective by design — accepting new partners now.",
     actions: [
       {
         label: "Start a Project",
@@ -121,17 +147,16 @@ export const copy = {
         primary: true,
       },
       {
-        label: "View Capabilities",
+        label: "View Services",
         href: "#services",
         primary: false,
       },
       {
-        label: "Request a Breakdown",
+        label: "Request a Scope Breakdown",
         href: "mailto:hello@1mw.com",
         primary: false,
       },
     ],
-    // CTA label adapts by narrative depth
     depthLabels: {
       intro: "See how it works",
       framing: "Explore the system",
@@ -143,9 +168,9 @@ export const copy = {
 
   // ─── FOOTER ─────────────────────────────────────────────────────────────────
   footer: {
-    tagline: "Marketing operating system.",
-    sub: "Built for attention. Measured by results.",
+    tagline: "Full-spectrum marketing & digital engine.",
+    sub: "Strategy. Creative. Technology. All in.",
     cta: "Have a project in mind?",
-    ctaSub: "We're selective. That's the point.",
+    ctaSub: "We work with brands that are serious about growth.",
   },
 } as const;
