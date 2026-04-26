@@ -57,10 +57,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="font-mono text-fluid-xs text-muted">
-            &copy; 2025–2026 1MW Marketing. All rights reserved.
+            &copy; 2026 1MW. All rights reserved.
           </p>
           <p className="font-mono text-fluid-xs text-muted">
-            Crafted with obsession. Deployed with precision.
+            Strategy. Creative. Technology. All in.
           </p>
         </div>
       </div>
