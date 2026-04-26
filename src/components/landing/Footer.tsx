@@ -21,7 +21,7 @@ export default function Footer() {
               Have a project in mind?
             </p>
             <p className="font-mono text-fluid-xs text-muted">
-              We're selective. That's the point.
+              We work with brands that are serious about growth.
             </p>
           </div>
           <a
