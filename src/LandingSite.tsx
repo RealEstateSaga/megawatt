@@ -1,18 +1,18 @@
-import Cursor from "./components/Cursor";
-import CursorLighting from "./components/CursorLighting";
-import BackgroundField from "./components/BackgroundField";
-import Grain from "./components/Grain";
-import Nav from "./components/Nav";
-import Hero from "./components/Hero";
-import Marquee from "./components/Marquee";
-import About from "./components/About";
-import Services from "./components/Services";
-import Work from "./components/Work";
-import Process from "./components/Process";
-import Stats from "./components/Stats";
-import Testimonials from "./components/Testimonials";
-import Contact from "./components/Contact";
-import Footer from "./components/Footer";
+import Cursor from "./components/landing/Cursor";
+import CursorLighting from "./components/landing/CursorLighting";
+import BackgroundField from "./components/landing/BackgroundField";
+import Grain from "./components/landing/Grain";
+import Nav from "./components/landing/Nav";
+import Hero from "./components/landing/Hero";
+import Marquee from "./components/landing/Marquee";
+import About from "./components/landing/About";
+import Services from "./components/landing/Services";
+import Work from "./components/landing/Work";
+import Process from "./components/landing/Process";
+import Stats from "./components/landing/Stats";
+import Testimonials from "./components/landing/Testimonials";
+import Contact from "./components/landing/Contact";
+import Footer from "./components/landing/Footer";
 import { useLenis } from "./hooks/useLenis";
 
 export default function LandingSite() {
