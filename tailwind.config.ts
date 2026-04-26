@@ -14,6 +14,15 @@ export default {
     },
     extend: {
       colors: {
+        // ── 1MW landing raw palette (no conflicts with shadcn) ─────────
+        bg: "#080808",
+        surface: "#0f0f0f",
+        mid: "#666666",
+        light: "#999999",
+        off: "#f5f5f0",
+        blue: "#4f8eff",
+
+        // ── shadcn token-driven palette ───────────────────────────────
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -73,6 +82,11 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["'Playfair Display'", "Georgia", "serif"],
+        mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
       },
       keyframes: {
         "accordion-down": {
