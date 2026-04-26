@@ -1,10 +1,9 @@
 import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
+import logo from "../../assets/1mw-logo.svg";
 
 const footerLinks = {
   Studio: ["About", "Services", "Work", "Process"],
-  Connect: ["Twitter/X", "LinkedIn", "Dribbble", "GitHub"],
-  Legal: ["Privacy Policy", "Terms of Service", "Cookie Policy"],
 };
 
 export default function Footer() {
@@ -36,10 +35,10 @@ export default function Footer() {
         </motion.div>
 
         {/* Links grid */}
-        <div className="grid md:grid-cols-4 gap-12 mb-16">
+        <div className="grid md:grid-cols-2 gap-12 mb-16">
           <div className="md:col-span-1">
-            <p className="font-display text-2xl text-off font-bold mb-4">1MW</p>
-            <p className="font-mono text-fluid-xs text-muted leading-relaxed">
+            <img src={logo} alt="1MW" className="h-6 w-auto mb-4" />
+            <p className="font-mono text-fluid-xs text-light leading-relaxed">
               Premium creative studio.
               <br />
               Building digital futures.

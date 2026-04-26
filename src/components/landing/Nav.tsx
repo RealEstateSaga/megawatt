@@ -38,7 +38,7 @@ export default function Nav() {
       >
         {/* Logo */}
         <a href="#" aria-label="1MW home" className="flex items-center">
-          <img src={logo} alt="1MW" className="h-12 w-auto" />
+          <img src={logo} alt="1MW" className="h-6 w-auto" />
         </a>
 
         {/* Desktop links */}

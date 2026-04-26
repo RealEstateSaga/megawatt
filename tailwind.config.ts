@@ -17,8 +17,8 @@ export default {
         // ── 1MW landing raw palette (no conflicts with shadcn) ─────────
         bg: "#080808",
         surface: "#0f0f0f",
-        mid: "#666666",
-        light: "#999999",
+        mid: "#8a8a8a",
+        light: "#c4c4c4",
         off: "#f5f5f0",
         blue: "#4f8eff",
 
