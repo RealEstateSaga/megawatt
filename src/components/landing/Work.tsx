@@ -43,7 +43,7 @@ export default function Work() {
         >
           <div className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-6 text-left">
             <p className="text-fluid-sm text-light leading-relaxed max-w-3xl">
-              1MW.com is a highly desirable three-character .com — rare by nature, deliberate by design. A megawatt is a universal measure of power, and the firm carries that same weight. Founded by Mike Wilen, 1MW is a marketing and advertising firm spanning data, creativity, media, technology, and AI — shaping how businesses are positioned and built to compete. The consortium explores any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.
+              1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design. A megawatt is a universal measure of power, and the firm carries that same weight. Founded by Mike Wilen, 1MW is a marketing and advertising firm spanning data, creativity, media, technology, and AI. The consortium explores any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.
             </p>
           </div>
         </motion.div>
