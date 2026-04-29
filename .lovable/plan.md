@@ -1,156 +1,96 @@
-## 1MW Lightfield Inversion — Implementation Plan
+# 1MW Content + UI Refinement
 
-Goal: convert the landing site from dark cinematic to a white precision system. Preserve narrative structure, sections, motion architecture, and conversion flow. Touch tokens first so the change cascades, then retune the handful of components with hardcoded color literals.
+A precision pass focused on simpler copy, cleaner navigation, stronger contrast, and consistent CTAs. No structural redesign — every section keeps its layout and motion.
 
-### Scope
-Landing site only (`.landing-root` scope). The `/dashboard` (leadpro) surfaces stay untouched.
+## 1. Hero (`src/components/landing/Hero.tsx`, `src/content/copy.ts`)
 
----
+- Replace `hero.subtext` and `hero.subtextFast` with: **"Marketing systems built for growth."**
+- Keep "Marketing & Advertising" as `hero.system` label, but raise contrast: change the label class from `text-muted` to a darker tone (`text-[#2A2A2A]`) and remove low-opacity siblings.
+- Order on screen stays: `Marketing & Advertising` → `1MW` logo → new tagline. Nothing else.
 
-### 1. Typography — Montserrat globally
+## 2. Navigation (`src/components/landing/Nav.tsx`)
 
-**`src/index.css`**
-- Swap the Google Fonts import: replace Inter / Playfair Display / JetBrains Mono with `Montserrat:wght@300;400;500;600;700;800` (keep JetBrains Mono only if we want to retain mono labels, otherwise drop it).
-- Update `body` font-family to Montserrat.
+- Final link list (in order): **About, Services, Work, Process, Contact**.
+- Default link color `#111111`, hover `#000000`, font-medium. Remove `text-off/90`.
+- Narrative dots: keep five but ensure inactive color is a visible grey (`#BFBFBF` instead of `#E5E5E5`).
+- "Start a Project" CTA kept as-is (already high contrast).
 
-**`tailwind.config.ts`**
-- `fontFamily.sans` → Montserrat
-- `fontFamily.display` → Montserrat (700/800 used inline via `font-bold`/`font-extrabold`) — replaces Playfair Display so the existing `font-display` classes inherit Montserrat without rewriting every component.
-- `fontFamily.mono` → keep Montserrat too, with `tracking-widest uppercase` carrying the "label" feel (current mono labels lose the typewriter look, which matches the editorial brief).
-- Apply slightly tighter default tracking on display headings via inline `tracking-tight` (already mostly present).
+## 3. Section labels & headlines (`src/content/copy.ts`, `src/components/landing/Services.tsx`, `src/components/landing/Process.tsx`, `src/components/landing/About.tsx`)
 
-### 2. Color tokens — invert the landing palette
+- `reframing.label`: "What We Build" → remove the label entirely (hide the small mono label + divider in `About.tsx`). About headline ("Not a vendor. / A marketing infrastructure.") stays.
+- `reframing.supporting` → **"1MW is the marketing and advertising engine behind a connected portfolio of modern brands. Built to create momentum, clarity, and measurable growth."**
+- `reframing.cta` stays "See what we build" → keep but link target unchanged.
+- `mechanism.label`: "What We Do" → **"Services"**
+- `mechanism.headline`: "Six Systems. One Engine." → **"Six systems. One strategy."**
+- Add a new `mechanism.intro` field: **"Integrated marketing systems designed to help brands grow with clarity, speed, and measurable performance."** Render it under the headline in `Services.tsx`.
+- Process section title in `Process.tsx`: replace "The 1MW *Engagement*" with **"Process"** (single word, same display styling).
+- Process intro paragraph (added under title): **"A clear process built to move from strategy to execution without wasted motion."**
 
-**`src/index.css` `.landing-root` block**
-```
---background: 0 0% 100%;          /* #FFFFFF */
---foreground: 0 0% 0%;             /* #000 */
---card:       0 0% 100%;
---card-foreground: 0 0% 0%;
---muted:      0 0% 90%;            /* #E5E5E5 borders */
---muted-foreground: 0 0% 29%;      /* #4A4A4A */
---accent:     0 0% 0%;             /* black-as-accent for CTAs */
---accent-foreground: 0 0% 100%;
---border:     0 0% 90%;            /* #E5E5E5 */
---input:      0 0% 90%;
---ring:       0 0% 0%;
-```
+## 4. Services pillar CTAs (`src/content/copy.ts`)
 
-**`tailwind.config.ts`** raw landing palette (these are referenced as `bg-bg`, `text-off`, `text-light`, `text-mid`, `bg-surface`, `text-accent` across every component — inverting them propagates the change everywhere):
-- `bg`      → `#FFFFFF`
-- `surface` → `#FAFAF8`
-- `mid`     → `#7A7A7A`  (tertiary text)
-- `light`   → `#4A4A4A`  (secondary text — replaces previous `#c4c4c4`)
-- `off`     → `#000000`  (primary text — replaces previous off-white)
-- `accent`  → `#000000`  (CTAs render as black-on-white)
-- `blue`    → keep but unused
+- Standardize all six pillar `cta` fields to **"Learn more"**. The arrow is appended in `Services.tsx` already.
 
-**`body:has(.landing-root)`** → background `#FFFFFF` (replace `#080808`).
+## 5. Work / About narrative card (`src/components/landing/Work.tsx`)
 
-**Selection color** in `.landing-root ::selection` → black background, white text.
+- Replace the paragraph with: **"1MW is the marketing and advertising engine behind a connected portfolio of modern brands. Built to create momentum, clarity, and measurable growth."**
+- Remove the rarity/domain explanation entirely. Headline "One million watts. / All in." stays.
 
-### 3. Ambient layers — paper diffusion, not glow
+## 6. Conversion / Contact (`src/components/landing/Contact.tsx`, `src/content/copy.ts`)
 
-**`src/components/landing/BackgroundField.tsx`**
-- Remove the gold/blue/purple `r,g,b` interpolations.
-- Replace both glows with a single static-channel paper diffusion: `rgba(0,0,0,0.018)` primary, `rgba(80,80,80,0.012)` secondary.
-- Reduce drift amplitude by ~40% and slow durations to 35s/45s for "felt, not seen" movement.
+- `conversion.label`: "Let's Build It." → **"Start the conversation."**
+- `conversion.primary`: → **"One conversation to map what growth could look like."**
+- Remove the scroll-intensity alt subline (use single primary copy).
 
-**`src/components/landing/CursorLighting.tsx`** — tonal compression instead of illumination
-- Replace radial gold/blue gradient with a soft *darkening* radial: `radial-gradient(520px circle at ..., rgba(0,0,0,0.04), transparent 60%)`.
-- Drop the scroll-driven color channels; keep only opacity fade-in.
+## 7. Footer (`src/components/landing/Footer.tsx`, `src/content/copy.ts`)
 
-**`src/components/landing/Cursor.tsx`**
-- Inner dot: remove `mix-blend-difference`; switch to solid black (`bg-black`).
-- Outer ring border: `rgba(0,0,0,0.35)` default, `rgba(0,0,0,0.7)` on hover. Drop the gold ring.
-- "View" label color → black.
+- Mini-CTA heading: "Have a project in mind?" → **"Tell us what you're building."**
+- Mini-CTA subline: "We'd love to hear from you!" → **"We'll map the system behind it."**
+- Nav links list: **About, Services, Work, Process, Contact** (add About + Contact to current list, in that order).
+- Bottom-bar tagline: "Strategy. Creative. Technology. All in." → **"Marketing systems built for growth."**
+- Link color: `text-off/90` → `text-[#111111]` hover `text-black`. Subdued lines (`text-mid`) on the © row stay (they read as system text, not links).
 
-**`src/components/landing/Grain.tsx`**
-- Lower opacity from `0.035` to `0.02` and invert grain values toward dark specks on white (data RGB → ~30, alpha ~14) so it reads like paper texture.
+## 8. Contrast audit — text classes (multiple files)
 
-### 4. Section-level retune (hardcoded literals)
+Replace washed-out classes everywhere on the landing route:
 
-**`Hero.tsx`**
-- Grid lines: change `rgba(245,245,240,...)` → `rgba(0,0,0,0.5)` with the same `opacity-[0.018]` wrapper, so the structural grid reads on white.
-- Scroll cue gradient `from-accent/60` continues to work since accent is now black.
-- Wrapper `bg-bg` continues to work (now white).
+- `text-light` body copy → keep (`#2B2B2B` already meets the spec).
+- `text-mid` used as **support copy** stays (`#444444`).
+- `text-off/55`, `text-off/70`, `text-off/30`, `text-off/90` → drop opacity, use solid `text-off` or `text-[#2B2B2B]` depending on hierarchy. Specifically:
+  - `About.tsx` italic clarification line: `text-off/55` → `text-off/80` (still distinct from primary, but readable).
+  - `Work.tsx` italic "All in.": `text-off/55` → `text-off/80`.
+  - `Footer.tsx` nav links: `text-off/90` → `text-[#111111]`.
+  - `Nav.tsx` links: `text-off/90` → `text-[#111111]`.
+- Inline link CTAs that use `text-accent hover:text-mid` (About, Process, Work) → switch to `text-[#111111] hover:text-black` with same underline behavior. (`text-accent` currently maps to a grey tone; the directive wants links to read as solid black.)
+- Tertiary contact link (`text-mid` with `border-mid/40`) → `text-[#111111]` with `border-black/40`.
+- `ctaConfig.ts` ghost style: `text-light` → `text-[#111111]`; border `black/30` stays.
 
-**`Nav.tsx`**
-- Scrolled state: `bg-bg/80 backdrop-blur-xl` works (white translucent).
-- Narrative dots inactive color hardcoded `#1a1a1a` → change to `#E5E5E5`; active hardcoded `#c9a96e` → `#000`.
-- "Start a Project" pill (`bg-accent text-bg`) automatically becomes black-on-white. Hover `hover:bg-off` → also black; change hover to `hover:bg-mid` (`#7A7A7A`) for soft charcoal transition per the spec.
-- Mobile menu burger lines `bg-off` → now black, fine.
-- Mobile menu overlay `bg-bg` → white, links `text-off` → black, fine.
+## 9. Anchor / nav integrity check
 
-**`Services.tsx`**
-- Per-pillar lighting `rgba(201,169,110,0.06)` → `rgba(0,0,0,0.04)` (tonal compression on hover).
-- Backgrounds `bg-surface/50` (now near-white) — fine.
-- Border tokens already `border-border` → light grey.
+Confirm all nav anchors map to existing section IDs in `LandingSite.tsx`:
 
-**`Process.tsx`**
-- Step dot border animates to `#c9a96e` → change to `#000`.
-- Section `bg-surface` → light off-white, fine.
+- `#about` → `About` ✓
+- `#services` → `Services` ✓
+- `#work` → `Work` ✓
+- `#process` → `Process` ✓
+- `#contact` → `Contact` ✓
 
-**`Marquee.tsx`**
-- Background `bg-surface`, accent diamond `text-accent` (now black), fine — automatically reads as a clean editorial divider.
+Footer link list will be updated to match this exact set and order.
 
-**`Contact.tsx`**
-- Primary CTA glow `rgba(201,169,110,...)` → drop entirely; replace with subtle scale/elevation only (or `rgba(0,0,0,0.08)` shadow). Spec says "no glow."
-- Availability pulse dot keeps green `bg-green-500/70` (a credible signal even on white).
+## Files to edit
 
-**`Footer.tsx`**
-- "Get in touch" pill (`bg-accent text-bg`) becomes black-on-white. Hover → `hover:bg-mid`.
-- Borders/text inherit tokens — fine.
+- `src/content/copy.ts` — hero, reframing, mechanism, conversion, footer copy + new `mechanism.intro`
+- `src/components/landing/Hero.tsx` — label contrast, single subtext
+- `src/components/landing/Nav.tsx` — link color tokens, dot inactive color
+- `src/components/landing/About.tsx` — remove label row, link contrast, italic opacity
+- `src/components/landing/Services.tsx` — render `mechanism.intro`, label color stays via copy change
+- `src/components/landing/Work.tsx` — narrative copy, italic opacity, link contrast
+- `src/components/landing/Process.tsx` — title "Process", intro paragraph, link contrast
+- `src/components/landing/Contact.tsx` — label/primary copy, tertiary link contrast, drop intensity alt
+- `src/components/landing/Footer.tsx` — heading/subline, full nav list, tagline, link contrast
+- `src/content/ctaConfig.ts` — ghost style text color
 
-**`About.tsx` / `Work.tsx` / `Testimonials.tsx`** — only token-driven colors, no literals to retune.
+## Out of scope
 
-### 5. CTA system — editorial buttons
-
-Centralize in **`src/content/ctaConfig.ts`** (`ctaClasses`):
-- `direct` → `bg-black text-white px-6 py-3 font-medium tracking-wide hover:bg-mid transition-colors duration-300`
-- `outline` → `border border-black text-black px-6 py-3 font-medium tracking-wide hover:bg-mid/10 transition-colors duration-300`
-- Remove gradient/glow/pulse modifiers.
-
-Inline pill CTAs in Nav and Footer adopt the same direct style.
-
-### 6. Motion calm-down
-
-Per the spec ("reduce motion intensity by ~25%"), in **`src/engine/motion.ts`**:
-- Bump base durations ~25% (e.g., `DUR.normal` from `0.6s` → `0.75s`, `DUR.slow` `0.9s` → `1.1s`, `DUR.cinematic` keeps similar).
-- Reduce default `enterDistance` in `useMotionIntensity` by ~25%.
-
-(I'll confirm exact current values when implementing; I have not opened that file yet.)
-
-### 7. QA pass
-
-After implementation, visit `/`, scroll through every section at desktop (1525px) and a 390px mobile viewport, and verify:
-- No black backgrounds left, no gold/blue tinting in ambient layers.
-- All text readable (primary black, secondary `#4A4A4A`, tertiary `#7A7A7A`).
-- CTAs are black-on-white with charcoal hover.
-- Cursor reads as a tonal-compression lens, not a glow.
-- Mobile spacing is uncramped.
-
----
-
-### Files I expect to edit
-- `src/index.css` (font import, `.landing-root` tokens, body bg, selection)
-- `tailwind.config.ts` (palette, fontFamily)
-- `src/components/landing/BackgroundField.tsx`
-- `src/components/landing/CursorLighting.tsx`
-- `src/components/landing/Cursor.tsx`
-- `src/components/landing/Grain.tsx`
-- `src/components/landing/Hero.tsx`
-- `src/components/landing/Nav.tsx`
-- `src/components/landing/Services.tsx`
-- `src/components/landing/Process.tsx`
-- `src/components/landing/Contact.tsx`
-- `src/components/landing/Footer.tsx`
-- `src/content/ctaConfig.ts`
-- `src/engine/motion.ts`
-
-### Out of scope
-- `/dashboard` (leadpro) and any `.leadpro-root` styling.
-- Copy changes — only visual system inversion.
-- Removing Stats/Testimonials (already hidden).
-
-Approve this and I'll implement straight through.
+- No layout, motion, or animation changes.
+- No new sections; `Stats`/`Testimonials` remain hidden.
+- No changes to `BackgroundField`, `Cursor`, `Grain`, `index.css` tokens, or `tailwind.config.ts`.

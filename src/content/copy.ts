@@ -7,26 +7,26 @@ export const copy = {
   hero: {
     system: "Marketing & Advertising",
     headline: "1MW",
-    subtext:
-      "1MW unifies your consumer-facing presence across data, creativity, media, technology, and AI — built for measurable growth and long-term scalability.",
-    subtextFast:
-      "1MW unifies your consumer-facing presence across data, creativity, media, technology, and AI — built for measurable growth and long-term scalability.",
+    subtext: "Marketing systems built for growth.",
+    subtextFast: "Marketing systems built for growth.",
   },
 
   // ─── STATE 2: REFRAMING ─────────────────────────────────────────────────────
   reframing: {
-    label: "What We Build",
+    label: "",
     statement: "Not a vendor.",
     clarification: "A marketing infrastructure.",
     supporting:
-      "1MW combines data, creativity, media, technology, and artificial intelligence to deliver high-impact marketing systems that shape how brands engage audiences across every channel. Not isolated services — a fully integrated marketing infrastructure designed for measurable growth and long-term scalability.",
+      "1MW is the marketing and advertising engine behind a connected portfolio of modern brands. Built to create momentum, clarity, and measurable growth.",
     cta: "See what we build",
   },
 
   // ─── STATE 3: MECHANISM ─────────────────────────────────────────────────────
   mechanism: {
-    label: "What We Do",
-    headline: "Six Systems. One Engine.",
+    label: "Services",
+    headline: "Six systems. One strategy.",
+    intro:
+      "Integrated marketing systems designed to help brands grow with clarity, speed, and measurable performance.",
     pillars: [
       {
         id: "full-spectrum",
@@ -36,7 +36,7 @@ export const copy = {
           "Aligns marketing, creative, and media execution into a single coordinated system built around your business objectives.",
         outcome: "Strategy, execution, and impact as one continuous system.",
         tags: ["Strategy", "Execution", "Impact"],
-        cta: "Build the system",
+        cta: "Learn more",
       },
       {
         id: "cloud",
@@ -46,7 +46,7 @@ export const copy = {
           "Full transition to scalable cloud environments. Microsoft 365, Google Workspace, domain configuration, and unified storage built for security and operational clarity.",
         outcome: "Fast, stable, and fully integrated from day one.",
         tags: ["Cloud", "Integration", "Stability"],
-        cta: "Build your infrastructure",
+        cta: "Learn more",
       },
       {
         id: "web",
@@ -56,7 +56,7 @@ export const copy = {
           "Custom-built websites engineered for speed, usability, and conversion. Every build is a core business asset — strategically effective, not just visually strong.",
         outcome: "Designed for clarity. Built to convert.",
         tags: ["Design", "Websites", "Redesign"],
-        cta: "Start your build",
+        cta: "Learn more",
       },
       {
         id: "performance",
@@ -66,7 +66,7 @@ export const copy = {
           "Data-led campaigns across search, paid media, and conversion strategy. Every initiative tracked and aligned with revenue outcomes — not vanity metrics.",
         outcome: "Qualified traffic. Measurable growth.",
         tags: ["Search", "Paid", "Conversion"],
-        cta: "Launch a campaign",
+        cta: "Learn more",
       },
       {
         id: "crm",
@@ -76,7 +76,7 @@ export const copy = {
           "Intelligent customer communication systems that increase lifetime value. CRM platforms, automation workflows, and personalized email strategies that keep brands connected at every stage.",
         outcome: "Convert. Retain. Re-engage.",
         tags: ["Automation", "Email", "Intelligence"],
-        cta: "Build your CRM system",
+        cta: "Learn more",
       },
       {
         id: "integration",
@@ -86,7 +86,7 @@ export const copy = {
           "CRM, analytics, advertising, and automation tools connected into a unified operational ecosystem. No fragmentation. No blind spots. Faster decisions.",
         outcome: "All your systems. One source of truth.",
         tags: ["Integration", "Data", "Efficiency"],
-        cta: "Connect your stack",
+        cta: "Learn more",
       },
     ],
   },
@@ -136,10 +136,9 @@ export const copy = {
 
   // ─── STATE 5: CONVERSION ────────────────────────────────────────────────────
   conversion: {
-    label: "Let's Build It.",
-    primary:
-      "One conversation is all it takes to map your full marketing infrastructure.",
-    availability: "Selective by design — accepting new partners now.",
+    label: "Start the conversation.",
+    primary: "One conversation to map what growth could look like.",
+    availability: "",
     actions: [
       {
         label: "Start a Project",
@@ -168,9 +167,9 @@ export const copy = {
 
   // ─── FOOTER ─────────────────────────────────────────────────────────────────
   footer: {
-    tagline: "Full-spectrum marketing & digital engine.",
-    sub: "Strategy. Creative. Technology. All in.",
-    cta: "Have a project in mind?",
-    ctaSub: "We work with brands that are serious about growth.",
+    tagline: "Marketing systems built for growth.",
+    sub: "Marketing systems built for growth.",
+    cta: "Tell us what you're building.",
+    ctaSub: "We'll map the system behind it.",
   },
 } as const;

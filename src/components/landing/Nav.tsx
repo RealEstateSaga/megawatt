@@ -4,7 +4,7 @@ import { useSite, type NarrativeState } from "../../context/SiteContext";
 import { EASE, DUR } from "../../engine/motion";
 import logo from "../../assets/1mw-logo.svg";
 
-const links = ["Work", "Services", "About", "Process", "Contact"];
+const links = ["About", "Services", "Work", "Process", "Contact"];
 
 // Five dots map to five narrative states
 const NARRATIVE_ORDER: NarrativeState[] = [
@@ -47,7 +47,7 @@ export default function Nav() {
             <a
               key={link}
               href={`#${link.toLowerCase()}`}
-              className="text-fluid-xs text-off/90 hover:text-off transition-colors duration-200 tracking-widest uppercase font-mono font-medium"
+              className="text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-widest uppercase font-mono font-medium"
             >
               {link}
             </a>
@@ -66,7 +66,7 @@ export default function Nav() {
                   width: state === narrativeState ? 16 : 4,
                   height: 4,
                   backgroundColor:
-                    state === narrativeState ? "#000000" : "#E5E5E5",
+                    state === narrativeState ? "#000000" : "#BFBFBF",
                 }}
                 transition={{ duration: 0.4, ease: EASE.cinematic }}
               />
