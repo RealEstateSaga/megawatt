@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { motion, useSpring } from "framer-motion";
 import { EASE, DUR, SPRING } from "../../engine/motion";
 import { copy } from "../../content/copy";
