@@ -120,15 +120,15 @@ export default function Nav() {
           >
             {links.map((link, i) => (
               <motion.a
-                key={link}
-                href={`#${link.toLowerCase()}`}
+                key={link.label}
+                href={link.href}
                 className="font-display text-4xl text-off"
                 onClick={() => setOpen(false)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07, ease: EASE.cinematic }}
               >
-                {link}
+                {link.label}
               </motion.a>
             ))}
           </motion.div>
