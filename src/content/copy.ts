@@ -137,7 +137,7 @@ export const copy = {
   // ─── STATE 5: CONVERSION ────────────────────────────────────────────────────
   conversion: {
     label: "Start the conversation.",
-    primary: "One conversation to map what growth could look like.",
+    primary: "One conversation to map your next move.",
     availability: "",
     actions: [
       {
