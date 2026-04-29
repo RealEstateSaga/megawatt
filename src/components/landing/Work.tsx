@@ -30,8 +30,6 @@ export default function Work() {
             transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.1 }}
           >
             One million watts.
-            <br />
-            <span className="italic text-off/80">All in.</span>
           </motion.h2>
         </div>
 
