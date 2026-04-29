@@ -21,7 +21,7 @@ export default function Footer() {
               Have a project in mind?
             </p>
             <p className="font-mono text-fluid-xs text-mid">
-              We work with brands that are serious about growth.
+              We'd love to hear from you!
             </p>
           </div>
           <a
