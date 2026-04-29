@@ -23,9 +23,9 @@ export default function Marquee() {
     <div className="py-8 border-y border-border overflow-hidden bg-surface">
       <motion.div className="flex gap-16 whitespace-nowrap" style={{ x }}>
         {[...items, ...items].map((item, i) => (
-          <span key={i} className="font-mono text-fluid-xs text-muted tracking-widest uppercase flex items-center gap-16">
+          <span key={i} className="font-mono text-fluid-xs text-black tracking-widest uppercase flex items-center gap-16 font-medium">
             {item}
-            <span className="text-accent">◆</span>
+            <span className="text-black">◆</span>
           </span>
         ))}
       </motion.div>
