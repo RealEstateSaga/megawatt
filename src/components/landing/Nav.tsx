@@ -4,7 +4,13 @@ import { useSite, type NarrativeState } from "../../context/SiteContext";
 import { EASE, DUR } from "../../engine/motion";
 import logo from "../../assets/1mw-logo.svg";
 
-const links = ["About", "Services", "Work", "Process", "Contact"];
+const links: { label: string; href: string }[] = [
+  { label: "1MW", href: "#" },
+  { label: "Services", href: "#services" },
+  { label: "About", href: "#work" },
+  { label: "Process", href: "#process" },
+  { label: "Contact", href: "#contact" },
+];
 
 // Five dots map to five narrative states
 const NARRATIVE_ORDER: NarrativeState[] = [
@@ -45,11 +51,11 @@ export default function Nav() {
         <div className="hidden md:flex items-center gap-8">
           {links.map((link) => (
             <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
+              key={link.label}
+              href={link.href}
               className="text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-widest uppercase font-mono font-medium"
             >
-              {link}
+              {link.label}
             </a>
           ))}
         </div>
@@ -114,15 +120,15 @@ export default function Nav() {
           >
             {links.map((link, i) => (
               <motion.a
-                key={link}
-                href={`#${link.toLowerCase()}`}
+                key={link.label}
+                href={link.href}
                 className="font-display text-4xl text-off"
                 onClick={() => setOpen(false)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07, ease: EASE.cinematic }}
               >
-                {link}
+                {link.label}
               </motion.a>
             ))}
           </motion.div>

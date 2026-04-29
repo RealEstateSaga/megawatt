@@ -106,7 +106,7 @@ export default function Process() {
             href="#contact"
             className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-widest uppercase border-b border-black/40 hover:border-black pb-0.5 font-semibold"
           >
-            Walk through scope with us &rarr;
+            Start The Conversation &rarr;
           </a>
         </motion.div>
       </div>
