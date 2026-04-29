@@ -58,37 +58,7 @@ export default function About() {
             </div>
           </motion.div>
 
-          {/* Right — supporting context + CTA */}
-          <motion.div
-            className="md:col-span-4 md:col-start-9"
-            style={{ y: rightY }}
-          >
-            <motion.p
-              className="text-fluid-sm text-light leading-relaxed mb-10"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
-            >
-              {copy.reframing.supporting}
-            </motion.p>
-
-            {/* Soft inline CTA — ghost style, framing state */}
-            <motion.div
-              className="border-l border-accent/25 pl-4"
-              initial={{ opacity: 0, x: -8 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: DUR.normal, ease: EASE.cinematic, delay: 0.35 }}
-            >
-              <a
-                href="#services"
-                className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase font-semibold"
-              >
-                {copy.reframing.cta} &rarr;
-              </a>
-            </motion.div>
-          </motion.div>
+          {/* Right column intentionally empty — supporting copy and CTA removed for momentum */}
         </div>
       </div>
     </SectionWrapper>
