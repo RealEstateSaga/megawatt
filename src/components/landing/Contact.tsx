@@ -103,16 +103,7 @@ export default function Contact() {
         </motion.div>
 
         {/* Availability signal */}
-        <motion.div
-          className="inline-flex items-center gap-2 font-mono text-fluid-xs text-mid"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse" />
-          {copy.conversion.availability}
-        </motion.div>
+        {/* Availability signal removed */}
 
         {/* Email — always visible as a fallback */}
         <motion.div
