@@ -44,13 +44,13 @@ export default function Cursor() {
 
   const ringSize = state === "default" ? 36 : state === "hover" ? 56 : 72;
   const ringBorder =
-    state === "default" ? "rgba(255,255,255,0.25)" : "rgba(201,169,110,0.6)";
+    state === "default" ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.7)";
 
   return (
     <>
-      {/* Inner dot — sharp, fast, mix-blend for contrast on any background */}
+      {/* Inner dot — solid black, sharp, editorial */}
       <motion.div
-        className="fixed top-0 left-0 z-[9999] pointer-events-none mix-blend-difference"
+        className="fixed top-0 left-0 z-[9999] pointer-events-none"
         style={{
           x: cursorX,
           y: cursorY,
@@ -59,7 +59,7 @@ export default function Cursor() {
         }}
       >
         <motion.div
-          className="rounded-full bg-off"
+          className="rounded-full bg-black"
           animate={{ width: state === "view" ? 6 : 8, height: state === "view" ? 6 : 8 }}
           transition={{ duration: 0.2 }}
         />
@@ -87,7 +87,7 @@ export default function Cursor() {
         >
           {state === "view" && (
             <motion.span
-              className="font-mono text-[9px] text-accent tracking-widest uppercase"
+              className="font-mono text-[9px] text-black tracking-widest uppercase"
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}

@@ -66,7 +66,7 @@ export default function Nav() {
                   width: state === narrativeState ? 16 : 4,
                   height: 4,
                   backgroundColor:
-                    state === narrativeState ? "#c9a96e" : "#1a1a1a",
+                    state === narrativeState ? "#000000" : "#E5E5E5",
                 }}
                 transition={{ duration: 0.4, ease: EASE.cinematic }}
               />
@@ -75,7 +75,7 @@ export default function Nav() {
 
           <a
             href="#contact"
-            className="text-fluid-xs bg-accent text-bg px-5 py-2 font-mono tracking-widest uppercase font-medium hover:bg-off transition-colors duration-300"
+            className="text-fluid-xs bg-black text-white px-5 py-2 tracking-wide uppercase font-semibold hover:bg-mid transition-colors duration-300"
           >
             Start a Project
           </a>

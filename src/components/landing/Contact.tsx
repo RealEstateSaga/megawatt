@@ -24,8 +24,8 @@ export default function Contact() {
     offset: ["start end", "end end"],
   });
 
-  // Primary CTA subtle pulse glow intensifies as user scrolls deeper into section
-  const ctaGlow = useTransform(sectionProgress, [0, 0.5, 1], [0, 0.06, 0.14]);
+  // No glow in lightfield mode — keep transform reference for layout parity only
+  const ctaGlow = useTransform(sectionProgress, [0, 1], [0, 0]);
 
   // Subline based on scroll intensity
   const subline =
@@ -74,8 +74,8 @@ export default function Contact() {
           viewport={{ once: true }}
           transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
         >
-          {/* Primary action — assertive, scroll-depth-pulsed */}
-          <motion.div style={{ boxShadow: useTransform(ctaGlow, (v) => `0 0 ${v * 400}px rgba(201,169,110,${v})`) }}>
+          {/* Primary action — direct, editorial */}
+          <motion.div>
             <MagneticLink href={copy.conversion.actions[0].href} className={ctaClasses("direct")}>
               {copy.conversion.actions[0].label}
               <motion.span

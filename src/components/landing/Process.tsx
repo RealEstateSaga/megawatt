@@ -130,7 +130,7 @@ function StepItem({ step, index }: { step: (typeof steps)[0]; index: number }) {
       <div className="relative flex-shrink-0 mt-1">
         <motion.div
           className="w-10 h-10 rounded-full border border-border flex items-center justify-center bg-surface z-10 relative group-hover:bg-bg transition-colors duration-300"
-          animate={inView ? { borderColor: "#c9a96e" } : {}}
+          animate={inView ? { borderColor: "#000000" } : {}}
           transition={{ duration: DUR.normal, delay: 0.3 }}
         >
           <span className="font-mono text-[10px] text-accent">{step.number}</span>

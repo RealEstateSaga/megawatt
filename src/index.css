@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -57,20 +57,19 @@
     --sidebar-ring: 145 50% 45%;
   }
 
-  /* ── 1MW landing scope: overrides shadcn vars only inside the landing tree.
-        Leadpro/shadcn surfaces are unaffected.                             */
+  /* ── 1MW landing scope: lightfield (white) system ─────────────────── */
   .landing-root {
-    --background: 0 0% 3%;          /* #080808 */
-    --foreground: 60 20% 95%;       /* #f5f5f0 off */
-    --card: 0 0% 6%;                /* #0f0f0f surface */
-    --card-foreground: 60 20% 95%;
-    --muted: 0 0% 20%;              /* #333333 */
-    --muted-foreground: 0 0% 75%;
-    --accent: 36 45% 61%;           /* #c9a96e gold */
-    --accent-foreground: 0 0% 3%;
-    --border: 0 0% 10%;             /* #1a1a1a */
-    --input: 0 0% 10%;
-    --ring: 36 45% 61%;
+    --background: 0 0% 100%;        /* #FFFFFF */
+    --foreground: 0 0% 0%;          /* #000 */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --muted: 0 0% 90%;              /* #E5E5E5 */
+    --muted-foreground: 0 0% 29%;   /* #4A4A4A */
+    --accent: 0 0% 0%;              /* black-as-accent */
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 90%;             /* #E5E5E5 */
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
   }
 }
 
@@ -80,7 +79,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
   }
 }
 
@@ -90,9 +89,9 @@
   cursor: none !important;
 }
 
-/* When landing is mounted, force document background dark to avoid white flash */
+/* When landing is mounted, force document background light to avoid color flash */
 body:has(.landing-root) {
-  background: #080808;
+  background: #ffffff;
 }
 
 /* ── Leadpro-only scope reset (defaults, kept for future explicit use) */
@@ -100,7 +99,7 @@ body:has(.landing-root) {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   cursor: auto;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Montserrat', system-ui, sans-serif;
 }
 
 /* ── Fluid type utilities used by the landing components ─────────────── */
@@ -116,8 +115,8 @@ body:has(.landing-root) {
   .text-fluid-5xl { font-size: clamp(4rem, 14vw, 12rem); }
 }
 
-/* Selection inside landing */
+/* Selection inside landing — black on white */
 .landing-root ::selection {
-  background: rgba(201, 169, 110, 0.3);
-  color: #f5f5f0;
+  background: rgba(0, 0, 0, 0.85);
+  color: #ffffff;
 }

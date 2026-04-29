@@ -31,11 +31,11 @@ export default function Hero() {
     >
       {/* Structural grid — barely perceptible depth cue */}
       <div
-        className="absolute inset-0 opacity-[0.018]"
+        className="absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(245,245,240,0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(245,245,240,0.5) 1px, transparent 1px)
+            linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)
           `,
           backgroundSize: "90px 90px",
         }}
