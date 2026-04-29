@@ -31,7 +31,7 @@ export default function Footer() {
             </p>
           </div>
           <a
-            href="#contact"
+            href="mailto:hello@1mw.com"
             className="flex-shrink-0 text-fluid-xs bg-black text-white px-6 py-3 tracking-wide uppercase font-semibold hover:bg-mid transition-colors duration-300"
           >
             Get in touch &rarr;
