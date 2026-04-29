@@ -23,17 +23,7 @@ export default function About() {
   return (
     <SectionWrapper id="about" phase="framing" padding="py-40 md:py-64" className="px-6 md:px-12">
       <div ref={ref} className="max-w-7xl mx-auto">
-        {/* State label */}
-        <motion.div
-          className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-16 flex items-center gap-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic }}
-        >
-          <div className="h-px w-12 bg-accent/30" />
-          {copy.reframing.label}
-        </motion.div>
+        {/* State label removed for cleaner hierarchy */}
 
         <div className="grid md:grid-cols-12 gap-12 md:gap-0 items-start">
           {/* Left — primary conceptual statement */}
@@ -53,7 +43,7 @@ export default function About() {
 
             <div className="overflow-hidden">
               <motion.h2
-                className="font-display text-fluid-3xl text-off/55 leading-[1.05] tracking-tight italic"
+                className="font-display text-fluid-3xl text-off/80 leading-[1.05] tracking-tight italic"
                 initial={{ y: "105%" }}
                 whileInView={{ y: 0 }}
                 viewport={{ once: true }}
@@ -93,7 +83,7 @@ export default function About() {
             >
               <a
                 href="#services"
-                className="font-mono text-fluid-xs text-accent hover:text-mid transition-colors duration-300 tracking-widest uppercase font-semibold"
+                className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase font-semibold"
               >
                 {copy.reframing.cta} &rarr;
               </a>

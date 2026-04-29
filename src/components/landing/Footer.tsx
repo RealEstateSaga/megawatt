@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
 import logo from "../../assets/1mw-logo.svg";
 
-const navLinks = ["About", "Services", "Work", "Process"];
+const navLinks = ["About", "Services", "Work", "Process", "Contact"];
 
 export default function Footer() {
   return (
@@ -18,10 +18,10 @@ export default function Footer() {
         >
           <div>
             <p className="font-display text-fluid-xl text-off mb-1">
-              Have a project in mind?
+              Tell us what you're building.
             </p>
             <p className="font-mono text-fluid-xs text-mid">
-              We'd love to hear from you!
+              We'll map the system behind it.
             </p>
           </div>
           <a
@@ -40,7 +40,7 @@ export default function Footer() {
               <a
                 key={link}
                 href={`#${link.toLowerCase()}`}
-                className="font-mono text-fluid-xs text-off/90 hover:text-off transition-colors duration-200 tracking-wide font-medium"
+                className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-wide font-medium"
               >
                 {link}
               </a>
@@ -48,7 +48,7 @@ export default function Footer() {
           </nav>
           <a
             href="mailto:hello@1mw.com"
-            className="font-mono text-fluid-xs text-light hover:text-off transition-colors duration-200 font-medium"
+            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 font-medium"
           >
             hello@1mw.com
           </a>
@@ -60,7 +60,7 @@ export default function Footer() {
             &copy; 2026 1MW. All rights reserved.
           </p>
           <p className="font-mono text-fluid-xs text-mid">
-            Strategy. Creative. Technology. All in.
+            Marketing systems built for growth.
           </p>
         </div>
       </div>

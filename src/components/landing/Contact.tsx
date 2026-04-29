@@ -27,11 +27,8 @@ export default function Contact() {
   // No glow in lightfield mode — keep transform reference for layout parity only
   const ctaGlow = useTransform(sectionProgress, [0, 1], [0, 0]);
 
-  // Subline based on scroll intensity
-  const subline =
-    scrollIntensity === "fast"
-      ? "We deliver measurable outcomes — revenue, activation, and category position."
-      : copy.conversion.primary;
+  // Single primary statement (no scroll-intensity alt)
+  const subline = copy.conversion.primary;
 
   return (
     <SectionWrapper
@@ -96,7 +93,7 @@ export default function Contact() {
           {/* Tertiary action — ghost / text only */}
           <a
             href={copy.conversion.actions[2].href}
-            className="font-mono text-fluid-xs text-mid hover:text-off transition-colors duration-300 tracking-widest uppercase border-b border-mid/40 hover:border-off pb-0.5 font-semibold"
+            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase border-b border-black/40 hover:border-black pb-0.5 font-semibold"
           >
             {copy.conversion.actions[2].label}
           </a>
@@ -115,7 +112,7 @@ export default function Contact() {
         >
           <a
             href="mailto:hello@1mw.com"
-            className="font-mono text-fluid-xs text-light hover:text-off transition-colors duration-300 tracking-wider font-medium"
+            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-wider font-medium"
           >
             hello@1mw.com
           </a>

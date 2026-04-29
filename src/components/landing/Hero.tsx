@@ -48,7 +48,7 @@ export default function Hero() {
       >
         {/* System label — minimal, mono, above the headline */}
         <motion.p
-          className="font-mono text-fluid-xs text-muted tracking-[0.3em] uppercase mb-10"
+          className="font-mono text-fluid-xs text-[#2A2A2A] tracking-[0.3em] uppercase mb-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}

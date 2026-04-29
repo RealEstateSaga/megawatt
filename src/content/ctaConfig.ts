@@ -68,7 +68,7 @@ export const CTA_BY_STATE: Record<NarrativeState, CTADefinition> = {
 export function ctaClasses(style: CTAStyle, base = ""): string {
   const map: Record<CTAStyle, string> = {
     ghost:
-      "border border-black/30 text-light hover:text-black hover:border-black transition-colors duration-300",
+      "border border-black/30 text-[#111111] hover:text-black hover:border-black transition-colors duration-300",
     outline:
       "border border-black text-black hover:bg-[#F2F2F2] transition-colors duration-300",
     filled:

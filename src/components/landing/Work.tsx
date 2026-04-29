@@ -31,7 +31,7 @@ export default function Work() {
           >
             One million watts.
             <br />
-            <span className="italic text-off/55">All in.</span>
+            <span className="italic text-off/80">All in.</span>
           </motion.h2>
         </div>
 
@@ -45,11 +45,9 @@ export default function Work() {
         >
           <div className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-6 text-left">
             <p className="text-fluid-sm text-light leading-relaxed max-w-3xl">
-              1MW.com is one of the rarest three-character domains in existence.
-              A megawatt is a universal measure of power. The firm behind it
-              operates the same way. Founded by Mike Wilen, 1MW is the in-house
-              marketing and advertising engine for a connected portfolio of
-              real estate brands, built to generate force, not just activity.
+              1MW is the marketing and advertising engine behind a connected
+              portfolio of modern brands. Built to create momentum, clarity,
+              and measurable growth.
             </p>
           </div>
         </motion.div>
@@ -67,7 +65,7 @@ export default function Work() {
           </p>
           <a
             href="#contact"
-            className="font-mono text-fluid-xs text-accent hover:text-mid transition-colors duration-300 tracking-widest uppercase border-b border-accent hover:border-mid pb-1 font-semibold"
+            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase border-b border-black/40 hover:border-black pb-1 font-semibold"
           >
             Start yours &rarr;
           </a>

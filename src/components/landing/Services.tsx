@@ -51,6 +51,18 @@ export default function Services() {
               </motion.h2>
             </div>
           </div>
+
+          <div className="md:col-span-6 md:col-start-7">
+            <motion.p
+              className="text-fluid-sm text-light leading-relaxed"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
+            >
+              {copy.mechanism.intro}
+            </motion.p>
+          </div>
         </div>
 
         {/* Three pillars */}

@@ -64,10 +64,17 @@ export default function Process() {
             viewport={{ once: true }}
             transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.1 }}
           >
-            The 1MW
-            <br />
-            <span className="italic text-accent">Engagement</span>
+            Process
           </motion.h2>
+          <motion.p
+            className="mt-6 text-fluid-sm text-light leading-relaxed max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
+          >
+            A clear process built to move from strategy to execution without wasted motion.
+          </motion.p>
         </div>
 
         <div className="relative flex flex-col gap-0">
@@ -97,7 +104,7 @@ export default function Process() {
           </p>
           <a
             href="#contact"
-            className="font-mono text-fluid-xs text-accent hover:text-mid transition-colors duration-200 tracking-widest uppercase border-b border-accent hover:border-mid pb-0.5 font-semibold"
+            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-widest uppercase border-b border-black/40 hover:border-black pb-0.5 font-semibold"
           >
             Walk through scope with us &rarr;
           </a>
