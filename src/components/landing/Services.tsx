@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { motion, useMotionValue, useMotionTemplate, useSpring } from "framer-motion";
+import { motion, useSpring } from "framer-motion";
 import { EASE, DUR, SPRING } from "../../engine/motion";
 import { copy } from "../../content/copy";
 import { useMotionIntensity } from "../../hooks/useMotionIntensity";
@@ -98,28 +97,15 @@ function PillarModule({
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // Per-module mouse-reactive lighting
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const lightBg = useMotionTemplate`radial-gradient(480px at ${mouseX}px ${mouseY}px, rgba(0,0,0,0.04), transparent 65%)`;
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
-  };
-
-  // Hover micro-depth via spring
+  // Hover micro-depth via spring (no cursor tracking)
   const hoverY = useSpring(0, SPRING.medium);
   const hoverScale = useSpring(1, SPRING.medium);
 
   return (
     <motion.div
       ref={ref}
-      className="group relative border-t border-border/50 overflow-hidden cursor-none"
+      className="group relative border-t border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
       style={{ y: hoverY, scale: hoverScale }}
-      onMouseMove={handleMouseMove}
       onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
       onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
       initial={{ opacity: 0, y: enterDistance }}
@@ -131,12 +117,6 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      {/* Directional lighting on hover */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: lightBg }}
-      />
-
       <div className="relative py-10 md:py-14 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
         {/* Number */}
         <div className="md:col-span-1">

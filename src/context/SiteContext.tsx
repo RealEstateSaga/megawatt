@@ -11,7 +11,7 @@ import {
   useSpring,
   type MotionValue,
 } from "framer-motion";
-import { SPRING, type ScrollIntensity } from "../engine/motion";
+import { type ScrollIntensity } from "../engine/motion";
 import { resolveNarrativeState } from "../content/stateDefinitions";
 
 /**
@@ -35,10 +35,6 @@ interface SiteContextValue {
   scrollVelocity: MotionValue<number>;
   /** Normalized scroll progress 0–1 */
   scrollDepth: MotionValue<number>;
-  /** Spring-smoothed mouse X (atmospheric lag) */
-  mouseX: MotionValue<number>;
-  /** Spring-smoothed mouse Y (atmospheric lag) */
-  mouseY: MotionValue<number>;
   /** Current narrative arc state based on scroll depth */
   narrativeState: NarrativeState;
   /** "fast" when velocity > 800 px/s — drives animation energy */
@@ -58,23 +54,9 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const rawVelocity = useVelocity(scrollY);
   const scrollVelocity = useSpring(rawVelocity, { stiffness: 400, damping: 90 });
 
-  // Atmospheric spring mouse — intentionally laggy for a "floating light" feel
-  const mouseX = useSpring(0, SPRING.atmospheric);
-  const mouseY = useSpring(0, SPRING.atmospheric);
-
   const [narrativeState, setNarrativeState] = useState<NarrativeState>("intro");
   const [scrollIntensity, setScrollIntensity] = useState<ScrollIntensity>("slow");
   const [motionScale, setMotionScale] = useState(1.0);
-
-  // Track raw mouse position; springs handle smoothing
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handler, { passive: true });
-    return () => window.removeEventListener("mousemove", handler);
-  }, [mouseX, mouseY]);
 
   // Derive narrative state from scroll depth using content-layer thresholds
   useEffect(() => {
@@ -99,8 +81,6 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         scrollY,
         scrollVelocity,
         scrollDepth: scrollYProgress,
-        mouseX,
-        mouseY,
         narrativeState,
         scrollIntensity,
         motionScale,
@@ -116,3 +96,4 @@ export function useSite() {
   if (!ctx) throw new Error("useSite must be used within SiteProvider");
   return ctx;
 }
+

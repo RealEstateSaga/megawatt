@@ -1,5 +1,3 @@
-import Cursor from "./components/landing/Cursor";
-import CursorLighting from "./components/landing/CursorLighting";
 import BackgroundField from "./components/landing/BackgroundField";
 import Grain from "./components/landing/Grain";
 import Nav from "./components/landing/Nav";
@@ -22,9 +20,7 @@ export default function LandingSite() {
     <>
       {/* ── Global layer stack (fixed, behind content) ─────────────────────── */}
       <BackgroundField />
-      <CursorLighting />
       <Grain />
-      <Cursor />
 
       {/* ── Chrome ─────────────────────────────────────────────────────────── */}
       <Nav />

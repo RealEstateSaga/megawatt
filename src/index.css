@@ -83,12 +83,6 @@
   }
 }
 
-/* ── Landing-only cursor + page chrome ──────────────────────────────── */
-.landing-cursor,
-.landing-cursor * {
-  cursor: none !important;
-}
-
 /* When landing is mounted, force document background light to avoid color flash */
 body:has(.landing-root) {
   background: #ffffff;
