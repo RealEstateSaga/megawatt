@@ -20,7 +20,7 @@ export default function Footer() {
             <p className="font-display text-fluid-xl text-off mb-1">
               Have a project in mind?
             </p>
-            <p className="font-mono text-fluid-xs text-muted">
+            <p className="font-mono text-fluid-xs text-mid">
               We work with brands that are serious about growth.
             </p>
           </div>
@@ -40,7 +40,7 @@ export default function Footer() {
               <a
                 key={link}
                 href={`#${link.toLowerCase()}`}
-                className="font-mono text-fluid-xs text-light hover:text-off transition-colors duration-200 tracking-wide"
+                className="font-mono text-fluid-xs text-off/90 hover:text-off transition-colors duration-200 tracking-wide font-medium"
               >
                 {link}
               </a>
@@ -48,7 +48,7 @@ export default function Footer() {
           </nav>
           <a
             href="mailto:hello@1mw.com"
-            className="font-mono text-fluid-xs text-muted hover:text-off transition-colors duration-200"
+            className="font-mono text-fluid-xs text-light hover:text-off transition-colors duration-200 font-medium"
           >
             hello@1mw.com
           </a>
@@ -56,10 +56,10 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="font-mono text-fluid-xs text-muted">
+          <p className="font-mono text-fluid-xs text-mid">
             &copy; 2026 1MW. All rights reserved.
           </p>
-          <p className="font-mono text-fluid-xs text-muted">
+          <p className="font-mono text-fluid-xs text-mid">
             Strategy. Creative. Technology. All in.
           </p>
         </div>

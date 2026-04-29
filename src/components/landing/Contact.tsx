@@ -43,15 +43,15 @@ export default function Contact() {
       <div ref={ref} className="max-w-5xl mx-auto text-center">
         {/* Section label */}
         <motion.div
-          className="font-mono text-fluid-xs text-accent/40 tracking-[0.3em] uppercase mb-12 flex items-center justify-center gap-4"
+          className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-12 flex items-center justify-center gap-4"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: DUR.normal }}
         >
-          <div className="h-px w-8 bg-accent/30" />
+          <div className="h-px w-8 bg-accent" />
           {copy.conversion.label}
-          <div className="h-px w-8 bg-accent/30" />
+          <div className="h-px w-8 bg-accent" />
         </motion.div>
 
         {/* Primary statement */}
@@ -96,7 +96,7 @@ export default function Contact() {
           {/* Tertiary action — ghost / text only */}
           <a
             href={copy.conversion.actions[2].href}
-            className="font-mono text-fluid-xs text-muted/50 hover:text-light transition-colors duration-300 tracking-widest uppercase border-b border-muted/20 hover:border-light/40 pb-0.5"
+            className="font-mono text-fluid-xs text-mid hover:text-off transition-colors duration-300 tracking-widest uppercase border-b border-mid/40 hover:border-off pb-0.5 font-semibold"
           >
             {copy.conversion.actions[2].label}
           </a>
@@ -104,13 +104,13 @@ export default function Contact() {
 
         {/* Availability signal */}
         <motion.div
-          className="inline-flex items-center gap-2 font-mono text-fluid-xs text-muted/50"
+          className="inline-flex items-center gap-2 font-mono text-fluid-xs text-mid"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500/70 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse" />
           {copy.conversion.availability}
         </motion.div>
 
@@ -124,7 +124,7 @@ export default function Contact() {
         >
           <a
             href="mailto:hello@1mw.com"
-            className="font-mono text-fluid-xs text-muted/40 hover:text-muted transition-colors duration-300 tracking-wider"
+            className="font-mono text-fluid-xs text-light hover:text-off transition-colors duration-300 tracking-wider font-medium"
           >
             hello@1mw.com
           </a>

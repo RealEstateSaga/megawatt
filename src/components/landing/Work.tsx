@@ -31,7 +31,7 @@ export default function Work() {
           >
             One million watts.
             <br />
-            <span className="italic text-off/30">All in.</span>
+            <span className="italic text-off/55">All in.</span>
           </motion.h2>
         </div>
 
@@ -44,7 +44,7 @@ export default function Work() {
           transition={{ duration: DUR.slow, ease: EASE.cinematic }}
         >
           <div className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-6 text-left">
-            <p className="text-fluid-sm text-light/80 leading-relaxed max-w-3xl">
+            <p className="text-fluid-sm text-light leading-relaxed max-w-3xl">
               1MW.com is one of the rarest three-character domains in existence.
               A megawatt is a universal measure of power. The firm behind it
               operates the same way. Founded by Mike Wilen, 1MW is the in-house
@@ -62,12 +62,12 @@ export default function Work() {
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
         >
-          <p className="font-mono text-fluid-xs text-muted">
+          <p className="font-mono text-fluid-xs text-mid">
             Every engagement starts with one conversation.
           </p>
           <a
             href="#contact"
-            className="font-mono text-fluid-xs text-accent hover:text-off transition-colors duration-300 tracking-widest uppercase border-b border-accent/40 hover:border-off pb-1"
+            className="font-mono text-fluid-xs text-accent hover:text-mid transition-colors duration-300 tracking-widest uppercase border-b border-accent hover:border-mid pb-1 font-semibold"
           >
             Start yours &rarr;
           </a>

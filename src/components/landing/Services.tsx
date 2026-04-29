@@ -29,7 +29,7 @@ export default function Services() {
         <div className="mb-24 md:mb-32 grid md:grid-cols-12 gap-8">
           <div className="md:col-span-5">
             <motion.div
-              className="font-mono text-fluid-xs text-accent/50 tracking-[0.3em] uppercase mb-8 flex items-center gap-4"
+              className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-8 flex items-center gap-4"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -128,7 +128,7 @@ function PillarModule({
       <div className="relative py-10 md:py-14 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
         {/* Number */}
         <div className="md:col-span-1">
-          <span className="font-mono text-fluid-xs text-muted/50 tracking-widest">
+          <span className="font-mono text-fluid-xs text-mid tracking-widest">
             {pillar.number}
           </span>
         </div>
@@ -142,10 +142,10 @@ function PillarModule({
 
         {/* Definition + Outcome */}
         <div className="md:col-span-5">
-          <p className="text-fluid-sm text-light/70 leading-relaxed mb-2">
+          <p className="text-fluid-sm text-light leading-relaxed mb-2">
             {pillar.definition}
           </p>
-          <p className="font-mono text-fluid-xs text-accent/70 tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-400">
+          <p className="font-mono text-fluid-xs text-accent tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold">
             &rarr; {pillar.outcome}
           </p>
         </div>
@@ -156,7 +156,7 @@ function PillarModule({
             {pillar.tags.map((tag) => (
               <span
                 key={tag}
-                className="font-mono text-[10px] text-muted/40 border border-muted/15 px-2 py-0.5 tracking-wider uppercase group-hover:border-accent/20 group-hover:text-accent/50 transition-colors duration-400"
+                className="font-mono text-[10px] text-mid border border-border px-2 py-0.5 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
               >
                 {tag}
               </span>
@@ -166,7 +166,7 @@ function PillarModule({
           {/* Contextual CTA — revealed on hover */}
           <a
             href="#contact"
-            className="font-mono text-[10px] text-muted/30 hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300"
+            className="font-mono text-[10px] text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
           >
             {pillar.cta} &rarr;
           </a>
