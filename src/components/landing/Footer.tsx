@@ -2,7 +2,13 @@ import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
 import logo from "../../assets/1mw-logo.svg";
 
-const navLinks = ["About", "Services", "Work", "Process", "Contact"];
+const navLinks: { label: string; href: string }[] = [
+  { label: "1MW", href: "#" },
+  { label: "Services", href: "#services" },
+  { label: "About", href: "#work" },
+  { label: "Process", href: "#process" },
+  { label: "Contact", href: "#contact" },
+];
 
 export default function Footer() {
   return (
@@ -38,11 +44,11 @@ export default function Footer() {
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-3">
             {navLinks.map((link) => (
               <a
-                key={link}
-                href={`#${link.toLowerCase()}`}
+                key={link.label}
+                href={link.href}
                 className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-wide font-medium"
               >
-                {link}
+                {link.label}
               </a>
             ))}
           </nav>
@@ -60,7 +66,7 @@ export default function Footer() {
             &copy; 2026 1MW. All rights reserved.
           </p>
           <p className="font-mono text-fluid-xs text-mid">
-            Marketing systems built for growth.
+            1MW is a marketing and advertising engine built to create momentum, clarity, and measurable growth.
           </p>
         </div>
       </div>
