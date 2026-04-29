@@ -14,12 +14,12 @@ export default {
     },
     extend: {
       colors: {
-        // ── 1MW landing raw palette (no conflicts with shadcn) ─────────
-        bg: "#080808",
-        surface: "#0f0f0f",
-        mid: "#8a8a8a",
-        light: "#c4c4c4",
-        off: "#f5f5f0",
+        // ── 1MW landing raw palette — lightfield system ────────────────
+        bg: "#FFFFFF",
+        surface: "#FAFAF8",
+        mid: "#7A7A7A",
+        light: "#4A4A4A",
+        off: "#000000",
         blue: "#4f8eff",
 
         // ── shadcn token-driven palette ───────────────────────────────
@@ -84,9 +84,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["'Playfair Display'", "Georgia", "serif"],
-        mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
+        sans: ["Montserrat", "system-ui", "sans-serif"],
+        display: ["Montserrat", "system-ui", "sans-serif"],
+        mono: ["Montserrat", "ui-sans-serif", "system-ui"],
       },
       keyframes: {
         "accordion-down": {

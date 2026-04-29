@@ -15,12 +15,13 @@ export const EASE = {
 } as const;
 
 export const DUR = {
-  instant: 0.15,
-  fast: 0.3,
-  normal: 0.55,
-  slow: 0.85,
-  cinematic: 1.1,
-  drift: 2.2,
+  // Lightfield calibration: ~25% slower than the cinematic dark system
+  instant: 0.18,
+  fast: 0.38,
+  normal: 0.7,
+  slow: 1.05,
+  cinematic: 1.35,
+  drift: 2.6,
 } as const;
 
 export type ScrollIntensity = "slow" | "fast";

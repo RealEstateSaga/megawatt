@@ -29,11 +29,12 @@ export default function Grain() {
       const data = imageData.data;
 
       for (let i = 0; i < data.length; i += 4) {
-        const val = Math.random() * 255;
+        // Dark specks on white — paper texture
+        const val = Math.random() * 80;
         data[i] = val;
         data[i + 1] = val;
         data[i + 2] = val;
-        data[i + 3] = 18;
+        data[i + 3] = 14;
       }
 
       ctx.putImageData(imageData, 0, 0);
@@ -53,7 +54,7 @@ export default function Grain() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 z-[100] pointer-events-none opacity-[0.035]"
+      className="fixed inset-0 z-[100] pointer-events-none opacity-[0.02]"
     />
   );
 }

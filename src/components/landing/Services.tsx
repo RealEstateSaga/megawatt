@@ -89,7 +89,7 @@ function PillarModule({
   // Per-module mouse-reactive lighting
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const lightBg = useMotionTemplate`radial-gradient(480px at ${mouseX}px ${mouseY}px, rgba(201,169,110,0.06), transparent 65%)`;
+  const lightBg = useMotionTemplate`radial-gradient(480px at ${mouseX}px ${mouseY}px, rgba(0,0,0,0.04), transparent 65%)`;
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;

@@ -33,7 +33,7 @@ export function useMotionIntensity(): MotionIntensity {
 
   const durationScale = isEnergetic ? 0.45 : 1;
   const staggerDelay = isEnergetic ? 0.04 : 0.08;
-  const enterDistance = isEnergetic ? 16 : 32;
+  const enterDistance = isEnergetic ? 12 : 24;
   const enterDuration = isEnergetic ? DUR.fast : DUR.slow;
 
   return {

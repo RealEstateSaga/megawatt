@@ -26,7 +26,7 @@ export default function Footer() {
           </div>
           <a
             href="#contact"
-            className="flex-shrink-0 font-mono text-fluid-xs bg-accent text-bg px-6 py-3 tracking-widest uppercase hover:bg-off transition-colors duration-300"
+            className="flex-shrink-0 text-fluid-xs bg-black text-white px-6 py-3 tracking-wide uppercase font-semibold hover:bg-mid transition-colors duration-300"
           >
             Get in touch &rarr;
           </a>
