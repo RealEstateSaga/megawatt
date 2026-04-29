@@ -14,12 +14,12 @@ export default {
     },
     extend: {
       colors: {
-        // ── 1MW landing raw palette — lightfield system ────────────────
+        // ── 1MW landing raw palette — lightfield system (high-contrast) ────
         bg: "#FFFFFF",
         surface: "#FAFAF8",
-        mid: "#7A7A7A",
-        light: "#4A4A4A",
-        off: "#000000",
+        mid: "#444444",      // supporting copy
+        light: "#2B2B2B",    // secondary copy
+        off: "#000000",      // primary copy
         blue: "#4f8eff",
 
         // ── shadcn token-driven palette ───────────────────────────────

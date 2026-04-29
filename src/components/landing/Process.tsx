@@ -86,18 +86,18 @@ export default function Process() {
 
         {/* Inline contextual CTA */}
         <motion.div
-          className="mt-16 ml-[calc(19px+2rem)] md:ml-[calc(23px+4rem)] border-l border-accent/30 pl-4"
+          className="mt-16 ml-[calc(19px+2rem)] md:ml-[calc(23px+4rem)] border-l border-accent pl-4"
           initial={{ opacity: 0, x: -10 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: DUR.normal, ease: EASE.cinematic, delay: 0.3 }}
         >
-          <p className="font-mono text-fluid-xs text-muted mb-2">
+          <p className="font-mono text-fluid-xs text-mid mb-2">
             Want to map this to your business?
           </p>
           <a
             href="#contact"
-            className="font-mono text-fluid-xs text-accent hover:text-off transition-colors duration-200 tracking-widest uppercase border-b border-accent/40 hover:border-off pb-0.5"
+            className="font-mono text-fluid-xs text-accent hover:text-mid transition-colors duration-200 tracking-widest uppercase border-b border-accent hover:border-mid pb-0.5 font-semibold"
           >
             Walk through scope with us &rarr;
           </a>

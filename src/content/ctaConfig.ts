@@ -68,13 +68,13 @@ export const CTA_BY_STATE: Record<NarrativeState, CTADefinition> = {
 export function ctaClasses(style: CTAStyle, base = ""): string {
   const map: Record<CTAStyle, string> = {
     ghost:
-      "border border-black/10 text-mid hover:text-black hover:border-black/30 transition-colors duration-300",
+      "border border-black/30 text-light hover:text-black hover:border-black transition-colors duration-300",
     outline:
-      "border border-black text-black hover:bg-black hover:text-white transition-colors duration-300",
+      "border border-black text-black hover:bg-[#F2F2F2] transition-colors duration-300",
     filled:
-      "bg-black/85 text-white hover:bg-black transition-colors duration-300",
+      "bg-black text-white hover:bg-[#1a1a1a] transition-colors duration-300",
     direct:
-      "bg-black text-white hover:bg-mid transition-colors duration-300 font-semibold",
+      "bg-black text-white hover:bg-[#1a1a1a] transition-colors duration-300 font-semibold",
   };
   return `${map[style]} text-fluid-xs tracking-wide uppercase px-6 py-3 ${base}`.trim();
 }

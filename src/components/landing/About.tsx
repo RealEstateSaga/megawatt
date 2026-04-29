@@ -25,7 +25,7 @@ export default function About() {
       <div ref={ref} className="max-w-7xl mx-auto">
         {/* State label */}
         <motion.div
-          className="font-mono text-fluid-xs text-accent/50 tracking-[0.3em] uppercase mb-16 flex items-center gap-4"
+          className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-16 flex items-center gap-4"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -53,7 +53,7 @@ export default function About() {
 
             <div className="overflow-hidden">
               <motion.h2
-                className="font-display text-fluid-3xl text-off/25 leading-[1.05] tracking-tight italic"
+                className="font-display text-fluid-3xl text-off/55 leading-[1.05] tracking-tight italic"
                 initial={{ y: "105%" }}
                 whileInView={{ y: 0 }}
                 viewport={{ once: true }}
@@ -74,7 +74,7 @@ export default function About() {
             style={{ y: rightY }}
           >
             <motion.p
-              className="text-fluid-sm text-light/70 leading-relaxed mb-10"
+              className="text-fluid-sm text-light leading-relaxed mb-10"
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -93,7 +93,7 @@ export default function About() {
             >
               <a
                 href="#services"
-                className="font-mono text-fluid-xs text-accent/60 hover:text-accent transition-colors duration-300 tracking-widest uppercase"
+                className="font-mono text-fluid-xs text-accent hover:text-mid transition-colors duration-300 tracking-widest uppercase font-semibold"
               >
                 {copy.reframing.cta} &rarr;
               </a>

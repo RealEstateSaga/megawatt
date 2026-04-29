@@ -73,7 +73,7 @@ export default function Hero() {
         {/* Category subtext — single sentence, swaps by intensity */}
         <motion.p
           key={scrollIntensity}
-          className="font-mono text-fluid-sm text-light/60 max-w-lg mx-auto leading-relaxed tracking-wide"
+          className="font-mono text-fluid-sm text-light max-w-lg mx-auto leading-relaxed tracking-wide"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 0.85 }}
