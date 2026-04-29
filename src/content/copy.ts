@@ -26,7 +26,7 @@ export const copy = {
     label: "Services",
     headline: "Six systems. One strategy.",
     intro:
-      "Integrated marketing systems designed to help businesses grow with clarity, speed, and measurable performance.",
+      "Integrated marketing and advertising systems designed for growth, built with clarity, speed, and measurable performance.",
     pillars: [
       {
         id: "full-spectrum",
