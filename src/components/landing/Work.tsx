@@ -42,7 +42,10 @@ export default function Work() {
           transition={{ duration: DUR.slow, ease: EASE.cinematic }}
         >
           <div className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-6 text-left">
-            <p className="text-fluid-sm text-light leading-relaxed max-w-3xl">
+            <p
+              className="text-off/90 leading-[1.4] font-light"
+              style={{ fontSize: "clamp(1.3rem, 2vw, 2rem)", maxWidth: "65ch" }}
+            >
               1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design. A megawatt is a universal measure of power, and the firm carries that same weight. Founded by Mike Wilen, 1MW is a marketing and advertising firm spanning data, creativity, media, technology, and AI. The consortium explores any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.
             </p>
           </div>
