@@ -44,7 +44,7 @@ export default function Process() {
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section id="process" ref={ref} className="py-32 md:py-48 px-6 md:px-12 bg-surface">
+    <section id="process" ref={ref} className="py-48 md:py-72 px-6 md:px-12 bg-surface">
       <div className="max-w-7xl mx-auto">
         <div className="mb-20">
           <motion.div
@@ -79,7 +79,7 @@ export default function Process() {
 
         <div className="relative flex flex-col gap-0">
           {/* Animated timeline line */}
-          <div className="absolute left-[19px] md:left-[23px] top-0 bottom-0 w-px bg-border">
+          <div className="absolute left-[27px] md:left-[27px] top-0 bottom-0 w-px bg-border">
             <motion.div
               className="absolute top-0 left-0 w-full bg-accent"
               style={{ height: lineHeight }}
@@ -125,7 +125,7 @@ function StepItem({ step, index }: { step: (typeof steps)[0]; index: number }) {
   return (
     <motion.div
       ref={ref}
-      className="flex gap-8 md:gap-16 pb-16 last:pb-0 group transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)]"
+      className="flex gap-8 md:gap-16 pb-24 md:pb-32 last:pb-0 group transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)]"
       style={{ y, scale }}
       onMouseEnter={() => { y.set(-4); scale.set(1.01); }}
       onMouseLeave={() => { y.set(0); scale.set(1); }}
@@ -134,22 +134,22 @@ function StepItem({ step, index }: { step: (typeof steps)[0]; index: number }) {
       transition={{ duration: DUR.slow, delay: index * 0.06, ease: EASE.cinematic }}
     >
       {/* Step dot */}
-      <div className="relative flex-shrink-0 mt-1">
+      <div className="relative flex-shrink-0 mt-3">
         <motion.div
-          className="w-10 h-10 rounded-full border border-border flex items-center justify-center bg-surface z-10 relative group-hover:bg-bg transition-colors duration-300"
+          className="w-14 h-14 rounded-full border border-border flex items-center justify-center bg-surface z-10 relative group-hover:bg-bg transition-colors duration-300"
           animate={inView ? { borderColor: "#000000" } : {}}
           transition={{ duration: DUR.normal, delay: 0.3 }}
         >
-          <span className="font-mono text-[10px] text-accent">{step.number}</span>
+          <span className="font-mono text-xs text-accent">{step.number}</span>
         </motion.div>
       </div>
 
       {/* Content */}
       <div className="pt-2">
-        <h3 className="font-display text-fluid-xl text-off mb-3 group-hover:text-accent transition-colors duration-300">
+        <h3 className="font-display text-fluid-lg text-off mb-5 group-hover:text-accent transition-colors duration-300 leading-[1.05] tracking-tight">
           {step.title}
         </h3>
-        <p className="text-fluid-sm text-light leading-relaxed max-w-md">
+        <p className="text-fluid-sm text-light leading-relaxed max-w-2xl">
           {step.description}
         </p>
       </div>

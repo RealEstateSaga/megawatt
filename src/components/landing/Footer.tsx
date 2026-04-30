@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
-import logo from "../../assets/1mw-logo.svg";
+
 
 const navLinks: { label: string; href: string }[] = [
   { label: "1MW", href: "#" },
@@ -39,14 +39,20 @@ export default function Footer() {
         </motion.div>
 
         {/* Brand block */}
-        <div className="mb-16">
-          <img src={logo} alt="1MW" className="h-6 w-auto mb-4" />
-          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-3">
+        <div className="mb-20">
+          <div
+            className="font-display font-bold text-off leading-none mb-8 tracking-tight"
+            style={{ fontSize: "clamp(2rem, 4vw, 4rem)" }}
+          >
+            1MW
+          </div>
+          <nav className="flex flex-wrap items-center gap-x-10 gap-y-3 mb-4">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-wide font-medium"
+                className="text-[#111111] hover:text-black transition-colors duration-200 tracking-wide font-sans font-medium uppercase"
+                style={{ fontSize: "clamp(1rem, 1.2vw, 1.25rem)" }}
               >
                 {link.label}
               </a>

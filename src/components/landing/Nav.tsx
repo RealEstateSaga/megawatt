@@ -47,13 +47,14 @@ export default function Nav() {
           <img src={logo} alt="1MW" className="h-6 w-auto" />
         </a>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop links — right aligned, generous spacing */}
+        <div className="hidden md:flex items-center gap-12 lg:gap-14 ml-auto mr-8">
           {links.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-widest uppercase font-mono font-medium"
+              className="text-[#111111] hover:text-black transition-colors duration-200 tracking-wide uppercase font-sans font-medium"
+              style={{ fontSize: "clamp(1rem, 1.2vw, 1.25rem)" }}
             >
               {link.label}
             </a>

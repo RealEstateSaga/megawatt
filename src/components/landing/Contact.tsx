@@ -51,10 +51,10 @@ export default function Contact() {
           <div className="h-px w-8 bg-accent" />
         </motion.div>
 
-        {/* Primary statement */}
+        {/* Primary statement — monumental CTA headline */}
         <motion.p
           key={scrollIntensity}
-          className="font-display text-fluid-2xl text-off leading-tight mb-16 max-w-2xl mx-auto"
+          className="font-display text-fluid-3xl text-off leading-[1.0] tracking-tight mb-20 max-w-5xl mx-auto"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

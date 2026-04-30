@@ -21,7 +21,7 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="py-32 md:py-48"
+      padding="py-48 md:py-72"
       className="px-6 md:px-12 bg-surface/50"
     >
       <div className="max-w-7xl mx-auto">
@@ -118,38 +118,45 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-10 md:py-14 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
-        {/* Number */}
-        <div className="md:col-span-1">
-          <span className="font-mono text-fluid-xs text-mid tracking-widest">
+      <div className="relative py-16 md:py-24 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
+        {/* Number — monumental */}
+        <div className="md:col-span-2">
+          <span
+            className="font-display font-bold text-mid/70 leading-none block"
+            style={{ fontSize: "clamp(4rem, 8vw, 8rem)" }}
+          >
             {pillar.number}
           </span>
         </div>
 
         {/* Title */}
         <div className="md:col-span-3">
-          <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-tight">
+          <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight">
             {pillar.title}
           </h3>
         </div>
 
         {/* Definition + Outcome */}
-        <div className="md:col-span-5">
-          <p className="text-fluid-sm text-light leading-relaxed mb-2">
+        <div className="md:col-span-4">
+          <p className="text-fluid-sm text-light leading-relaxed mb-4">
             {pillar.definition}
           </p>
-          <p className="font-mono text-fluid-xs text-accent tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold">
+          <p
+            className="font-display text-accent tracking-tight opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold leading-snug"
+            style={{ fontSize: "clamp(1.2rem, 2vw, 2rem)" }}
+          >
             &rarr; {pillar.outcome}
           </p>
         </div>
 
         {/* Tags + CTA */}
-        <div className="md:col-span-3 flex flex-col items-start md:items-end gap-3">
-          <div className="flex flex-wrap gap-1.5 justify-start md:justify-end">
+        <div className="md:col-span-3 flex flex-col items-start md:items-end gap-5">
+          <div className="flex flex-wrap gap-2 justify-start md:justify-end">
             {pillar.tags.map((tag) => (
               <span
                 key={tag}
-                className="font-mono text-[10px] text-mid border border-border px-2 py-0.5 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
+                className="font-mono text-mid border border-border px-3 py-1 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
+                style={{ fontSize: "clamp(1rem, 1.4vw, 1.4rem)" }}
               >
                 {tag}
               </span>
@@ -159,7 +166,7 @@ function PillarModule({
           {/* Contextual CTA — revealed on hover */}
           <a
             href="#contact"
-            className="font-mono text-[10px] text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
+            className="font-mono text-fluid-xs text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
           >
             {pillar.cta} &rarr;
           </a>
