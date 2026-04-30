@@ -67,13 +67,13 @@ export default function Footer() {
           </a>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Bottom bar — stacked lines */}
+        <div className="border-t border-border pt-8 flex flex-col items-start gap-2">
           <p className="font-mono text-fluid-xs text-mid">
-            &copy; 2026 1MW. All rights reserved.
+            &copy; 2026 1MW
           </p>
           <p className="font-mono text-fluid-xs text-mid">
-            1MW is a marketing and advertising engine built to create momentum, clarity, and measurable growth.
+            1MW is a marketing and advertising engine built for momentum and measurable growth.
           </p>
         </div>
       </div>
