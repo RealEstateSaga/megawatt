@@ -9,30 +9,35 @@ const steps = [
     title: "Audit",
     description:
       "We assess your current marketing infrastructure, channels, tools, and competitive position before recommending anything.",
+    outcome: "Start with clarity. Build from there.",
   },
   {
     number: "02",
     title: "Strategy",
     description:
       "Positioning, channel architecture, and a coordinated plan that aligns every moving part to a single business objective.",
+    outcome: "One objective. Every moving part aligned.",
   },
   {
     number: "03",
     title: "Build",
     description:
       "Websites, cloud systems, CRM platforms, and creative assets — engineered for performance and long-term adaptability.",
+    outcome: "Built for performance. Engineered to last.",
   },
   {
     number: "04",
     title: "Activate",
     description:
       "Campaigns, automation workflows, and media systems deployed across the channels that drive qualified growth.",
+    outcome: "Reach the right people. At the right time.",
   },
   {
     number: "05",
     title: "Optimize",
     description:
       "Continuous performance tracking, testing, and refinement aligned to revenue outcomes, not vanity metrics.",
+    outcome: "Track everything. Improve what matters. Repeat.",
   },
 ];
 
