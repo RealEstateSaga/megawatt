@@ -1,155 +1,112 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useInView, useSpring } from "framer-motion";
-import { EASE, DUR, SPRING } from "../../engine/motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { EASE, DUR } from "../../engine/motion";
 
 const steps = [
-  {
-    number: "01",
-    title: "Audit",
-    description:
-      "We assess your current marketing infrastructure, channels, tools, and competitive position before recommending anything.",
-  },
-  {
-    number: "02",
-    title: "Strategy",
-    description:
-      "Positioning, channel architecture, and a coordinated plan that aligns every moving part to a single business objective.",
-  },
-  {
-    number: "03",
-    title: "Build",
-    description:
-      "Websites, cloud systems, CRM platforms, and creative assets — engineered for performance and long-term adaptability.",
-  },
-  {
-    number: "04",
-    title: "Activate",
-    description:
-      "Campaigns, automation workflows, and media systems deployed across the channels that drive qualified growth.",
-  },
-  {
-    number: "05",
-    title: "Optimize",
-    description:
-      "Continuous performance tracking, testing, and refinement aligned to revenue outcomes, not vanity metrics.",
-  },
+  { number: "01", title: "Audit",    description: "We assess your current marketing infrastructure, channels, tools, and competitive position before recommending anything." },
+  { number: "02", title: "Strategy", description: "Positioning, channel architecture, and a coordinated plan that aligns every moving part to a single business objective." },
+  { number: "03", title: "Build",    description: "Websites, cloud systems, CRM platforms, and creative assets — engineered for performance and long-term adaptability." },
+  { number: "04", title: "Activate", description: "Campaigns, automation workflows, and media systems deployed across the channels that drive qualified growth." },
+  { number: "05", title: "Optimize", description: "Continuous performance tracking, testing, and refinement aligned to revenue outcomes, not vanity metrics." },
 ];
 
+/**
+ * PROCESS — white editorial chapter.
+ * Sequential timeline as oversized vertical rhythm.
+ */
 export default function Process() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start 0.8", "end 0.2"],
+    offset: ["start end", "end start"],
   });
-  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const headerY = useTransform(scrollYProgress, [0, 1], [60, -60]);
 
   return (
-    <section id="process" ref={ref} className="py-32 md:py-48 px-6 md:px-12 bg-surface">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-20">
-          <motion.div
-            className="font-mono text-fluid-xs text-accent tracking-widest uppercase mb-4 flex items-center gap-3"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+    <section
+      id="process"
+      ref={ref}
+      data-env="light"
+      className="env-light relative px-8 md:px-16 py-40 md:py-64"
+    >
+      <motion.div
+        style={{ y: headerY }}
+        className="flex justify-between items-start mb-32 md:mb-48"
+      >
+        <div>
+          <motion.span
+            className="text-[11px] tracking-[0.35em] uppercase text-black/50 mb-12 block"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: DUR.normal, ease: EASE.cinematic }}
+            transition={{ duration: DUR.normal }}
           >
-            <div className="h-px w-8 bg-accent" />
-            How We Work
-          </motion.div>
-          <motion.h2
-            className="font-display text-fluid-3xl text-off leading-tight"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.1 }}
-          >
-            Process
-          </motion.h2>
-          <motion.p
-            className="mt-6 text-fluid-sm text-light leading-relaxed max-w-2xl"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
-          >
-            A clear process built to move from strategy to execution without wasted motion.
-          </motion.p>
-        </div>
-
-        <div className="relative flex flex-col gap-0">
-          {/* Animated timeline line */}
-          <div className="absolute left-[19px] md:left-[23px] top-0 bottom-0 w-px bg-border">
-            <motion.div
-              className="absolute top-0 left-0 w-full bg-accent"
-              style={{ height: lineHeight }}
-            />
+            Process — 04
+          </motion.span>
+          <div className="overflow-hidden">
+            <motion.h2
+              className="font-display font-bold text-fluid-3xl text-black leading-[0.95] tracking-[-0.035em]"
+              initial={{ y: "105%" }}
+              whileInView={{ y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, ease: EASE.cinematic }}
+            >
+              How we work.
+            </motion.h2>
           </div>
-
-          {steps.map((step, i) => (
-            <StepItem key={step.number} step={step} index={i} />
-          ))}
         </div>
 
-        {/* Inline contextual CTA */}
-        <motion.div
-          className="mt-16 ml-[calc(19px+2rem)] md:ml-[calc(23px+4rem)] border-l border-accent pl-4"
-          initial={{ opacity: 0, x: -10 }}
-          whileInView={{ opacity: 1, x: 0 }}
+        <motion.p
+          className="hidden md:block max-w-sm text-fluid-sm text-black/65 leading-[1.55] mt-24"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: DUR.normal, ease: EASE.cinematic, delay: 0.3 }}
+          transition={{ duration: DUR.slow, delay: 0.25 }}
         >
-          <p className="font-mono text-fluid-xs text-mid mb-2">
-            Want to map this to your business?
-          </p>
-          <a
-            href="#contact"
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-widest uppercase border-b border-black/40 hover:border-black pb-0.5 font-semibold"
-          >
-            Start The Conversation &rarr;
-          </a>
-        </motion.div>
+          A clear process built to move from strategy to execution without wasted motion.
+        </motion.p>
+      </motion.div>
+
+      <div>
+        {steps.map((step, i) => (
+          <StepRow key={step.number} step={step} index={i} />
+        ))}
       </div>
     </section>
   );
 }
 
-function StepItem({ step, index }: { step: (typeof steps)[0]; index: number }) {
+function StepRow({ step, index }: { step: (typeof steps)[number]; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-20% 0px" });
-
-  // Micro-depth: subtle lift on hover via springs
-  const y = useSpring(0, SPRING.medium);
-  const scale = useSpring(1, SPRING.medium);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const numY = useTransform(scrollYProgress, [0, 1], [50, -50]);
 
   return (
     <motion.div
       ref={ref}
-      className="flex gap-8 md:gap-16 pb-16 last:pb-0 group transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)]"
-      style={{ y, scale }}
-      onMouseEnter={() => { y.set(-4); scale.set(1.01); }}
-      onMouseLeave={() => { y.set(0); scale.set(1); }}
-      initial={{ opacity: 0, x: -20 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: DUR.slow, delay: index * 0.06, ease: EASE.cinematic }}
+      className="group relative border-t border-black/15 py-16 md:py-24 grid md:grid-cols-12 gap-8 md:gap-12 items-start"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: index * 0.05 }}
     >
-      {/* Step dot */}
-      <div className="relative flex-shrink-0 mt-1">
-        <motion.div
-          className="w-10 h-10 rounded-full border border-border flex items-center justify-center bg-surface z-10 relative group-hover:bg-bg transition-colors duration-300"
-          animate={inView ? { borderColor: "#000000" } : {}}
-          transition={{ duration: DUR.normal, delay: 0.3 }}
-        >
-          <span className="font-mono text-[10px] text-accent">{step.number}</span>
-        </motion.div>
-      </div>
+      <motion.div style={{ y: numY }} className="md:col-span-3">
+        <span className="font-display font-light text-[clamp(4.5rem,11vw,10rem)] text-black/85 leading-none tracking-[-0.04em] block">
+          {step.number}
+        </span>
+      </motion.div>
 
-      {/* Content */}
-      <div className="pt-2">
-        <h3 className="font-display text-fluid-xl text-off mb-3 group-hover:text-accent transition-colors duration-300">
+      <div className="md:col-span-5">
+        <h3 className="font-display font-semibold text-fluid-2xl text-black leading-[1.0] tracking-[-0.025em]">
           {step.title}
         </h3>
-        <p className="text-fluid-sm text-light leading-relaxed max-w-md">
+      </div>
+
+      <div className="md:col-span-4">
+        <p className="text-fluid-sm text-black/65 leading-[1.6]">
           {step.description}
         </p>
       </div>
