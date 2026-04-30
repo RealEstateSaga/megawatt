@@ -21,48 +21,21 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="py-48 md:py-72"
+      padding="py-24 md:py-32"
       className="px-6 md:px-12 bg-surface/50"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Section header */}
-        <div className="mb-24 md:mb-32 grid md:grid-cols-12 gap-8">
-          <div className="md:col-span-5">
-            <motion.div
-              className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-8 flex items-center gap-4"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: DUR.normal, ease: EASE.cinematic }}
-            >
-              <div className="h-px w-12 bg-accent/30" />
-              {copy.mechanism.label}
-            </motion.div>
-
-            <div className="overflow-hidden">
-              <motion.h2
-                className="font-display text-fluid-3xl text-off leading-tight tracking-tight"
-                initial={{ y: "105%" }}
-                whileInView={{ y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.08 }}
-              >
-                {copy.mechanism.headline}
-              </motion.h2>
-            </div>
-          </div>
-
-          <div className="md:col-span-6 md:col-start-7">
-            <motion.p
-              className="text-fluid-sm text-light leading-relaxed"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
-            >
-              {copy.mechanism.intro}
-            </motion.p>
-          </div>
+        {/* Centered intro statement */}
+        <div className="mb-16 md:mb-20 max-w-5xl mx-auto text-center">
+          <motion.p
+            className="font-display text-fluid-2xl text-off leading-[1.1] tracking-tight"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: DUR.cinematic, ease: EASE.cinematic }}
+          >
+            {copy.mechanism.intro}
+          </motion.p>
         </div>
 
         {/* Three pillars */}
@@ -118,10 +91,10 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-16 md:py-20 px-2 md:px-0 grid md:grid-cols-12 gap-y-6 gap-x-12 items-start">
+      <div className="relative py-10 md:py-12 px-2 md:px-0 grid md:grid-cols-12 gap-y-4 gap-x-12 items-start">
         {/* Title + small numeric label */}
         <div className="md:col-span-5">
-          <span className="font-mono text-fluid-xs text-mid tracking-[0.3em] uppercase block mb-4">
+          <span className="font-mono text-fluid-xs text-mid tracking-[0.3em] uppercase block mb-3">
             {pillar.number}
           </span>
           <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight">
@@ -131,7 +104,7 @@ function PillarModule({
 
         {/* Definition + Outcome */}
         <div className="md:col-span-5">
-          <p className="text-fluid-sm text-light leading-relaxed mb-5">
+          <p className="text-fluid-sm text-light leading-relaxed mb-4">
             {pillar.definition}
           </p>
           <p
@@ -142,7 +115,7 @@ function PillarModule({
           </p>
         </div>
 
-        {/* Tags + CTA */}
+        {/* Tags */}
         <div className="md:col-span-2 flex flex-col items-start md:items-end gap-5">
           <div className="flex flex-wrap gap-2 justify-start md:justify-end">
             {pillar.tags.map((tag) => (
@@ -154,14 +127,6 @@ function PillarModule({
               </span>
             ))}
           </div>
-
-          {/* Contextual CTA — revealed on hover */}
-          <a
-            href="#contact"
-            className="font-mono text-fluid-xs text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
-          >
-            {pillar.cta} &rarr;
-          </a>
         </div>
       </div>
 
