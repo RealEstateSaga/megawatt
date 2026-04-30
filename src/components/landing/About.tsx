@@ -21,7 +21,7 @@ export default function About() {
   const rightY = useTransform(scrollYProgress, [0, 1], [25, -25]);
 
   return (
-    <SectionWrapper id="about" phase="framing" padding="py-40 md:py-64" className="px-6 md:px-12">
+    <SectionWrapper id="about" phase="framing" padding="pt-40 md:pt-64 pb-20 md:pb-32" className="px-6 md:px-12">
       <div ref={ref} className="max-w-7xl mx-auto">
         {/* State label removed for cleaner hierarchy */}
 
