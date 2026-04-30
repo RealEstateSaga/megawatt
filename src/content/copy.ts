@@ -26,7 +26,7 @@ export const copy = {
     label: "Services",
     headline: "Six systems. One strategy.",
     intro:
-      "Integrated marketing designed for growth, and built for performance.",
+      "Marketing designed for growth, and built for performance.",
     pillars: [
       {
         id: "full-spectrum",

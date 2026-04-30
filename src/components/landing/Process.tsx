@@ -59,7 +59,7 @@ export default function Process() {
             viewport={{ once: true }}
             transition={{ duration: DUR.cinematic, ease: EASE.cinematic }}
           >
-            A clear process built to move from strategy to execution without wasted motion.
+            From strategy to execution, no wasted motion.
           </motion.p>
         </div>
 
