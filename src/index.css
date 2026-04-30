@@ -111,7 +111,7 @@ body:has(.landing-root) {
   /* CTA supporting text size & medium statements */
   .text-fluid-2xl { font-size: clamp(2rem, 8vw, 8rem); }
   /* Section headings: Services, About, Process */
-  .text-fluid-3xl { font-size: clamp(2.5rem, 10vw, 10rem); }
+  .text-fluid-3xl { font-size: clamp(2rem, 10vw, 10rem); }
   /* Hero / CTA monumental */
   .text-fluid-4xl { font-size: clamp(3.5rem, 18vw, 18rem); }
   .text-fluid-5xl { font-size: clamp(3.5rem, 18vw, 18rem); }

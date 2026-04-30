@@ -35,13 +35,13 @@ export default function Contact() {
       id="contact"
       phase="conversion"
       padding="pt-20 md:pt-28 pb-40 md:pb-56"
-      className="px-6 md:px-12 bg-surface/30"
+      className="px-8 md:px-12 bg-surface/30"
     >
       <div ref={ref} className="max-w-5xl mx-auto text-center">
         {/* Primary statement — monumental CTA headline */}
         <motion.p
           key={scrollIntensity}
-          className="font-display text-fluid-3xl text-off leading-[1.0] tracking-tight mb-20 max-w-5xl mx-auto"
+          className="font-display text-fluid-3xl text-off leading-[1.05] tracking-tight mb-20 max-w-5xl mx-auto [text-wrap:balance]"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
