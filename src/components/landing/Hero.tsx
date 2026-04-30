@@ -1,93 +1,100 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
+import { useSite } from "../../context/SiteContext";
 import { copy } from "../../content/copy";
+import logo from "../../assets/1mw-logo.svg";
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
+  const { scrollIntensity } = useSite();
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
 
-  // Editorial parallax — slow, weighted layer displacement
-  const wordY = useTransform(scrollYProgress, [0, 1], [0, -120]);
-  const labelY = useTransform(scrollYProgress, [0, 1], [0, -60]);
-  const subY = useTransform(scrollYProgress, [0, 1], [0, -180]);
-  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  // Hero content compresses upward as user scrolls into Reframing state
+  const y = useTransform(scrollYProgress, [0, 1], [0, 140]);
+  const opacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.6], [1, 0.96]);
+
+  // Subtext adapts to scroll intensity (behavioral personalization)
+  const subtext =
+    scrollIntensity === "fast" ? copy.hero.subtextFast : copy.hero.subtext;
 
   return (
     <section
       ref={ref}
       id="hero"
-      data-env="light"
-      className="env-light relative min-h-[110vh] flex flex-col justify-between overflow-hidden px-8 md:px-16 pt-40 pb-16"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-bg"
     >
-      {/* Top label — system / category */}
+      {/* Structural grid — barely perceptible depth cue */}
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)
+          `,
+          backgroundSize: "90px 90px",
+        }}
+      />
+
+      {/* ── Primary content — compresses upward on scroll ────────────────── */}
       <motion.div
-        style={{ y: labelY, opacity }}
-        className="relative z-10 flex justify-between items-start"
+        className="relative z-20 text-center px-6 max-w-5xl mx-auto"
+        style={{ y, opacity, scale }}
       >
+        {/* System label — minimal, mono, above the headline */}
         <motion.p
-          className="text-[12px] tracking-[0.35em] uppercase font-medium text-black"
+          className="font-mono text-fluid-xs text-[#2A2A2A] tracking-[0.3em] uppercase mb-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.3 }}
+          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
         >
           {copy.hero.system}
         </motion.p>
-        <motion.p
-          className="hidden md:block text-[12px] tracking-[0.35em] uppercase font-medium text-black/50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.4 }}
-        >
-          Est. — Mike Wilen
-        </motion.p>
-      </motion.div>
 
-      {/* Center: monumental wordmark */}
-      <motion.div
-        style={{ y: wordY, opacity }}
-        className="relative z-10 flex-1 flex items-center justify-center"
-      >
-        <div className="overflow-hidden">
-          <motion.h1
-            className="font-display text-fluid-5xl font-bold tracking-[-0.06em] text-black leading-none select-none"
-            initial={{ y: "110%" }}
-            animate={{ y: 0 }}
-            transition={{ duration: 1.4, ease: EASE.cinematic, delay: 0.45 }}
-            aria-label="1MW"
-          >
-            1MW
-          </motion.h1>
-        </div>
-      </motion.div>
+        {/* 1MW logo — the only focal point */}
+        <h1 className="mb-10 flex justify-center" aria-label="1MW">
+          <div className="overflow-hidden">
+            <motion.img
+              src={logo}
+              alt="1MW"
+              className="h-12 w-auto block"
+              initial={{ y: "110%" }}
+              animate={{ y: 0 }}
+              transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
+            />
+          </div>
+        </h1>
 
-      {/* Bottom: supporting statement — left-aligned editorial */}
-      <motion.div
-        style={{ y: subY, opacity }}
-        className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6"
-      >
+        {/* Category subtext — single sentence, swaps by intensity */}
         <motion.p
-          className="font-display text-fluid-lg text-black max-w-xl leading-[1.15] tracking-tight"
-          initial={{ opacity: 0, y: 24 }}
+          key={scrollIntensity}
+          className="font-mono text-fluid-sm text-light max-w-lg mx-auto leading-relaxed tracking-wide"
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 1.0 }}
+          transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 0.85 }}
         >
-          Marketing systems<br />built for growth.
+          {subtext}
         </motion.p>
+      </motion.div>
 
+      {/* ── Subtle scroll cue — implied, not labeled ─────────────────────── */}
+      <motion.div
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2.0, duration: DUR.slow }}
+      >
         <motion.div
-          className="flex items-center gap-3 text-[11px] tracking-[0.3em] uppercase text-black/60"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: DUR.slow, delay: 1.4 }}
-        >
-          <span>Scroll</span>
-          <span className="block w-12 h-px bg-black/40" />
-        </motion.div>
+          className="w-px h-14 bg-gradient-to-b from-accent/60 to-transparent mx-auto"
+          animate={{ scaleY: [0, 1, 0], opacity: [0, 0.7, 0] }}
+          style={{ originY: 0 }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        />
       </motion.div>
     </section>
   );

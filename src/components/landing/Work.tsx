@@ -1,88 +1,72 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
 
 /**
- * WORK / 1MW — black editorial chapter.
- * Oversized declarative statement + brand narrative paragraph.
+ * ABOUT — "One million watts. All in."
+ *
+ * Replaces the prior Selected Work grid with a single full-width
+ * narrative card describing the firm.
  */
 export default function Work() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  const titleY = useTransform(scrollYProgress, [0, 1], [80, -80]);
-  const bodyY = useTransform(scrollYProgress, [0, 1], [40, -40]);
-
   return (
-    <section
-      id="work"
-      ref={ref}
-      data-env="dark"
-      className="env-dark relative px-8 md:px-16 py-40 md:py-64 overflow-hidden"
-    >
-      <motion.div
-        className="flex justify-between items-start mb-32 md:mb-48"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: DUR.slow }}
-      >
-        <span className="text-[11px] tracking-[0.35em] uppercase text-white/50">
-          Work — 03
-        </span>
-        <span className="hidden md:block text-[11px] tracking-[0.35em] uppercase text-white/50">
-          1MW.com
-        </span>
-      </motion.div>
-
-      <motion.div style={{ y: titleY }}>
-        <div className="overflow-hidden">
-          <motion.h2
-            className="font-display font-bold text-fluid-4xl text-white leading-[0.92] tracking-[-0.04em]"
-            initial={{ y: "105%" }}
-            whileInView={{ y: 0 }}
+    <section id="work" className="py-32 md:py-48 px-6 md:px-12">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-20">
+          <motion.div
+            className="font-mono text-fluid-xs text-accent tracking-widest uppercase mb-4 flex items-center gap-3"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1.3, ease: EASE.cinematic }}
+            transition={{ duration: DUR.normal, ease: EASE.cinematic }}
+          >
+            <div className="h-px w-8 bg-accent" />
+            About
+          </motion.div>
+          <motion.h2
+            className="font-display text-fluid-3xl text-off leading-tight"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.1 }}
           >
             One million watts.
           </motion.h2>
         </div>
-      </motion.div>
 
-      <motion.div
-        style={{ y: bodyY }}
-        className="mt-32 md:mt-56 grid md:grid-cols-12 gap-12 items-end"
-      >
-        <motion.p
-          className="md:col-span-7 text-fluid-base text-white/80 leading-[1.6] max-w-2xl"
-          initial={{ opacity: 0, y: 30 }}
+        {/* Single full-width narrative card */}
+        <motion.div
+          className="relative border border-border overflow-hidden"
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
+          transition={{ duration: DUR.slow, ease: EASE.cinematic }}
         >
-          1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design. A megawatt is a universal measure of power, and the firm carries that same weight. Founded by Mike Wilen, 1MW is a marketing and advertising firm spanning data, creativity, media, technology, and AI. The consortium explores any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.
-        </motion.p>
+          <div className="relative p-10 md:p-16 lg:p-20 flex flex-col gap-6 text-left">
+            <p className="text-fluid-sm text-light leading-relaxed max-w-3xl">
+              1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design. A megawatt is a universal measure of power, and the firm carries that same weight. Founded by Mike Wilen, 1MW is a marketing and advertising firm spanning data, creativity, media, technology, and AI. The consortium explores any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.
+            </p>
+          </div>
+        </motion.div>
 
+        {/* Contextual CTA */}
         <motion.div
-          className="md:col-span-4 md:col-start-9 flex flex-col gap-4"
+          className="mt-16 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-12"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: DUR.slow, delay: 0.4 }}
+          transition={{ delay: 0.4 }}
         >
-          <p className="text-[11px] tracking-[0.3em] uppercase text-white/50">
+          <p className="font-mono text-fluid-xs text-mid">
             Every engagement starts with one conversation.
           </p>
           <a
             href="#contact"
-            className="self-start text-[12px] tracking-[0.25em] uppercase font-semibold text-white border-b border-white pb-1 hover:opacity-60 transition-opacity duration-300"
+            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase border-b border-black/40 hover:border-black pb-1 font-semibold"
           >
             Start yours &rarr;
           </a>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }

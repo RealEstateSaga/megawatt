@@ -1,126 +1,173 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { EASE, DUR } from "../../engine/motion";
+import { motion, useSpring } from "framer-motion";
+import { EASE, DUR, SPRING } from "../../engine/motion";
 import { copy } from "../../content/copy";
+import { useMotionIntensity } from "../../hooks/useMotionIntensity";
+import SectionWrapper from "./SectionWrapper";
 
 /**
- * SERVICES — white editorial chapter.
- * Stacked narrative blocks (not cards): massive numeral, large title,
- * descriptor, single CTA. No grid. No iconography.
+ * STATE 3: MECHANISM
+ *
+ * Objective: Explain system capability through structured fragments.
+ * Experience: Three system pillars as interactive modules, not cards.
+ * Hover: depth lift + directional lighting shift.
+ * Scroll: spacing increases slightly, creating breathing effect.
+ * No click dependency — hover to explore is sufficient.
  */
 export default function Services() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  const headerY = useTransform(scrollYProgress, [0, 1], [60, -60]);
+  const { enterDuration, staggerDelay, enterDistance } = useMotionIntensity();
 
   return (
-    <section
+    <SectionWrapper
       id="services"
-      ref={ref}
-      data-env="light"
-      className="env-light relative px-8 md:px-16 py-40 md:py-64"
+      phase="mechanism"
+      padding="py-32 md:py-48"
+      className="px-6 md:px-12 bg-surface/50"
     >
-      {/* Chapter header */}
-      <motion.div
-        style={{ y: headerY }}
-        className="flex justify-between items-start mb-32 md:mb-48"
-      >
-        <div>
-          <motion.span
-            className="text-[11px] tracking-[0.35em] uppercase text-black/50 mb-12 block"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: DUR.normal }}
-          >
-            Services — 02
-          </motion.span>
-          <div className="overflow-hidden">
-            <motion.h2
-              className="font-display font-bold text-fluid-3xl text-black leading-[0.95] tracking-[-0.035em]"
-              initial={{ y: "105%" }}
-              whileInView={{ y: 0 }}
+      <div className="max-w-7xl mx-auto">
+        {/* Section header */}
+        <div className="mb-24 md:mb-32 grid md:grid-cols-12 gap-8">
+          <div className="md:col-span-5">
+            <motion.div
+              className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-8 flex items-center gap-4"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 1.2, ease: EASE.cinematic }}
+              transition={{ duration: DUR.normal, ease: EASE.cinematic }}
             >
-              Six systems.<br />One strategy.
-            </motion.h2>
+              <div className="h-px w-12 bg-accent/30" />
+              {copy.mechanism.label}
+            </motion.div>
+
+            <div className="overflow-hidden">
+              <motion.h2
+                className="font-display text-fluid-3xl text-off leading-tight tracking-tight"
+                initial={{ y: "105%" }}
+                whileInView={{ y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.08 }}
+              >
+                {copy.mechanism.headline}
+              </motion.h2>
+            </div>
+          </div>
+
+          <div className="md:col-span-6 md:col-start-7">
+            <motion.p
+              className="text-fluid-sm text-light leading-relaxed"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
+            >
+              {copy.mechanism.intro}
+            </motion.p>
           </div>
         </div>
 
-        <motion.p
-          className="hidden md:block max-w-sm text-fluid-sm text-black/65 leading-[1.55] mt-24"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: DUR.slow, delay: 0.25 }}
-        >
-          {copy.mechanism.intro}
-        </motion.p>
-      </motion.div>
-
-      {/* Editorial pillar stack */}
-      <div>
-        {copy.mechanism.pillars.map((pillar, i) => (
-          <PillarRow key={pillar.id} pillar={pillar} index={i} />
-        ))}
+        {/* Three pillars */}
+        <div className="flex flex-col gap-px">
+          {copy.mechanism.pillars.map((pillar, i) => (
+            <PillarModule
+              key={pillar.id}
+              pillar={pillar}
+              index={i}
+              enterDuration={enterDuration}
+              staggerDelay={staggerDelay}
+              enterDistance={enterDistance}
+            />
+          ))}
+        </div>
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
 
-function PillarRow({
+function PillarModule({
   pillar,
   index,
+  enterDuration,
+  staggerDelay,
+  enterDistance,
 }: {
   pillar: typeof copy.mechanism.pillars[number];
   index: number;
+  enterDuration: number;
+  staggerDelay: number;
+  enterDistance: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  const numY = useTransform(scrollYProgress, [0, 1], [40, -40]);
+
+  // Hover micro-depth via spring (no cursor tracking)
+  const hoverY = useSpring(0, SPRING.medium);
+  const hoverScale = useSpring(1, SPRING.medium);
 
   return (
     <motion.div
       ref={ref}
-      className="group relative border-t border-black/15 py-14 md:py-20 grid md:grid-cols-12 gap-8 md:gap-12 items-start"
-      initial={{ opacity: 0, y: 40 }}
+      className="group relative border-t border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
+      style={{ y: hoverY, scale: hoverScale }}
+      onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
+      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
+      initial={{ opacity: 0, y: enterDistance }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: index * 0.06 }}
+      viewport={{ once: true }}
+      transition={{
+        duration: enterDuration,
+        delay: index * staggerDelay * 2,
+        ease: EASE.cinematic,
+      }}
     >
-      {/* Massive numeral */}
-      <motion.div style={{ y: numY }} className="md:col-span-3">
-        <span className="font-display font-light text-[clamp(4rem,9vw,8rem)] text-black/85 leading-none tracking-[-0.04em] block">
-          {pillar.number}
-        </span>
-      </motion.div>
+      <div className="relative py-10 md:py-14 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
+        {/* Number */}
+        <div className="md:col-span-1">
+          <span className="font-mono text-fluid-xs text-mid tracking-widest">
+            {pillar.number}
+          </span>
+        </div>
 
-      {/* Title */}
-      <div className="md:col-span-5">
-        <h3 className="font-display font-semibold text-fluid-xl text-black leading-[1.05] tracking-[-0.02em]">
-          {pillar.title}
-        </h3>
+        {/* Title */}
+        <div className="md:col-span-3">
+          <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-tight">
+            {pillar.title}
+          </h3>
+        </div>
+
+        {/* Definition + Outcome */}
+        <div className="md:col-span-5">
+          <p className="text-fluid-sm text-light leading-relaxed mb-2">
+            {pillar.definition}
+          </p>
+          <p className="font-mono text-fluid-xs text-accent tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold">
+            &rarr; {pillar.outcome}
+          </p>
+        </div>
+
+        {/* Tags + CTA */}
+        <div className="md:col-span-3 flex flex-col items-start md:items-end gap-3">
+          <div className="flex flex-wrap gap-1.5 justify-start md:justify-end">
+            {pillar.tags.map((tag) => (
+              <span
+                key={tag}
+                className="font-mono text-[10px] text-mid border border-border px-2 py-0.5 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Contextual CTA — revealed on hover */}
+          <a
+            href="#contact"
+            className="font-mono text-[10px] text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
+          >
+            {pillar.cta} &rarr;
+          </a>
+        </div>
       </div>
 
-      {/* Descriptor + CTA */}
-      <div className="md:col-span-4 flex flex-col gap-6">
-        <p className="text-fluid-sm text-black/65 leading-[1.55]">
-          {pillar.definition}
-        </p>
-        <a
-          href="#contact"
-          className="self-start text-[12px] tracking-[0.25em] uppercase font-semibold text-black border-b border-black pb-1 hover:opacity-60 transition-opacity duration-300"
-        >
-          Learn more &rarr;
-        </a>
-      </div>
+      {/* Bottom separator */}
+      <div className="h-px bg-border/50 mx-0" />
     </motion.div>
   );
 }
