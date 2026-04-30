@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
-import logo from "../../assets/1mw-logo.svg";
+
 
 const navLinks: { label: string; href: string }[] = [
   { label: "1MW", href: "#" },
