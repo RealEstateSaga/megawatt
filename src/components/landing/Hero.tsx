@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
 import { useSite } from "../../context/SiteContext";
 import { copy } from "../../content/copy";
+import wordmark from "../../assets/1mw-wordmark.svg";
 
 
 export default function Hero() {
@@ -59,15 +60,15 @@ export default function Hero() {
         {/* 1MW wordmark — monumental, the only focal point */}
         <h1 className="mb-12 flex justify-center" aria-label="1MW">
           <div className="overflow-hidden leading-none">
-            <motion.span
-              className="font-display font-bold tracking-tight text-off block leading-[0.85]"
-              style={{ fontSize: "clamp(7rem, 18vw, 18rem)" }}
+            <motion.img
+              src={wordmark}
+              alt="1MW"
+              className="block w-full h-auto mx-auto"
+              style={{ maxWidth: "min(90vw, 1100px)" }}
               initial={{ y: "110%" }}
               animate={{ y: 0 }}
               transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
-            >
-              1MW
-            </motion.span>
+            />
           </div>
         </h1>
 
