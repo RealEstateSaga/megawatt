@@ -96,17 +96,25 @@ body:has(.landing-root) {
   font-family: 'Montserrat', system-ui, sans-serif;
 }
 
-/* ── Fluid type utilities used by the landing components ─────────────── */
+/* ── Fluid type utilities — 1MW monumental editorial scale ────────────── */
 @layer utilities {
-  .text-fluid-xs { font-size: clamp(0.75rem, 1.5vw, 0.875rem); }
-  .text-fluid-sm { font-size: clamp(0.875rem, 1.8vw, 1rem); }
-  .text-fluid-base { font-size: clamp(1rem, 2vw, 1.125rem); }
-  .text-fluid-lg { font-size: clamp(1.125rem, 2.5vw, 1.5rem); }
-  .text-fluid-xl { font-size: clamp(1.5rem, 3.5vw, 2.25rem); }
-  .text-fluid-2xl { font-size: clamp(2rem, 5vw, 3.5rem); }
-  .text-fluid-3xl { font-size: clamp(2.5rem, 7vw, 5rem); }
-  .text-fluid-4xl { font-size: clamp(3rem, 10vw, 8rem); }
-  .text-fluid-5xl { font-size: clamp(4rem, 14vw, 12rem); }
+  /* Micro labels (Marketing & Advertising, mono eyebrows, tags) */
+  .text-fluid-xs { font-size: clamp(1rem, 1.4vw, 1.4rem); }
+  /* Service body / process body / inline emphasis */
+  .text-fluid-sm { font-size: clamp(1.2rem, 1.8vw, 1.8rem); line-height: 1.6; }
+  /* Supporting section intro text — editorial */
+  .text-fluid-base { font-size: clamp(1.4rem, 2.5vw, 2.5rem); line-height: 1.45; }
+  /* Footer brand / process step titles */
+  .text-fluid-lg { font-size: clamp(2rem, 4vw, 4rem); }
+  /* Service titles — chapter headings */
+  .text-fluid-xl { font-size: clamp(2.4rem, 4vw, 5rem); }
+  /* CTA supporting text size & medium statements */
+  .text-fluid-2xl { font-size: clamp(3rem, 8vw, 8rem); }
+  /* Section headings: Services, About, Process */
+  .text-fluid-3xl { font-size: clamp(4rem, 10vw, 10rem); }
+  /* Hero / CTA monumental */
+  .text-fluid-4xl { font-size: clamp(7rem, 18vw, 18rem); }
+  .text-fluid-5xl { font-size: clamp(7rem, 18vw, 18rem); }
 }
 
 /* Selection inside landing — black on white */
