@@ -125,7 +125,7 @@ function StepItem({ step, index }: { step: (typeof steps)[0]; index: number }) {
   return (
     <motion.div
       ref={ref}
-      className="flex gap-8 md:gap-16 pb-16 last:pb-0 group transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)]"
+      className="flex gap-8 md:gap-16 pb-24 md:pb-32 last:pb-0 group transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)]"
       style={{ y, scale }}
       onMouseEnter={() => { y.set(-4); scale.set(1.01); }}
       onMouseLeave={() => { y.set(0); scale.set(1); }}
