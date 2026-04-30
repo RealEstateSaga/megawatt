@@ -48,13 +48,13 @@ export default function Hero() {
         style={{ y, opacity, scale }}
       >
         {/* 1MW wordmark — monumental, the only focal point */}
-        <h1 className="mb-12 flex justify-center" aria-label="1MW">
-          <div className="overflow-hidden leading-none">
+        <h1 className="mb-12 flex justify-center w-full" aria-label="1MW">
+          <div className="overflow-hidden leading-none w-full flex justify-center">
             <motion.img
               src={wordmark}
               alt="1MW"
-              className="block w-full h-auto mx-auto"
-              style={{ maxWidth: "min(90vw, 1100px)" }}
+              className="block h-auto mx-auto"
+              style={{ width: "min(82vw, 1100px)", maxWidth: "100%" }}
               initial={{ y: "110%" }}
               animate={{ y: 0 }}
               transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}

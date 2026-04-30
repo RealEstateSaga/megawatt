@@ -27,7 +27,7 @@ export default function About() {
 
         <div className="grid md:grid-cols-12 gap-12 md:gap-0 items-start">
           {/* Left — primary conceptual statement */}
-          <motion.div className="md:col-span-7" style={{ y: leftY }}>
+          <motion.div className="md:col-span-7 text-center md:text-left" style={{ y: leftY }}>
             {/* Primary statement — large, clip reveal */}
             <div className="overflow-hidden mb-6">
               <motion.h2
