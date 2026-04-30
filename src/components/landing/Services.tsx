@@ -100,24 +100,10 @@ function PillarModule({
         </div>
 
         {/* Definition */}
-        <div className="md:col-span-5">
+        <div className="md:col-span-7">
           <p className="text-fluid-sm text-light leading-relaxed">
             {pillar.definition}
           </p>
-        </div>
-
-        {/* Tags */}
-        <div className="md:col-span-2 flex flex-col items-start md:items-end gap-5">
-          <div className="flex flex-wrap gap-2 justify-start md:justify-end">
-            {pillar.tags.map((tag) => (
-              <span
-                key={tag}
-                className="font-mono text-fluid-xs text-mid border border-border px-3 py-1 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
         </div>
 
       </div>
