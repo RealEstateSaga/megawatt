@@ -118,45 +118,37 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-16 md:py-24 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
-        {/* Number — monumental */}
-        <div className="md:col-span-2">
-          <span
-            className="font-display font-bold text-mid/70 leading-none block"
-            style={{ fontSize: "clamp(4rem, 8vw, 8rem)" }}
-          >
+      <div className="relative py-16 md:py-20 px-2 md:px-0 grid md:grid-cols-12 gap-y-6 gap-x-12 items-start">
+        {/* Title + small numeric label */}
+        <div className="md:col-span-5">
+          <span className="font-mono text-fluid-xs text-mid tracking-[0.3em] uppercase block mb-4">
             {pillar.number}
           </span>
-        </div>
-
-        {/* Title */}
-        <div className="md:col-span-3">
           <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight">
             {pillar.title}
           </h3>
         </div>
 
         {/* Definition + Outcome */}
-        <div className="md:col-span-4">
-          <p className="text-fluid-sm text-light leading-relaxed mb-4">
+        <div className="md:col-span-5">
+          <p className="text-fluid-sm text-light leading-relaxed mb-5">
             {pillar.definition}
           </p>
           <p
             className="font-display text-accent tracking-tight opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold leading-snug"
-            style={{ fontSize: "clamp(1.2rem, 2vw, 2rem)" }}
+            style={{ fontSize: "clamp(1.1rem, 1.6vw, 1.6rem)" }}
           >
             &rarr; {pillar.outcome}
           </p>
         </div>
 
         {/* Tags + CTA */}
-        <div className="md:col-span-3 flex flex-col items-start md:items-end gap-5">
+        <div className="md:col-span-2 flex flex-col items-start md:items-end gap-5">
           <div className="flex flex-wrap gap-2 justify-start md:justify-end">
             {pillar.tags.map((tag) => (
               <span
                 key={tag}
-                className="font-mono text-mid border border-border px-3 py-1 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
-                style={{ fontSize: "clamp(1rem, 1.4vw, 1.4rem)" }}
+                className="font-mono text-fluid-xs text-mid border border-border px-3 py-1 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
               >
                 {tag}
               </span>
