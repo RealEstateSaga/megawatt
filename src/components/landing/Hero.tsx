@@ -56,24 +56,26 @@ export default function Hero() {
           {copy.hero.system}
         </motion.p>
 
-        {/* 1MW logo — the only focal point */}
-        <h1 className="mb-10 flex justify-center" aria-label="1MW">
-          <div className="overflow-hidden">
-            <motion.img
-              src={logo}
-              alt="1MW"
-              className="h-12 w-auto block"
+        {/* 1MW wordmark — monumental, the only focal point */}
+        <h1 className="mb-12 flex justify-center" aria-label="1MW">
+          <div className="overflow-hidden leading-none">
+            <motion.span
+              className="font-display font-bold tracking-tight text-off block leading-[0.85]"
+              style={{ fontSize: "clamp(7rem, 18vw, 18rem)" }}
               initial={{ y: "110%" }}
               animate={{ y: 0 }}
               transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
-            />
+            >
+              1MW
+            </motion.span>
           </div>
         </h1>
 
-        {/* Category subtext — single sentence, swaps by intensity */}
+        {/* Category subtext — large statement */}
         <motion.p
           key={scrollIntensity}
-          className="font-mono text-fluid-sm text-light max-w-lg mx-auto leading-relaxed tracking-wide"
+          className="font-display text-off max-w-4xl mx-auto leading-[1.1] tracking-tight"
+          style={{ fontSize: "clamp(2rem, 5vw, 5rem)" }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 0.85 }}
