@@ -92,23 +92,17 @@ function PillarModule({
       }}
     >
       <div className="relative py-10 md:py-12 px-2 md:px-0 grid md:grid-cols-12 gap-y-4 gap-x-12 items-center">
-        {/* Title + small numeric label */}
+        {/* Title */}
         <div className="md:col-span-5">
           <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight">
             {pillar.title}
           </h3>
         </div>
 
-        {/* Definition + Outcome */}
+        {/* Definition */}
         <div className="md:col-span-5">
-          <p className="text-fluid-sm text-light leading-relaxed mb-4">
+          <p className="text-fluid-sm text-light leading-relaxed">
             {pillar.definition}
-          </p>
-          <p
-            className="font-display text-accent tracking-tight opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold leading-snug"
-            style={{ fontSize: "clamp(1.1rem, 1.6vw, 1.6rem)" }}
-          >
-            &rarr; {pillar.outcome}
           </p>
         </div>
 
@@ -124,6 +118,16 @@ function PillarModule({
               </span>
             ))}
           </div>
+        </div>
+
+        {/* Outcome — full-width centered overlay on hover */}
+        <div className="col-span-12 pointer-events-none absolute inset-0 flex items-center justify-center px-6">
+          <p
+            className="font-display text-accent tracking-tight text-center opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold leading-snug bg-surface/85 backdrop-blur-sm px-6 py-3"
+            style={{ fontSize: "clamp(1.2rem, 1.9vw, 1.9rem)" }}
+          >
+            &rarr; {pillar.outcome}
+          </p>
         </div>
       </div>
 
