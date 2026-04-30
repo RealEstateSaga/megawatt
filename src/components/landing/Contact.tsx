@@ -1,158 +1,106 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { EASE, DUR, SPRING } from "../../engine/motion";
-import { useSite } from "../../context/SiteContext";
-import { copy } from "../../content/copy";
-import { ctaClasses } from "../../content/ctaConfig";
-import SectionWrapper from "./SectionWrapper";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { EASE, DUR } from "../../engine/motion";
 
 /**
- * STATE 5: CONVERSION FIELD
- *
- * Objective: Capture intent without interrupting flow.
- * CTAs are not centralized — they're distributed. This is the final exit.
- * CTA intensity increases with scroll depth: soft → neutral → direct.
- * "No interaction should ever break readability."
+ * CONTACT — black editorial chapter, the final monument.
+ * Huge declarative statement, single email, single CTA block.
  */
 export default function Contact() {
-  const { scrollIntensity } = useSite();
   const ref = useRef<HTMLDivElement>(null);
-
-  // Local scroll progress within the section drives CTA pulse intensity
-  const { scrollYProgress: sectionProgress } = useScroll({
+  const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start end", "end end"],
+    offset: ["start end", "end start"],
   });
-
-  // No glow in lightfield mode — keep transform reference for layout parity only
-  const ctaGlow = useTransform(sectionProgress, [0, 1], [0, 0]);
-
-  // Single primary statement (no scroll-intensity alt)
-  const subline = copy.conversion.primary;
+  const titleY = useTransform(scrollYProgress, [0, 1], [80, -40]);
+  const bottomY = useTransform(scrollYProgress, [0, 1], [40, -20]);
 
   return (
-    <SectionWrapper
+    <section
       id="contact"
-      phase="conversion"
-      padding="py-40 md:py-64"
-      className="px-6 md:px-12 bg-surface/30 border-t border-border/40"
+      ref={ref}
+      data-env="dark"
+      className="env-dark relative px-8 md:px-16 py-40 md:py-64 overflow-hidden"
     >
-      <div ref={ref} className="max-w-5xl mx-auto text-center">
-        {/* Section label */}
-        <motion.div
-          className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-12 flex items-center justify-center gap-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: DUR.normal }}
-        >
-          <div className="h-px w-8 bg-accent" />
-          {copy.conversion.label}
-          <div className="h-px w-8 bg-accent" />
-        </motion.div>
+      <motion.div
+        className="flex justify-between items-start mb-32 md:mb-48"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: DUR.slow }}
+      >
+        <span className="text-[11px] tracking-[0.35em] uppercase text-white/50">
+          Contact — 05
+        </span>
+        <span className="hidden md:block text-[11px] tracking-[0.35em] uppercase text-white/50">
+          hello@1mw.com
+        </span>
+      </motion.div>
 
-        {/* Primary statement */}
+      <motion.div style={{ y: titleY }}>
+        <div className="overflow-hidden">
+          <motion.h2
+            className="font-display font-bold text-fluid-4xl text-white leading-[0.92] tracking-[-0.04em]"
+            initial={{ y: "105%" }}
+            whileInView={{ y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.3, ease: EASE.cinematic }}
+          >
+            Start the<br />conversation.
+          </motion.h2>
+        </div>
+
         <motion.p
-          key={scrollIntensity}
-          className="font-display text-fluid-2xl text-off leading-tight mb-16 max-w-2xl mx-auto"
-          initial={{ opacity: 0, y: 30 }}
+          className="mt-12 md:mt-16 text-fluid-lg text-white/70 max-w-2xl leading-[1.3] tracking-tight"
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: DUR.cinematic, ease: EASE.cinematic }}
+          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.25 }}
         >
-          {subline}
+          One conversation to map your next move.
         </motion.p>
+      </motion.div>
 
-        {/* Three contextual actions — distributed intensity */}
+      <motion.div
+        style={{ y: bottomY }}
+        className="mt-32 md:mt-56 grid md:grid-cols-12 gap-12 items-end"
+      >
         <motion.div
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+          className="md:col-span-6"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
-        >
-          {/* Primary action — direct, editorial */}
-          <motion.div>
-            <MagneticLink href={copy.conversion.actions[0].href} className={ctaClasses("direct")}>
-              {copy.conversion.actions[0].label}
-              <motion.span
-                className="inline-block ml-2"
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity }}
-              >
-                &rarr;
-              </motion.span>
-            </MagneticLink>
-          </motion.div>
-
-          {/* Secondary action — outline */}
-          <MagneticLink href={copy.conversion.actions[1].href} className={ctaClasses("outline")}>
-            {copy.conversion.actions[1].label}
-          </MagneticLink>
-
-          {/* Tertiary action — ghost / text only */}
-          <a
-            href={copy.conversion.actions[2].href}
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase border-b border-black/40 hover:border-black pb-0.5 font-semibold"
-          >
-            {copy.conversion.actions[2].label}
-          </a>
-        </motion.div>
-
-        {/* Availability signal */}
-        {/* Availability signal removed */}
-
-        {/* Email — always visible as a fallback */}
-        <motion.div
-          className="mt-6"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.65 }}
+          transition={{ duration: DUR.slow, delay: 0.3 }}
         >
           <a
             href="mailto:hello@1mw.com"
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-wider font-medium"
+            className="font-display text-fluid-2xl text-white tracking-tight leading-none hover:opacity-60 transition-opacity duration-300 inline-block border-b border-white/40 pb-2"
           >
             hello@1mw.com
           </a>
         </motion.div>
-      </div>
-    </SectionWrapper>
-  );
-}
 
-function MagneticLink({
-  children,
-  href,
-  className,
-}: {
-  children: React.ReactNode;
-  href: string;
-  className: string;
-}) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const x = useSpring(0, SPRING.loose);
-  const y = useSpring(0, SPRING.loose);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    x.set((e.clientX - (rect.left + rect.width / 2)) * 0.35);
-    y.set((e.clientY - (rect.top + rect.height / 2)) * 0.35);
-  };
-
-  return (
-    <motion.a
-      ref={ref}
-      href={href}
-      style={{ x, y }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
-      className={`inline-flex items-center ${className}`}
-    >
-      {children}
-    </motion.a>
+        <motion.div
+          className="md:col-span-4 md:col-start-9 flex flex-col gap-4 items-start"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: DUR.slow, delay: 0.45 }}
+        >
+          <a
+            href="mailto:hello@1mw.com"
+            className="inline-flex items-center gap-3 bg-white text-black px-8 py-5 text-[12px] tracking-[0.25em] uppercase font-semibold hover:bg-white/85 transition-colors duration-300"
+          >
+            Start a Project &rarr;
+          </a>
+          <a
+            href="#services"
+            className="text-[12px] tracking-[0.25em] uppercase font-semibold text-white/70 hover:text-white border-b border-white/40 pb-1 transition-colors duration-300"
+          >
+            View Services
+          </a>
+        </motion.div>
+      </motion.div>
+    </section>
   );
 }

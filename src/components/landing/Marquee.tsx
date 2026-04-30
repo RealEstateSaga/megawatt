@@ -4,28 +4,37 @@ const items = [
   "Strategy", "Web Design", "Cloud Infrastructure", "Performance Marketing",
   "SEO", "Paid Media", "CRM & Automation", "Email Marketing",
   "Systems Integration", "AI",
-  "Strategy", "Web Design", "Cloud Infrastructure", "Performance Marketing",
-  "SEO", "Paid Media", "CRM & Automation", "Email Marketing",
-  "Systems Integration", "AI",
 ];
 
+/**
+ * Editorial divider marquee — sits between the white Hero and the dark About.
+ * Black bar with white type creates the first environmental inversion.
+ */
 export default function Marquee() {
   const x = useMotionValue(0);
-  const speed = 0.8;
+  const speed = 0.6;
 
   useAnimationFrame(() => {
     const current = x.get();
     x.set(current - speed);
-    if (current < -1200) x.set(0);
+    if (current < -1600) x.set(0);
   });
 
+  const loop = [...items, ...items, ...items];
+
   return (
-    <div className="py-8 border-y border-border overflow-hidden bg-surface">
-      <motion.div className="flex gap-16 whitespace-nowrap" style={{ x }}>
-        {[...items, ...items].map((item, i) => (
-          <span key={i} className="font-mono text-fluid-xs text-black tracking-widest uppercase flex items-center gap-16 font-medium">
+    <div
+      data-env="dark"
+      className="env-dark py-10 overflow-hidden"
+    >
+      <motion.div className="flex gap-20 whitespace-nowrap" style={{ x }}>
+        {loop.map((item, i) => (
+          <span
+            key={i}
+            className="text-[13px] tracking-[0.3em] uppercase text-white flex items-center gap-20 font-medium"
+          >
             {item}
-            <span className="text-black">◆</span>
+            <span className="text-white/40">◆</span>
           </span>
         ))}
       </motion.div>
