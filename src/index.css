@@ -98,15 +98,25 @@ body:has(.landing-root) {
 
 /* ── Fluid type utilities used by the landing components ─────────────── */
 @layer utilities {
-  .text-fluid-xs { font-size: clamp(0.75rem, 1.5vw, 0.875rem); }
-  .text-fluid-sm { font-size: clamp(0.875rem, 1.8vw, 1rem); }
-  .text-fluid-base { font-size: clamp(1rem, 2vw, 1.125rem); }
-  .text-fluid-lg { font-size: clamp(1.125rem, 2.5vw, 1.5rem); }
-  .text-fluid-xl { font-size: clamp(1.5rem, 3.5vw, 2.25rem); }
-  .text-fluid-2xl { font-size: clamp(2rem, 5vw, 3.5rem); }
-  .text-fluid-3xl { font-size: clamp(2.5rem, 7vw, 5rem); }
-  .text-fluid-4xl { font-size: clamp(3rem, 10vw, 8rem); }
-  .text-fluid-5xl { font-size: clamp(4rem, 14vw, 12rem); }
+  /* Editorial scale — typography as primary architecture */
+  .text-fluid-xs   { font-size: clamp(0.8125rem, 0.95vw, 1rem);   letter-spacing: 0.02em; }
+  .text-fluid-sm   { font-size: clamp(1rem, 1.25vw, 1.25rem);     line-height: 1.55; }
+  .text-fluid-base { font-size: clamp(1.125rem, 1.5vw, 1.5rem);   line-height: 1.5; }
+  .text-fluid-lg   { font-size: clamp(1.5rem, 2.4vw, 2rem);       line-height: 1.35; letter-spacing: -0.01em; }
+  .text-fluid-xl   { font-size: clamp(1.75rem, 3vw, 2.625rem);    line-height: 1.2;  letter-spacing: -0.015em; }
+  .text-fluid-2xl  { font-size: clamp(2.25rem, 4.5vw, 4rem);      line-height: 1.05; letter-spacing: -0.02em; }
+  .text-fluid-3xl  { font-size: clamp(3.5rem, 8vw, 7.5rem);       line-height: 0.96; letter-spacing: -0.035em; }
+  .text-fluid-4xl  { font-size: clamp(4.5rem, 12vw, 11rem);       line-height: 0.92; letter-spacing: -0.04em; }
+  .text-fluid-5xl  { font-size: clamp(6rem, 18vw, 18rem);         line-height: 0.88; letter-spacing: -0.05em; }
+
+  /* Editorial section environments — black/white inversion */
+  .env-light { background: #ffffff; color: #000000; }
+  .env-dark  { background: #000000; color: #ffffff; }
+  .env-dark .text-light { color: #B5B5B5; }
+  .env-dark .text-mid   { color: #8A8A8A; }
+  .env-dark .text-off   { color: #ffffff; }
+  .env-dark .border-border { border-color: rgba(255,255,255,0.14); }
+  .env-dark .bg-bg      { background: #000000; }
 }
 
 /* Selection inside landing — black on white */
