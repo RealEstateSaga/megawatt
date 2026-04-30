@@ -38,19 +38,6 @@ export default function Contact() {
       className="px-6 md:px-12 bg-surface/30 border-t border-border/40"
     >
       <div ref={ref} className="max-w-5xl mx-auto text-center">
-        {/* Section label */}
-        <motion.div
-          className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-12 flex items-center justify-center gap-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: DUR.normal }}
-        >
-          <div className="h-px w-8 bg-accent" />
-          {copy.conversion.label}
-          <div className="h-px w-8 bg-accent" />
-        </motion.div>
-
         {/* Primary statement — monumental CTA headline */}
         <motion.p
           key={scrollIntensity}
