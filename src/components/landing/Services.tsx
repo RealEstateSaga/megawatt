@@ -91,7 +91,7 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-10 md:py-12 px-2 md:px-0 grid md:grid-cols-12 gap-y-4 gap-x-12 items-start">
+      <div className="relative py-10 md:py-12 px-2 md:px-0 grid md:grid-cols-12 gap-y-4 gap-x-12 items-center">
         {/* Title + small numeric label */}
         <div className="md:col-span-5">
           <span className="font-mono text-fluid-xs text-mid tracking-[0.3em] uppercase block mb-3">
