@@ -65,24 +65,6 @@ export default function Process() {
           ))}
         </div>
 
-        {/* Inline contextual CTA */}
-        <motion.div
-          className="mt-16 text-center"
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: DUR.normal, ease: EASE.cinematic, delay: 0.2 }}
-        >
-          <p className="font-mono text-fluid-xs text-mid mb-2">
-            What's next?
-          </p>
-          <a
-            href="#contact"
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 tracking-widest uppercase border-b border-black/40 hover:border-black pb-0.5 font-semibold"
-          >
-            Start The Conversation &rarr;
-          </a>
-        </motion.div>
       </div>
     </SectionWrapper>
   );
