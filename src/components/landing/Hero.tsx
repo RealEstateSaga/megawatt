@@ -47,16 +47,6 @@ export default function Hero() {
         className="relative z-20 text-center px-6 max-w-5xl mx-auto"
         style={{ y, opacity, scale }}
       >
-        {/* System label — minimal, mono, above the headline */}
-        <motion.p
-          className="font-mono text-fluid-xs text-[#2A2A2A] tracking-[0.3em] uppercase mb-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
-        >
-          {copy.hero.system}
-        </motion.p>
-
         {/* 1MW wordmark — monumental, the only focal point */}
         <h1 className="mb-12 flex justify-center" aria-label="1MW">
           <div className="overflow-hidden leading-none">
@@ -81,7 +71,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 0.85 }}
         >
-          {subtext}
+          {copy.hero.system}
         </motion.p>
       </motion.div>
 
