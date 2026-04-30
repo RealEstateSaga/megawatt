@@ -104,7 +104,7 @@ function PillarModule({
 
         {/* Definition + Outcome */}
         <div className="md:col-span-5">
-          <p className="text-fluid-sm text-light leading-relaxed mb-5">
+          <p className="text-fluid-sm text-light leading-relaxed mb-4">
             {pillar.definition}
           </p>
           <p
@@ -115,7 +115,7 @@ function PillarModule({
           </p>
         </div>
 
-        {/* Tags + CTA */}
+        {/* Tags */}
         <div className="md:col-span-2 flex flex-col items-start md:items-end gap-5">
           <div className="flex flex-wrap gap-2 justify-start md:justify-end">
             {pillar.tags.map((tag) => (
@@ -127,14 +127,6 @@ function PillarModule({
               </span>
             ))}
           </div>
-
-          {/* Contextual CTA — revealed on hover */}
-          <a
-            href="#contact"
-            className="font-mono text-fluid-xs text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
-          >
-            {pillar.cta} &rarr;
-          </a>
         </div>
       </div>
 
