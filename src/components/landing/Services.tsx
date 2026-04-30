@@ -21,12 +21,12 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="pt-12 md:pt-16 pb-24 md:pb-32"
+      padding="pt-6 md:pt-8 pb-20 md:pb-28"
       className="px-6 md:px-12 bg-surface/50"
     >
       <div className="max-w-7xl mx-auto">
         {/* Centered intro statement */}
-        <div className="mb-16 md:mb-20 max-w-5xl mx-auto text-center">
+        <div className="mb-10 md:mb-14 max-w-5xl mx-auto text-center">
           <motion.p
             className="font-display text-fluid-2xl text-off leading-[1.1] tracking-tight"
             initial={{ opacity: 0, y: 24 }}
