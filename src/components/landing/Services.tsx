@@ -118,27 +118,33 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-10 md:py-14 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
-        {/* Number */}
-        <div className="md:col-span-1">
-          <span className="font-mono text-fluid-xs text-mid tracking-widest">
+      <div className="relative py-16 md:py-24 px-2 md:px-0 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
+        {/* Number — monumental */}
+        <div className="md:col-span-2">
+          <span
+            className="font-display font-bold text-mid/70 leading-none block"
+            style={{ fontSize: "clamp(4rem, 8vw, 8rem)" }}
+          >
             {pillar.number}
           </span>
         </div>
 
         {/* Title */}
         <div className="md:col-span-3">
-          <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-tight">
+          <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight">
             {pillar.title}
           </h3>
         </div>
 
         {/* Definition + Outcome */}
-        <div className="md:col-span-5">
-          <p className="text-fluid-sm text-light leading-relaxed mb-2">
+        <div className="md:col-span-4">
+          <p className="text-fluid-sm text-light leading-relaxed mb-4">
             {pillar.definition}
           </p>
-          <p className="font-mono text-fluid-xs text-accent tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold">
+          <p
+            className="font-display text-accent tracking-tight opacity-0 group-hover:opacity-100 transition-opacity duration-400 font-semibold leading-snug"
+            style={{ fontSize: "clamp(1.2rem, 2vw, 2rem)" }}
+          >
             &rarr; {pillar.outcome}
           </p>
         </div>

@@ -31,7 +31,7 @@ export default function About() {
             {/* Primary statement — large, clip reveal */}
             <div className="overflow-hidden mb-6">
               <motion.h2
-                className="font-display text-fluid-3xl text-off leading-[1.05] tracking-tight"
+                className="font-display text-fluid-2xl text-off leading-[1.0] tracking-tight"
                 initial={{ y: "105%" }}
                 whileInView={{ y: 0 }}
                 viewport={{ once: true }}
@@ -43,7 +43,7 @@ export default function About() {
 
             <div className="overflow-hidden">
               <motion.h2
-                className="font-display text-fluid-3xl text-off/80 leading-[1.05] tracking-tight italic"
+                className="font-display text-fluid-2xl text-off/80 leading-[1.0] tracking-tight italic"
                 initial={{ y: "105%" }}
                 whileInView={{ y: 0 }}
                 viewport={{ once: true }}
