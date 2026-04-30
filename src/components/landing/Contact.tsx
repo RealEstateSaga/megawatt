@@ -50,56 +50,16 @@ export default function Contact() {
           {subline}
         </motion.p>
 
-        {/* Three contextual actions — distributed intensity */}
+        {/* Email — primary contact, scaled up to replace removed CTAs */}
         <motion.div
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
         >
-          {/* Primary action — direct, editorial */}
-          <motion.div>
-            <MagneticLink href={copy.conversion.actions[0].href} className={ctaClasses("direct")}>
-              {copy.conversion.actions[0].label}
-              <motion.span
-                className="inline-block ml-2"
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity }}
-              >
-                &rarr;
-              </motion.span>
-            </MagneticLink>
-          </motion.div>
-
-          {/* Secondary action — outline */}
-          <MagneticLink href={copy.conversion.actions[1].href} className={ctaClasses("outline")}>
-            {copy.conversion.actions[1].label}
-          </MagneticLink>
-
-          {/* Tertiary action — ghost / text only */}
-          <a
-            href={copy.conversion.actions[2].href}
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase border-b border-black/40 hover:border-black pb-0.5 font-semibold"
-          >
-            {copy.conversion.actions[2].label}
-          </a>
-        </motion.div>
-
-        {/* Availability signal */}
-        {/* Availability signal removed */}
-
-        {/* Email — always visible as a fallback */}
-        <motion.div
-          className="mt-6"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.65 }}
-        >
           <a
             href="mailto:hello@1mw.com"
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-wider font-medium"
+            className="font-display text-fluid-xl text-[#111111] hover:text-black transition-colors duration-300 tracking-tight font-medium"
           >
             hello@1mw.com
           </a>
