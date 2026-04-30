@@ -74,7 +74,7 @@ export default function Process() {
           transition={{ duration: DUR.normal, ease: EASE.cinematic, delay: 0.2 }}
         >
           <p className="font-mono text-fluid-xs text-mid mb-2">
-            Want to map this to your business?
+            What's next?
           </p>
           <a
             href="#contact"

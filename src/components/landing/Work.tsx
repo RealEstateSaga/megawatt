@@ -12,16 +12,6 @@ export default function Work() {
     <section id="work" className="py-48 md:py-72 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="mb-20">
-          <motion.div
-            className="font-mono text-fluid-xs text-accent tracking-widest uppercase mb-4 flex items-center gap-3"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: DUR.normal, ease: EASE.cinematic }}
-          >
-            <div className="h-px w-8 bg-accent" />
-            About
-          </motion.div>
           <motion.h2
             className="font-display text-fluid-3xl text-off leading-tight"
             initial={{ opacity: 0, y: 30 }}
