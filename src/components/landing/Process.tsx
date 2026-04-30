@@ -1,6 +1,7 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useInView, useSpring } from "framer-motion";
+import { motion, useSpring } from "framer-motion";
 import { EASE, DUR, SPRING } from "../../engine/motion";
+import SectionWrapper from "./SectionWrapper";
 
 const steps = [
   {
@@ -36,68 +37,41 @@ const steps = [
 ];
 
 export default function Process() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 0.8", "end 0.2"],
-  });
-  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
   return (
-    <section id="process" ref={ref} className="py-48 md:py-72 px-6 md:px-12 bg-surface">
+    <SectionWrapper
+      id="process"
+      phase="mechanism"
+      padding="pt-6 md:pt-8 pb-20 md:pb-28"
+      className="px-6 md:px-12 bg-surface"
+    >
       <div className="max-w-7xl mx-auto">
-        <div className="mb-20">
-          <motion.div
-            className="font-mono text-fluid-xs text-accent tracking-widest uppercase mb-4 flex items-center gap-3"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: DUR.normal, ease: EASE.cinematic }}
-          >
-            <div className="h-px w-8 bg-accent" />
-            How We Work
-          </motion.div>
-          <motion.h2
-            className="font-display text-fluid-3xl text-off leading-tight"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.1 }}
-          >
-            Process
-          </motion.h2>
+        {/* Centered intro statement */}
+        <div className="mb-10 md:mb-14 max-w-5xl mx-auto text-center">
           <motion.p
-            className="mt-6 text-fluid-sm text-light leading-relaxed max-w-2xl"
-            initial={{ opacity: 0, y: 20 }}
+            className="font-display text-fluid-2xl text-off leading-[1.1] tracking-tight"
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
+            transition={{ duration: DUR.cinematic, ease: EASE.cinematic }}
           >
             A clear process built to move from strategy to execution without wasted motion.
           </motion.p>
         </div>
 
-        <div className="relative flex flex-col gap-0">
-          {/* Animated timeline line */}
-          <div className="absolute left-[27px] md:left-[27px] top-0 bottom-0 w-px bg-border">
-            <motion.div
-              className="absolute top-0 left-0 w-full bg-accent"
-              style={{ height: lineHeight }}
-            />
-          </div>
-
+        {/* Steps */}
+        <div className="flex flex-col gap-px">
           {steps.map((step, i) => (
-            <StepItem key={step.number} step={step} index={i} />
+            <StepModule key={step.number} step={step} index={i} />
           ))}
         </div>
 
         {/* Inline contextual CTA */}
         <motion.div
-          className="mt-16 ml-[calc(19px+2rem)] md:ml-[calc(23px+4rem)] border-l border-accent pl-4"
-          initial={{ opacity: 0, x: -10 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          className="mt-16 text-center"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: DUR.normal, ease: EASE.cinematic, delay: 0.3 }}
+          transition={{ duration: DUR.normal, ease: EASE.cinematic, delay: 0.2 }}
         >
           <p className="font-mono text-fluid-xs text-mid mb-2">
             Want to map this to your business?
@@ -110,49 +84,47 @@ export default function Process() {
           </a>
         </motion.div>
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
 
-function StepItem({ step, index }: { step: (typeof steps)[0]; index: number }) {
+function StepModule({ step, index }: { step: (typeof steps)[number]; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-20% 0px" });
-
-  // Micro-depth: subtle lift on hover via springs
-  const y = useSpring(0, SPRING.medium);
-  const scale = useSpring(1, SPRING.medium);
+  const hoverY = useSpring(0, SPRING.medium);
+  const hoverScale = useSpring(1, SPRING.medium);
 
   return (
     <motion.div
       ref={ref}
-      className="flex gap-8 md:gap-16 pb-24 md:pb-32 last:pb-0 group transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.10)]"
-      style={{ y, scale }}
-      onMouseEnter={() => { y.set(-4); scale.set(1.01); }}
-      onMouseLeave={() => { y.set(0); scale.set(1); }}
-      initial={{ opacity: 0, x: -20 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
+      className="group relative border-t border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
+      style={{ y: hoverY, scale: hoverScale }}
+      onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
+      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={{ duration: DUR.slow, delay: index * 0.06, ease: EASE.cinematic }}
     >
-      {/* Step dot */}
-      <div className="relative flex-shrink-0 mt-3">
-        <motion.div
-          className="w-14 h-14 rounded-full border border-border flex items-center justify-center bg-surface z-10 relative group-hover:bg-bg transition-colors duration-300"
-          animate={inView ? { borderColor: "#000000" } : {}}
-          transition={{ duration: DUR.normal, delay: 0.3 }}
-        >
-          <span className="font-mono text-xs text-accent">{step.number}</span>
-        </motion.div>
+      <div className="relative py-10 md:py-12 px-2 md:px-0 grid md:grid-cols-12 gap-y-4 gap-x-12 items-center">
+        {/* Title + numeric label */}
+        <div className="md:col-span-5">
+          <span className="font-mono text-fluid-xs text-mid tracking-[0.3em] uppercase block mb-3">
+            {step.number}
+          </span>
+          <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight">
+            {step.title}
+          </h3>
+        </div>
+
+        {/* Description */}
+        <div className="md:col-span-7">
+          <p className="text-fluid-sm text-light leading-relaxed">
+            {step.description}
+          </p>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="pt-2">
-        <h3 className="font-display text-fluid-lg text-off mb-5 group-hover:text-accent transition-colors duration-300 leading-[1.05] tracking-tight">
-          {step.title}
-        </h3>
-        <p className="text-fluid-sm text-light leading-relaxed max-w-2xl">
-          {step.description}
-        </p>
-      </div>
+      <div className="h-px bg-border/50 mx-0" />
     </motion.div>
   );
 }
