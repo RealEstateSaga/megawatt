@@ -150,12 +150,13 @@ function PillarModule({
         </div>
 
         {/* Tags + CTA */}
-        <div className="md:col-span-3 flex flex-col items-start md:items-end gap-3">
-          <div className="flex flex-wrap gap-1.5 justify-start md:justify-end">
+        <div className="md:col-span-3 flex flex-col items-start md:items-end gap-5">
+          <div className="flex flex-wrap gap-2 justify-start md:justify-end">
             {pillar.tags.map((tag) => (
               <span
                 key={tag}
-                className="font-mono text-[10px] text-mid border border-border px-2 py-0.5 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
+                className="font-mono text-mid border border-border px-3 py-1 tracking-wider uppercase group-hover:border-accent group-hover:text-accent transition-colors duration-400"
+                style={{ fontSize: "clamp(1rem, 1.4vw, 1.4rem)" }}
               >
                 {tag}
               </span>
@@ -165,7 +166,7 @@ function PillarModule({
           {/* Contextual CTA — revealed on hover */}
           <a
             href="#contact"
-            className="font-mono text-[10px] text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
+            className="font-mono text-fluid-xs text-mid hover:text-accent tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 font-semibold"
           >
             {pillar.cta} &rarr;
           </a>
