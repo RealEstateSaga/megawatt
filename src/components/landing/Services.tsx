@@ -21,48 +21,21 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="py-48 md:py-72"
+      padding="py-24 md:py-32"
       className="px-6 md:px-12 bg-surface/50"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Section header */}
-        <div className="mb-24 md:mb-32 grid md:grid-cols-12 gap-8">
-          <div className="md:col-span-5">
-            <motion.div
-              className="font-mono text-fluid-xs text-accent tracking-[0.3em] uppercase mb-8 flex items-center gap-4"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: DUR.normal, ease: EASE.cinematic }}
-            >
-              <div className="h-px w-12 bg-accent/30" />
-              {copy.mechanism.label}
-            </motion.div>
-
-            <div className="overflow-hidden">
-              <motion.h2
-                className="font-display text-fluid-3xl text-off leading-tight tracking-tight"
-                initial={{ y: "105%" }}
-                whileInView={{ y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.08 }}
-              >
-                {copy.mechanism.headline}
-              </motion.h2>
-            </div>
-          </div>
-
-          <div className="md:col-span-6 md:col-start-7">
-            <motion.p
-              className="text-fluid-sm text-light leading-relaxed"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: DUR.slow, ease: EASE.cinematic, delay: 0.2 }}
-            >
-              {copy.mechanism.intro}
-            </motion.p>
-          </div>
+        {/* Centered intro statement */}
+        <div className="mb-16 md:mb-20 max-w-5xl mx-auto text-center">
+          <motion.p
+            className="font-display text-fluid-2xl text-off leading-[1.1] tracking-tight"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: DUR.cinematic, ease: EASE.cinematic }}
+          >
+            {copy.mechanism.intro}
+          </motion.p>
         </div>
 
         {/* Three pillars */}
