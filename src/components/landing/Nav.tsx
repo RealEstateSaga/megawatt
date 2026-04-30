@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSite, type NarrativeState } from "../../context/SiteContext";
 import { EASE, DUR } from "../../engine/motion";
-import logo from "../../assets/1mw-logo.svg";
+import logo from "../../assets/1mw-wordmark.svg";
 
 const links: { label: string; href: string }[] = [
   { label: "1MW", href: "#" },

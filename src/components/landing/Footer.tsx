@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
+import wordmark from "../../assets/1mw-wordmark.svg";
 
 
 const navLinks: { label: string; href: string }[] = [
@@ -40,12 +41,12 @@ export default function Footer() {
 
         {/* Brand block */}
         <div className="mb-20">
-          <div
-            className="font-display font-bold text-off leading-none mb-8 tracking-tight"
-            style={{ fontSize: "clamp(2rem, 4vw, 4rem)" }}
-          >
-            1MW
-          </div>
+          <img
+            src={wordmark}
+            alt="1MW"
+            className="block h-auto mb-8"
+            style={{ width: "clamp(8rem, 16vw, 16rem)" }}
+          />
           <nav className="flex flex-wrap items-center gap-x-10 gap-y-3 mb-4">
             {navLinks.map((link) => (
               <a
