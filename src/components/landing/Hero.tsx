@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
 import { useSite } from "../../context/SiteContext";
 import { copy } from "../../content/copy";
-import logo from "../../assets/1mw-logo.svg";
+
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
