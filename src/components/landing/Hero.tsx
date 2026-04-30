@@ -28,7 +28,7 @@ export default function Hero() {
     <section
       ref={ref}
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-bg"
+      className="relative min-h-screen flex flex-col items-center justify-end pb-16 md:pb-24 overflow-hidden bg-bg"
     >
       {/* Structural grid — barely perceptible depth cue */}
       <div
