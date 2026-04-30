@@ -36,7 +36,7 @@ export default function Nav() {
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-[500] px-6 md:px-12 h-16 flex items-center justify-between transition-all duration-500 ${
-          scrolled ? "bg-bg/80 backdrop-blur-xl border-b border-border" : ""
+          scrolled ? "bg-bg/50 backdrop-blur-xl" : ""
         }`}
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
