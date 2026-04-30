@@ -21,7 +21,7 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="py-24 md:py-32"
+      padding="pt-12 md:pt-16 pb-24 md:pb-32"
       className="px-6 md:px-12 bg-surface/50"
     >
       <div className="max-w-7xl mx-auto">
