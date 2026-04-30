@@ -9,7 +9,7 @@ import { EASE, DUR } from "../../engine/motion";
  */
 export default function Work() {
   return (
-    <section id="work" className="py-32 md:py-48 px-6 md:px-12">
+    <section id="work" className="py-48 md:py-72 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="mb-20">
           <motion.div

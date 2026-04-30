@@ -44,7 +44,7 @@ export default function Process() {
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section id="process" ref={ref} className="py-32 md:py-48 px-6 md:px-12 bg-surface">
+    <section id="process" ref={ref} className="py-48 md:py-72 px-6 md:px-12 bg-surface">
       <div className="max-w-7xl mx-auto">
         <div className="mb-20">
           <motion.div
