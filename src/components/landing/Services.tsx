@@ -21,8 +21,9 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="pt-6 md:pt-8 pb-20 md:pb-28"
-      className="px-6 md:px-12 bg-surface/50"
+      padding="pt-0 pb-20 md:pb-28"
+      className="px-6 md:px-12 bg-bg"
+      fadeOnScroll={false}
     >
       <div className="max-w-7xl mx-auto">
         {/* Three pillars */}

@@ -61,8 +61,8 @@ export default function SectionWrapper({
   // Validation sections stay fully opaque longer for "grounded" feel
   const opacity = useTransform(
     scrollYProgress,
-    isValidation ? [0, 0.15, 1] : [0, 0.2, 0.8, 1],
-    isValidation ? [0, 1, 1]   : [0, 1, 1, 0.85],
+    !fadeOnScroll ? [0, 1] : isValidation ? [0, 0.15, 1] : [0, 0.2, 0.8, 1],
+    !fadeOnScroll ? [1, 1] : isValidation ? [0, 1, 1]   : [0, 1, 1, 0.85],
   );
 
   // Subtle upward drift as section exits — creates "compressed into background" feel
