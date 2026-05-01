@@ -1,25 +1,13 @@
-import { useRef } from "react";
-import { motion, useSpring } from "framer-motion";
-import { EASE, SPRING } from "../../engine/motion";
 import { copy, type Pillar } from "../../content/copy";
-import { useMotionIntensity } from "../../hooks/useMotionIntensity";
 import SectionWrapper from "./SectionWrapper";
 
 /**
  * Unified pillar stack — Hero, all middle pillars, and Contact share the same
- * animated box treatment so the whole page is one continuous narrative.
- *
- * Each pillar:
- *   h1 (monumental title) + h2 (definition) + h3 (hover-revealed body).
- * On mobile the body is always visible so it pops as the user scrolls.
- *
- * Spacing rules:
- *   - py-32 md:py-56   → generous vertical breathing room around each box
- *   - gap-4 md:gap-6   → tight spacing BETWEEN h1 / h2 / h3 lines
+ * simple stacked treatment. No animated boxes, no hover reveals — just clean
+ * left-aligned typography: a monumental h1 followed by a single combined
+ * paragraph that fuses the definition + outcome into one body line.
  */
 export default function Services() {
-  const { enterDuration, staggerDelay, enterDistance } = useMotionIntensity();
-
   return (
     <SectionWrapper
       id="services"
@@ -29,30 +17,14 @@ export default function Services() {
       fadeOnScroll={false}
     >
       <div className="w-full">
-        <div className="flex flex-col gap-px">
-          {/* First pillar — Hero (h1 + h2 + h3, no logo) */}
-          <HeroPillar
-            enterDuration={enterDuration}
-            enterDistance={enterDistance}
-          />
+        <div className="flex flex-col">
+          <HeroPillar />
 
-          {/* Middle pillars */}
-          {copy.pillars.map((pillar, i) => (
-            <PillarModule
-              key={pillar.id}
-              pillar={pillar}
-              index={i + 1}
-              enterDuration={enterDuration}
-              staggerDelay={staggerDelay}
-              enterDistance={enterDistance}
-            />
+          {copy.pillars.map((pillar) => (
+            <PillarModule key={pillar.id} pillar={pillar} />
           ))}
 
-          {/* Final pillar — Contact (mailto link) */}
-          <ContactPillar
-            enterDuration={enterDuration}
-            enterDistance={enterDistance}
-          />
+          <ContactPillar />
         </div>
       </div>
     </SectionWrapper>
@@ -61,153 +33,80 @@ export default function Services() {
 
 /* ────────────────────────────────────────────────────────────────────── */
 
-function HeroPillar({
-  enterDuration,
-  enterDistance,
-}: {
-  enterDuration: number;
-  enterDistance: number;
-}) {
-  const hoverY = useSpring(0, SPRING.medium);
-  const hoverScale = useSpring(1, SPRING.medium);
-
+function HeroPillar() {
   return (
-    <motion.div
+    <section
       id="hero"
-      className="group relative border-t border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
-      style={{ y: hoverY, scale: hoverScale }}
-      onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
-      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
-      initial={{ opacity: 0, y: enterDistance }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: enterDuration, ease: EASE.cinematic }}
+      className="relative border-t border-border/50"
     >
       <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
-        {/* h1 — monumental title */}
         <h1
-          className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
+          className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {copy.hero.h1}
         </h1>
 
-        {/* h2 — definition */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
-          {copy.hero.h2}
-        </p>
-
-        {/* h3 — always visible on Hero, "1MW" highlighted bright red */}
-        <p className="font-display text-foreground text-fluid-sm leading-relaxed text-left max-w-7xl">
-          <span style={{ color: "#E11D2E" }}>1MW</span> {copy.hero.h3.replace(/^1MW\s*/, "")}
+        <p className="font-montserrat font-normal leading-[1.1] tracking-[0em] text-left max-w-7xl text-black"
+           style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}>
+          {copy.hero.h2}{" "}
+          <span style={{ color: "#E11D2E" }}>1MW</span>{" "}
+          {copy.hero.h3.replace(/^1MW\s*/, "")}
         </p>
       </div>
-    </motion.div>
+    </section>
   );
 }
 
 /* ────────────────────────────────────────────────────────────────────── */
 
-function PillarModule({
-  pillar,
-  index,
-  enterDuration,
-  staggerDelay,
-  enterDistance,
-}: {
-  pillar: Pillar;
-  index: number;
-  enterDuration: number;
-  staggerDelay: number;
-  enterDistance: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const hoverY = useSpring(0, SPRING.medium);
-  const hoverScale = useSpring(1, SPRING.medium);
-
+function PillarModule({ pillar }: { pillar: Pillar }) {
   return (
-    <motion.div
-      ref={ref}
-      className="group relative border-t border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
-      style={{ y: hoverY, scale: hoverScale }}
-      onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
-      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
-      initial={{ opacity: 0, y: enterDistance }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{
-        duration: enterDuration,
-        delay: Math.min(index * staggerDelay, 0.3),
-        ease: EASE.cinematic,
-      }}
-    >
+    <section className="relative border-t border-border/50">
       <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         <h2
-          className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
+          className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {pillar.title}
         </h2>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
-          {pillar.definition}
+        <p className="font-montserrat font-normal leading-[1.1] tracking-[0em] text-left max-w-7xl text-black"
+           style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}>
+          {pillar.definition}. {pillar.outcome}
         </p>
-
-        {/* h3 — hover-revealed on desktop, always visible on mobile.
-            Lives inside the same flex column so spacing stays consistent. */}
-        <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out w-full">
-          <div className="overflow-hidden">
-            <p className="text-fluid-sm text-foreground leading-relaxed text-left max-w-7xl opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
-              {pillar.outcome}
-            </p>
-          </div>
-        </div>
       </div>
-    </motion.div>
+    </section>
   );
 }
 
 /* ────────────────────────────────────────────────────────────────────── */
 
-function ContactPillar({
-  enterDuration,
-  enterDistance,
-}: {
-  enterDuration: number;
-  enterDistance: number;
-}) {
-  const hoverY = useSpring(0, SPRING.medium);
-  const hoverScale = useSpring(1, SPRING.medium);
-
+function ContactPillar() {
   return (
-    <motion.a
+    <section
       id="contact"
-      href={`mailto:${copy.conversion.email}`}
-      className="group relative block border-t border-b border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
-      style={{ y: hoverY, scale: hoverScale }}
-      onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
-      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
-      initial={{ opacity: 0, y: enterDistance }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: enterDuration, ease: EASE.cinematic }}
+      className="relative border-t border-b border-border/50"
     >
       <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         <h2
-          className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
+          className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {copy.conversion.title}
         </h2>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
-          {copy.conversion.definition}
+        <p className="font-montserrat font-normal leading-[1.1] tracking-[0em] text-left max-w-7xl text-black"
+           style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}>
+          {copy.conversion.definition}.{" "}
+          <a
+            href={`mailto:${copy.conversion.email}`}
+            className="underline hover:text-accent transition-colors"
+          >
+            {copy.conversion.email}
+          </a>
         </p>
-
-        <h3 className="font-display font-bold text-foreground text-fluid-sm leading-relaxed text-left max-w-7xl">
-          {copy.conversion.outcome}
-        </h3>
       </div>
-    </motion.a>
+    </section>
   );
 }
