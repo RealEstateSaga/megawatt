@@ -96,21 +96,19 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-10 md:py-12 px-2 md:px-0 grid md:grid-cols-12 gap-y-4 gap-x-12 items-center">
-        {/* Title */}
-        <div className="md:col-span-5">
-          <h3 className="font-display text-fluid-xl text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight">
-            {pillar.title}
-          </h3>
-        </div>
+      <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12 items-center text-center">
+        {/* Title — h1 monumental */}
+        <h3
+          className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
+          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
+        >
+          {pillar.title}
+        </h3>
 
-        {/* Definition */}
-        <div className="md:col-span-7">
-          <p className="text-fluid-sm text-light leading-relaxed">
-            {pillar.definition}
-          </p>
-        </div>
-
+        {/* Definition — h2 */}
+        <p className="font-display text-off text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
+          {pillar.definition}
+        </p>
       </div>
 
       {/* Outcome — always visible on mobile, hover-revealed on desktop */}
