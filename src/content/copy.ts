@@ -90,8 +90,8 @@ export const copy = {
     },
     {
       id: "access",
-      title: "Access",
-      definition: "We'll Hold the Door",
+      title: "Direct",
+      definition: "Access",
       outcome:
         "Deep roots in this industry give us something rare, direct access, and everything we do is built to show results.",
     },
