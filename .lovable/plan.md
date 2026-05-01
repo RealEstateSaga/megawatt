@@ -1,96 +1,80 @@
-# 1MW Content + UI Refinement
+# Unify scroll, add breathing room, restructure Hero & pillars
 
-A precision pass focused on simpler copy, cleaner navigation, stronger contrast, and consistent CTAs. No structural redesign — every section keeps its layout and motion.
+## 1. Connect Hero into the pillar stack (no more independent header)
 
-## 1. Hero (`src/components/landing/Hero.tsx`, `src/content/copy.ts`)
+Right now `Hero` is a standalone full-screen `<section>` and `Services` renders the pillar list separately. That's why the Hero "acts independently" and there's a visual gap before the first pillar.
 
-- Replace `hero.subtext` and `hero.subtextFast` with: **"Marketing systems built for growth."**
-- Keep "Marketing & Advertising" as `hero.system` label, but raise contrast: change the label class from `text-muted` to a darker tone (`text-[#2A2A2A]`) and remove low-opacity siblings.
-- Order on screen stays: `Marketing & Advertising` → `1MW` logo → new tagline. Nothing else.
+- Make the Hero render as the **first item in the same pillar list** (same border-t, same hover lift, same group hover-reveal).
+- Remove Hero's `min-h-screen` full-viewport behavior so it sits flush against "Collective" exactly like every other pillar transition.
+- Move the 1MW red wordmark into the Hero pillar's body (above the H1), keep the subtle scroll cue.
 
-## 2. Navigation (`src/components/landing/Nav.tsx`)
+Result: scrolling from the wordmark → "Marketing & Advertising" → "Expertise" → … → "Our Story" → "One" is one continuous, identical-looking stack.
 
-- Final link list (in order): **About, Services, Work, Process, Contact**.
-- Default link color `#111111`, hover `#000000`, font-medium. Remove `text-off/90`.
-- Narrative dots: keep five but ensure inactive color is a visible grey (`#BFBFBF` instead of `#E5E5E5`).
-- "Start a Project" CTA kept as-is (already high contrast).
+## 2. Connect "Our Story" → "One" (close the gap)
 
-## 3. Section labels & headlines (`src/content/copy.ts`, `src/components/landing/Services.tsx`, `src/components/landing/Process.tsx`, `src/components/landing/About.tsx`)
+`Contact.tsx` is a separate `SectionWrapper` with its own padding, which causes the gap after "Our Story". Fix:
 
-- `reframing.label`: "What We Build" → remove the label entirely (hide the small mono label + divider in `About.tsx`). About headline ("Not a vendor. / A marketing infrastructure.") stays.
-- `reframing.supporting` → **"1MW is the marketing and advertising engine behind a connected portfolio of modern brands. Built to create momentum, clarity, and measurable growth."**
-- `reframing.cta` stays "See what we build" → keep but link target unchanged.
-- `mechanism.label`: "What We Do" → **"Services"**
-- `mechanism.headline`: "Six Systems. One Engine." → **"Six systems. One strategy."**
-- Add a new `mechanism.intro` field: **"Integrated marketing systems designed to help brands grow with clarity, speed, and measurable performance."** Render it under the headline in `Services.tsx`.
-- Process section title in `Process.tsx`: replace "The 1MW *Engagement*" with **"Process"** (single word, same display styling).
-- Process intro paragraph (added under title): **"A clear process built to move from strategy to execution without wasted motion."**
+- Render the "One / Click to Map Your Next Move / hello@1mw.com" block as the **final item inside the same pillar list** in `Services.tsx` (still a mailto link), instead of a separate `Contact` section.
+- Remove the `<Contact />` import from `LandingSite.tsx`.
 
-## 4. Services pillar CTAs (`src/content/copy.ts`)
+## 3. Restructure Hero copy
 
-- Standardize all six pillar `cta` fields to **"Learn more"**. The arrow is appended in `Services.tsx` already.
+In `src/content/copy.ts` `copy.hero`:
 
-## 5. Work / About narrative card (`src/components/landing/Work.tsx`)
+- **H1:** `Marketing & Advertising` (was H2)
+- **H2:** `There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.`
+- **H3 (hover-reveal / mobile-visible):** `1MW is our attempt to do just that.`
 
-- Replace the paragraph with: **"1MW is the marketing and advertising engine behind a connected portfolio of modern brands. Built to create momentum, clarity, and measurable growth."**
-- Remove the rarity/domain explanation entirely. Headline "One million watts. / All in." stays.
+The 1MW red wordmark stays as the visual logo above the H1 (not as H1 itself anymore).
 
-## 6. Conversion / Contact (`src/components/landing/Contact.tsx`, `src/content/copy.ts`)
+## 4. Update two pillars
 
-- `conversion.label`: "Let's Build It." → **"Start the conversation."**
-- `conversion.primary`: → **"One conversation to map what growth could look like."**
-- Remove the scroll-intensity alt subline (use single primary copy).
+In `src/content/copy.ts`:
 
-## 7. Footer (`src/components/landing/Footer.tsx`, `src/content/copy.ts`)
+- Replace `collective` pillar with:
+  - title: `Expertise`
+  - definition: `Best of the Best`
+  - outcome: `We partner with the best in the industry to ensure our clients are at the cutting edge of now and next.`
+  - (rename id to `expertise`)
 
-- Mini-CTA heading: "Have a project in mind?" → **"Tell us what you're building."**
-- Mini-CTA subline: "We'd love to hear from you!" → **"We'll map the system behind it."**
-- Nav links list: **About, Services, Work, Process, Contact** (add About + Contact to current list, in that order).
-- Bottom-bar tagline: "Strategy. Creative. Technology. All in." → **"Marketing systems built for growth."**
-- Link color: `text-off/90` → `text-[#111111]` hover `text-black`. Subdued lines (`text-mid`) on the © row stay (they read as system text, not links).
+- Replace `identification` pillar with:
+  - title: `Audience`
+  - definition: `Persona Modeling`
+  - outcome: `Uncovering the who, what, and where with real-world audience models, compiling segmentations and target profiles, rooted in behaviors and context.`
+  - (rename id to `audience`)
 
-## 8. Contrast audit — text classes (multiple files)
+## 5. Breathing room — much more vertical space
 
-Replace washed-out classes everywhere on the landing route:
+Currently each pillar uses `py-12 md:py-20` (≈ 48–80px). Bump to:
 
-- `text-light` body copy → keep (`#2B2B2B` already meets the spec).
-- `text-mid` used as **support copy** stays (`#444444`).
-- `text-off/55`, `text-off/70`, `text-off/30`, `text-off/90` → drop opacity, use solid `text-off` or `text-[#2B2B2B]` depending on hierarchy. Specifically:
-  - `About.tsx` italic clarification line: `text-off/55` → `text-off/80` (still distinct from primary, but readable).
-  - `Work.tsx` italic "All in.": `text-off/55` → `text-off/80`.
-  - `Footer.tsx` nav links: `text-off/90` → `text-[#111111]`.
-  - `Nav.tsx` links: `text-off/90` → `text-[#111111]`.
-- Inline link CTAs that use `text-accent hover:text-mid` (About, Process, Work) → switch to `text-[#111111] hover:text-black` with same underline behavior. (`text-accent` currently maps to a grey tone; the directive wants links to read as solid black.)
-- Tertiary contact link (`text-mid` with `border-mid/40`) → `text-[#111111]` with `border-black/40`.
-- `ctaConfig.ts` ghost style: `text-light` → `text-[#111111]`; border `black/30` stays.
+- Pillar inner padding: `py-24 md:py-40` (≈ 96–160px top & bottom)
+- Gap between H1 and H2: `gap-10 md:gap-16` (was `gap-8 md:gap-12`)
+- Hover-revealed body bottom padding: `pb-16 md:pb-24` (was `pb-8 md:pb-10`)
+- Section wrapper: `pt-0 pb-32 md:pb-48` for the bottom of the stack
 
-## 9. Anchor / nav integrity check
+## 6. Wider container — boxes near page edges
 
-Confirm all nav anchors map to existing section IDs in `LandingSite.tsx`:
+Today: `max-w-7xl` (1280px) wraps the pillar list, and inner text is `max-w-5xl` (1024px).
 
-- `#about` → `About` ✓
-- `#services` → `Services` ✓
-- `#work` → `Work` ✓
-- `#process` → `Process` ✓
-- `#contact` → `Contact` ✓
+Change to:
 
-Footer link list will be updated to match this exact set and order.
+- Pillar list outer wrapper: drop `max-w-7xl mx-auto`. Use full width with horizontal page padding `px-6 md:px-12 lg:px-16` so boxes stretch nearly to the page edges (leaving ~48–64px of breathing room on desktop so the hover shadow can be enjoyed).
+- Inner text (`H2` definition + `H3` body) keeps `max-w-5xl mx-auto` so reading width stays comfortable while the **boxes themselves go wide**.
+
+Confirming the answer to your question: yes, today the boxes are constrained to 1280px (max-w-7xl) and the inner text is 1024px (max-w-5xl). After this change, boxes will span almost the full viewport width while text stays readable.
 
 ## Files to edit
 
-- `src/content/copy.ts` — hero, reframing, mechanism, conversion, footer copy + new `mechanism.intro`
-- `src/components/landing/Hero.tsx` — label contrast, single subtext
-- `src/components/landing/Nav.tsx` — link color tokens, dot inactive color
-- `src/components/landing/About.tsx` — remove label row, link contrast, italic opacity
-- `src/components/landing/Services.tsx` — render `mechanism.intro`, label color stays via copy change
-- `src/components/landing/Work.tsx` — narrative copy, italic opacity, link contrast
-- `src/components/landing/Process.tsx` — title "Process", intro paragraph, link contrast
-- `src/components/landing/Contact.tsx` — label/primary copy, tertiary link contrast, drop intensity alt
-- `src/components/landing/Footer.tsx` — heading/subline, full nav list, tagline, link contrast
-- `src/content/ctaConfig.ts` — ghost style text color
+- `src/content/copy.ts` — Hero restructure (h1/h2/h3 fields), update Collective → Expertise, Identification → Audience.
+- `src/components/landing/Hero.tsx` — refactor into a pillar-shaped block (no min-h-screen), wordmark above H1.
+- `src/components/landing/Services.tsx` — render Hero pillar first and Contact pillar last in the same stack; widen container; bump padding.
+- `src/components/landing/Contact.tsx` — delete (logic merged into Services as final pillar).
+- `src/LandingSite.tsx` — remove `<Hero />` and `<Contact />` as separate sections; only `<Services />` renders the unified stack (or keep `<Hero />` as a thin wrapper if cleaner — final decision at implementation).
 
-## Out of scope
+## Technical notes
 
-- No layout, motion, or animation changes.
-- No new sections; `Stats`/`Testimonials` remain hidden.
-- No changes to `BackgroundField`, `Cursor`, `Grain`, `index.css` tokens, or `tailwind.config.ts`.
+- The Hero pillar will reuse the exact `PillarModule` component so hover-lift, shadow, border-t, and grid-rows H3 reveal are byte-identical to other pillars.
+- The 1MW wordmark image stays in the Hero pillar above the H1, keeping its existing slide-up entrance animation.
+- The scroll cue (animated vertical line) stays at the bottom of the first pillar.
+- `copy.hero` shape changes from `{ title, body }` to `{ h1, h2, h3 }` — Hero component updated accordingly.
+- Pillar `id` rename (`collective`→`expertise`, `identification`→`audience`) is safe because nothing else references those ids.

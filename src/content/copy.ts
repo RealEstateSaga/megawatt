@@ -11,19 +11,19 @@ export type Pillar = {
 
 export const copy = {
   hero: {
-    // h1 = 1MW wordmark (red logo)
-    title: "Marketing & Advertising", // h2
-    body:
-      "There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before. 1MW is our attempt to do just that.",
+    // Visual: 1MW red wordmark sits above the H1
+    h1: "Marketing & Advertising",
+    h2: "There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.",
+    h3: "1MW is our attempt to do just that.",
   },
 
   pillars: [
     {
-      id: "collective",
-      title: "Collective",
-      definition: "Expertise & Experience",
+      id: "expertise",
+      title: "Expertise",
+      definition: "Best of the Best",
       outcome:
-        "While there's much to learn from the past, we're more interested in shaping what's ahead. We've invested in unique capabilities across insight, data, and innovation, and partner with best-in-class data and intelligence experts, making us the leaders of powerful marketing and advertising.",
+        "We partner with the best in the industry to ensure our clients are at the cutting edge of now and next.",
     },
     {
       id: "strategy",
@@ -33,11 +33,11 @@ export const copy = {
         "Every move is mapped to a clear objective, with the right channels, messaging, and timing to back it up. Strategy isn't a deliverable here, it's how we operate.",
     },
     {
-      id: "identification",
-      title: "Identification",
-      definition: "Audience & Personas",
+      id: "audience",
+      title: "Audience",
+      definition: "Persona Modeling",
       outcome:
-        "Uncovering the who, what, and where. We build real-world audience models, compiling segmentations, personas, and target profiles, rooted in behaviors and context.",
+        "Uncovering the who, what, and where with real-world audience models, compiling segmentations and target profiles, rooted in behaviors and context.",
     },
     {
       id: "creative",
