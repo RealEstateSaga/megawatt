@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { copy, type Pillar } from "../../content/copy";
 
 /**
@@ -90,59 +89,43 @@ function Panel({
   index: number;
   isLast: boolean;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const sheetY = useTransform(
-    scrollYProgress,
-    isLast ? [0, 0.35, 1] : [0, 0.3, 0.65, 1],
-    ["100%", "0%", "0%", "0%"]
-  );
-
   return (
-    <section
-      ref={ref}
+    <motion.section
       id={id}
-      className="relative"
-      style={{
-        height: isLast ? "100vh" : "200vh",
-      }}
+      className="sticky top-0 h-screen overflow-hidden bg-background"
+      style={{ zIndex: index + 1 }}
+      initial={{ opacity: 0.96, y: 48 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.35 }}
+      transition={fadeTransition}
     >
-      <motion.div
-        className="sticky top-0 h-screen w-full overflow-hidden bg-background"
-        style={{ zIndex: index + 1, y: sheetY }}
-      >
-        <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
-          <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
-            <motion.h2
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-15% 0px -10% 0px" }}
-              transition={fadeTransition}
-              className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
-              style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
-            >
-              {title}
-            </motion.h2>
+      <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
+        <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
+          <motion.h2
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.45 }}
+            transition={fadeTransition}
+            className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
+            style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
+          >
+            {title}
+          </motion.h2>
 
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-15% 0px -10% 0px" }}
-              transition={{ ...fadeTransition, delay: 0.15 }}
-              className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em] text-foreground"
-              style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
-            >
-              {body}
-            </motion.p>
-          </div>
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.45 }}
+            transition={{ ...fadeTransition, delay: 0.15 }}
+            className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em] text-foreground"
+            style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
+          >
+            {body}
+          </motion.p>
         </div>
-      </motion.div>
-    </section>
+      </div>
+    </motion.section>
   );
 }
