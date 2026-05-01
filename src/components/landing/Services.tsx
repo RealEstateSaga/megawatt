@@ -2,11 +2,10 @@ import { motion } from "framer-motion";
 import { copy, type Pillar } from "../../content/copy";
 
 /**
- * Stacking parallax (jomor.design-style).
+ * Stacking parallax.
  *
- * Each panel is a tall scroll container (200vh). Inside, a sticky child pins
- * for one full viewport, then the next panel scrolls up over the top of it.
- * Solid white backgrounds occlude the panel beneath.
+ * Each panel gets extra scroll runway so the next section can rise from the
+ * bottom of the viewport and cover the current one.
  */
 export default function Services() {
   const panels = [
@@ -91,22 +90,22 @@ function Panel({
   isLast: boolean;
 }) {
   return (
-    <section
+    <motion.section
       id={id}
-      className="relative"
-      style={{
-        height: isLast ? "100vh" : "140vh",
-        zIndex: index + 1,
-      }}
+      className="sticky top-0 h-screen overflow-hidden bg-background"
+      style={{ zIndex: index + 1 }}
+      initial={{ opacity: 0.96, y: 48 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.35 }}
+      transition={fadeTransition}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-background">
-        <div className="flex h-full w-full items-end px-8 pb-[14vh] pt-24 md:px-16 lg:px-24">
-          <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
+      <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
+        <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
           <motion.h2
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-15% 0px -10% 0px" }}
+            viewport={{ once: false, amount: 0.45 }}
             transition={fadeTransition}
             className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
             style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
@@ -118,16 +117,15 @@ function Panel({
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-15% 0px -10% 0px" }}
+            viewport={{ once: false, amount: 0.45 }}
             transition={{ ...fadeTransition, delay: 0.15 }}
             className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em] text-foreground"
             style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
           >
             {body}
           </motion.p>
-          </div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
