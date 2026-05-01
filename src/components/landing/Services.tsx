@@ -157,8 +157,8 @@ function ShowcasePillar({
       <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12">
         {/* Monumental header — matches hero "Marketing & Advertising" size */}
         <h3
-          className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight text-center"
-          style={{ fontSize: "clamp(2rem, 5vw, 5rem)" }}
+          className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
+          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
         >
           Strategy &amp; Intelligence
         </h3>
