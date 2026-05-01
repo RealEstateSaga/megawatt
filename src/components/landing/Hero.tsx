@@ -54,7 +54,7 @@ export default function Hero() {
               src={wordmark}
               alt="1MW"
               className="block h-auto mx-auto"
-              style={{ width: "min(82vw, 1100px)", maxWidth: "100%" }}
+              style={{ width: "min(42vw, 550px)", maxWidth: "100%" }}
               initial={{ y: "110%" }}
               animate={{ y: 0 }}
               transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
