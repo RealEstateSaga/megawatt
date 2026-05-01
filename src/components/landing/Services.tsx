@@ -94,11 +94,13 @@ function Panel({
       id={id}
       className="relative"
       style={{
-        height: isLast ? "100vh" : "165vh",
-        zIndex: index + 1,
+        height: isLast ? "100vh" : "200vh",
       }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-background">
+      <div
+        className="sticky top-0 h-screen w-full overflow-hidden bg-background"
+        style={{ zIndex: index + 1 }}
+      >
         <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
           <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
             <motion.h2
