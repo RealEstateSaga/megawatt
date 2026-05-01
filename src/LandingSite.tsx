@@ -1,5 +1,3 @@
-import BackgroundField from "./components/landing/BackgroundField";
-import Grain from "./components/landing/Grain";
 import Nav from "./components/landing/Nav";
 import Services from "./components/landing/Services";
 import Footer from "./components/landing/Footer";
@@ -10,8 +8,6 @@ export default function LandingSite() {
 
   return (
     <>
-      <BackgroundField />
-      <Grain />
       <Nav />
 
       <main>
