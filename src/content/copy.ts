@@ -83,8 +83,8 @@ export const copy = {
     },
     {
       id: "partnerships",
-      title: "Partnerships",
-      definition: "Public Relations & Collaborations",
+      title: "Collaborations",
+      definition: "Public Relations",
       outcome:
         "We build credibility and conversations at the same time, from press hits to thought leadership. We pair our clients with the right partners, from creators to companies, to amplify reach and bring values to life.",
     },
