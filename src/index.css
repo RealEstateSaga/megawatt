@@ -70,6 +70,15 @@
     --border: 0 0% 86%;             /* #DCDCDC — slightly darker, more architectural */
     --input: 0 0% 86%;
     --ring: 0 0% 0%;
+    --landing-brand: 355 77% 50%;
+    --landing-panel-1-bg: 0 0% 100%;
+    --landing-panel-1-fg: 0 0% 5%;
+    --landing-panel-2-bg: 0 0% 5%;
+    --landing-panel-2-fg: 0 0% 100%;
+    --landing-panel-3-bg: 48 20% 94%;
+    --landing-panel-3-fg: 0 0% 5%;
+    --landing-panel-4-bg: 355 77% 50%;
+    --landing-panel-4-fg: 0 0% 100%;
   }
 }
 
@@ -85,7 +94,7 @@
 
 /* When landing is mounted, force document background light to avoid color flash */
 body:has(.landing-root) {
-  background: #ffffff;
+  background: hsl(0 0% 100%);
 }
 
 /* ── Leadpro-only scope reset (defaults, kept for future explicit use) */
@@ -126,6 +135,30 @@ body:has(.landing-root) {
 
 /* Selection inside landing — black on white */
 .landing-root ::selection {
-  background: rgba(0, 0, 0, 0.85);
-  color: #ffffff;
+  background: hsl(0 0% 0% / 0.85);
+  color: hsl(0 0% 100%);
+}
+
+.landing-brand-text {
+  color: hsl(var(--landing-brand));
+}
+
+.landing-panel-tone-1 {
+  background: hsl(var(--landing-panel-1-bg));
+  color: hsl(var(--landing-panel-1-fg));
+}
+
+.landing-panel-tone-2 {
+  background: hsl(var(--landing-panel-2-bg));
+  color: hsl(var(--landing-panel-2-fg));
+}
+
+.landing-panel-tone-3 {
+  background: hsl(var(--landing-panel-3-bg));
+  color: hsl(var(--landing-panel-3-fg));
+}
+
+.landing-panel-tone-4 {
+  background: hsl(var(--landing-panel-4-bg));
+  color: hsl(var(--landing-panel-4-fg));
 }
