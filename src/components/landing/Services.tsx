@@ -1,17 +1,21 @@
-import { motion } from "framer-motion";
 import { copy, type Pillar } from "../../content/copy";
 
 /**
  * Stacking parallax (jomor.design style).
  *
- * Each panel has a tall outer wrapper. Inside, the visible content is
- * `sticky top-0 h-screen`. The FIRST panel pins while you scroll its
- * wrapper. When the next wrapper enters the viewport, its sticky child
- * scrolls UP from the bottom of the screen and — thanks to a higher
- * z-index — overlays the previous panel which is still pinned beneath.
+ * Every panel is a direct sibling with `position: sticky; top: 0; height: 100vh`
+ * inside ONE parent. As you scroll, panel N pins at the top. When panel N+1
+ * reaches the top of the viewport, it slides UP from the bottom and — because
+ * it has a higher z-index — covers panel N which is still pinned beneath it.
  *
- * Key: each panel is its own scroll container slice; siblings do NOT
- * share a sticky context, so they don't release together.
+ * Requirements for this to work:
+ *   1. Parent must NOT have `overflow: hidden` or any overflow value other
+ *      than `visible` — otherwise sticky breaks.
+ *   2. Each sibling must be exactly 100vh so the next one starts exactly
+ *      one viewport later.
+ *   3. z-index must increase per panel so later ones overlay earlier ones.
+ *   4. No transforms / will-change on ancestors (creates a containing block
+ *      that breaks sticky).
  */
 export default function Services() {
   const panels = [
@@ -51,7 +55,6 @@ export default function Services() {
           title={panel.title}
           body={panel.body}
           index={i}
-          total={panels.length}
         />
       ))}
     </div>
@@ -72,61 +75,40 @@ function renderHeroBody(): React.ReactNode {
 
 /* ────────────────────────────────────────────────────────────────────── */
 
-const fadeTransition = {
-  duration: 0.7,
-  ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-};
-
 function Panel({
   id,
   title,
   body,
   index,
-  total,
 }: {
   id: string;
   title: string;
   body: React.ReactNode;
   index: number;
-  total: number;
 }) {
-  const isLast = index === total - 1;
-
   return (
-    // Outer wrapper provides scroll runway. Each wrapper is its own
-    // sticky context so panels don't release simultaneously. Higher
-    // index = higher z-index, so later panels overlay earlier ones.
-    <div
-      className="relative"
-      style={{
-        height: isLast ? "100vh" : "100vh",
-        zIndex: index + 1,
-      }}
+    <section
+      id={id}
+      className="sticky top-0 h-screen w-full overflow-hidden bg-background"
+      style={{ zIndex: index + 1 }}
     >
-      <motion.section
-        id={id}
-        className="sticky top-0 h-screen w-full overflow-hidden bg-background"
-        initial={{ y: 0 }}
-        transition={fadeTransition}
-      >
-        <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
-          <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
-            <h2
-              className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
-              style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
-            >
-              {title}
-            </h2>
+      <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
+        <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
+          <h2
+            className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
+            style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
+          >
+            {title}
+          </h2>
 
-            <p
-              className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em] text-foreground"
-              style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
-            >
-              {body}
-            </p>
-          </div>
+          <p
+            className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em] text-foreground"
+            style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
+          >
+            {body}
+          </p>
         </div>
-      </motion.section>
-    </div>
+      </div>
+    </section>
   );
 }
