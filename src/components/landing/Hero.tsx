@@ -1,28 +1,11 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { EASE, DUR } from "../../engine/motion";
-import { useSite } from "../../context/SiteContext";
-import { copy } from "../../content/copy";
 import wordmark from "../../assets/1mw-wordmark.svg";
 
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollIntensity } = useSite();
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-
-  // Hero content compresses upward as user scrolls into Reframing state
-  const y = useTransform(scrollYProgress, [0, 1], [0, 140]);
-  const opacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.6], [1, 0.96]);
-
-  // Subtext adapts to scroll intensity (behavioral personalization)
-  const subtext =
-    scrollIntensity === "fast" ? copy.hero.subtextFast : copy.hero.subtext;
 
   return (
     <section
@@ -42,60 +25,64 @@ export default function Hero() {
         }}
       />
 
-      {/* ── Primary content — compresses upward on scroll ────────────────── */}
+      {/* ── Pillar-style block: logo + h1 + h2 + h3 hover-revealed ───────── */}
       <motion.div
-        className="relative z-20 text-center px-6 max-w-7xl mx-auto"
-        style={{ y, opacity, scale }}
+        className="group relative z-20 px-6 md:px-12 max-w-7xl mx-auto w-full"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: DUR.cinematic, ease: EASE.cinematic }}
       >
-        {/* 1MW wordmark — monumental, the only focal point */}
-        <h1 className="mb-12 flex justify-center w-full" aria-label="1MW">
-          <div className="overflow-hidden leading-none w-full flex justify-center">
-            <motion.img
-              src={wordmark}
-              alt="1MW"
-              className="block h-auto mx-auto"
-              style={{ width: "min(28vw, 360px)", maxWidth: "100%" }}
-              initial={{ y: "110%" }}
-              animate={{ y: 0 }}
-              transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
-            />
+        <div className="relative py-12 md:py-20 flex flex-col gap-8 md:gap-12 items-center text-center">
+          {/* 1MW wordmark */}
+          <h1 className="flex justify-center w-full" aria-label="1MW">
+            <div className="overflow-hidden leading-none w-full flex justify-center">
+              <motion.img
+                src={wordmark}
+                alt="1MW"
+                className="block h-auto mx-auto"
+                style={{ width: "min(28vw, 360px)", maxWidth: "100%" }}
+                initial={{ y: "110%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
+              />
+            </div>
+          </h1>
+
+          {/* Title — h1 monumental */}
+          <motion.p
+            className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
+            style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.2 }}
+          >
+            Marketing &amp; Advertising
+          </motion.p>
+
+          {/* Definition — h2 */}
+          <motion.p
+            className="font-display text-off text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: DUR.cinematic, ease: EASE.cinematic, delay: 0.35 }}
+          >
+            Creative that delivers.
+          </motion.p>
+        </div>
+
+        {/* h3 hover-revealed body */}
+        <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
+          <div className="overflow-hidden">
+            <p className="text-fluid-sm text-light leading-relaxed text-center pb-8 md:pb-10 px-6 md:px-12 max-w-5xl mx-auto opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
+              There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before. 1MW is our attempt to do just that.
+            </p>
           </div>
-        </h1>
-
-        {/* Category subtext — large statement */}
-        <motion.p
-          key={scrollIntensity}
-          className="font-display text-off max-w-none mx-auto leading-[1.0] tracking-tight text-center"
-          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 0.85 }}
-        >
-          {copy.hero.system}
-        </motion.p>
-
-        {/* h2 */}
-        <motion.p
-          className="font-display text-off text-fluid-xl leading-[1.05] tracking-tight text-center mt-10 md:mt-14 max-w-5xl mx-auto"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 1.05 }}
-        >
-          There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
-        </motion.p>
-
-        {/* h3 */}
-        <motion.p
-          className="text-fluid-sm text-light leading-relaxed text-center mt-6 md:mt-8 max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 1.2 }}
-        >
-          1MW is our attempt to do just that.
-        </motion.p>
+        </div>
       </motion.div>
 
-      {/* ── Subtle scroll cue — implied, not labeled ─────────────────────── */}
+      {/* ── Subtle scroll cue ────────────────────────────────────────────── */}
       <motion.div
         className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20"
         initial={{ opacity: 0 }}
