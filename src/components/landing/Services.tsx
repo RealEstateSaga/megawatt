@@ -83,23 +83,23 @@ function HeroPillar({
       viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-32 md:py-56 px-2 md:px-0 flex flex-col gap-4 md:gap-6 items-center text-center">
+      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-center text-center">
         {/* h1 — monumental title */}
         <h1
-          className="font-display text-foreground group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
-          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
+          className="font-display font-extrabold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-center"
+          style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {copy.hero.h1}
         </h1>
 
         {/* h2 — definition */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
           {copy.hero.h2}
         </p>
 
         {/* h3 — always visible on Hero, "1MW" highlighted bright red */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
-          <span style={{ color: "#E11D2E" }}>1MW</span> is our attempt to do just that.
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+          <span style={{ color: "#E11D2E" }}>1MW</span> {copy.hero.h3.replace(/^1MW\s*/, "")}
         </p>
       </div>
     </motion.div>
@@ -141,15 +141,15 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-32 md:py-56 px-2 md:px-0 flex flex-col gap-4 md:gap-6 items-center text-center">
+      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-center text-center">
         <h2
-          className="font-display text-foreground group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
-          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
+          className="font-display font-extrabold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-center"
+          style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {pillar.title}
         </h2>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
           {pillar.definition}
         </p>
 
@@ -157,7 +157,7 @@ function PillarModule({
             Lives inside the same flex column so spacing stays consistent. */}
         <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out w-full">
           <div className="overflow-hidden">
-            <p className="text-fluid-sm text-foreground leading-relaxed text-center max-w-5xl mx-auto opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
+            <p className="text-fluid-sm text-foreground leading-relaxed text-center max-w-7xl mx-auto opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
               {pillar.outcome}
             </p>
           </div>
