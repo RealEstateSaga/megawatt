@@ -24,7 +24,7 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="pt-0 pb-32 md:pb-48"
+      padding="pt-0 pb-0"
       className="px-0 bg-bg"
       fadeOnScroll={false}
     >
@@ -83,7 +83,7 @@ function HeroPillar({
       viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-start text-left">
+      <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         {/* h1 — monumental title */}
         <h1
           className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
@@ -98,7 +98,7 @@ function HeroPillar({
         </p>
 
         {/* h3 — always visible on Hero, "1MW" highlighted bright red */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
+        <p className="font-display text-foreground text-fluid-sm leading-relaxed text-left max-w-7xl">
           <span style={{ color: "#E11D2E" }}>1MW</span> {copy.hero.h3.replace(/^1MW\s*/, "")}
         </p>
       </div>
@@ -141,7 +141,7 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-start text-left">
+      <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         <h2
           className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
@@ -192,7 +192,7 @@ function ContactPillar({
       viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-start text-left">
+      <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         <h2
           className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
