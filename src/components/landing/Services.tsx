@@ -192,19 +192,19 @@ function ContactPillar({
       viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-32 md:py-56 px-2 md:px-0 flex flex-col gap-4 md:gap-6 items-center text-center">
+      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-center text-center">
         <h2
-          className="font-display text-foreground group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
-          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
+          className="font-display font-extrabold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-center"
+          style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {copy.conversion.title}
         </h2>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
           {copy.conversion.definition}
         </p>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
           {copy.conversion.outcome}
         </p>
       </div>
