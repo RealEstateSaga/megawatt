@@ -14,7 +14,7 @@ const navigation = {
 
 export default function Footer() {
   return (
-    <footer className="bg-bg border-t border-border">
+    <footer className="bg-bg">
       <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8 lg:py-32">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <img
@@ -73,7 +73,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 border-t border-border pt-8">
+        <div className="mt-16">
           <p className="text-xs/6 text-muted-foreground font-mono">
             &copy; 2026 1MW
           </p>
