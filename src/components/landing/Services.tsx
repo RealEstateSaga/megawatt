@@ -163,14 +163,19 @@ function ShowcasePillar({
           Strategy &amp; Intelligence
         </h3>
 
+        {/* Body paragraph at standard pillar text size */}
+        <p className="text-fluid-sm text-light leading-relaxed w-full text-center max-w-none">
+          There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
+        </p>
+
         {/* Subheader — matches pillar title size (Full-Spectrum Marketing) */}
         <p className="font-display text-off text-fluid-xl leading-[1.05] tracking-tight text-center">
           Turning data complexity into clarity.
         </p>
 
-        {/* Full-width definition at standard pillar text size */}
+        {/* Closing line at standard pillar text size */}
         <p className="text-fluid-sm text-light leading-relaxed w-full text-center max-w-none">
-          Aligns marketing, creative, and media execution into a single coordinated system built around your business objectives.
+          1MW is our attempt to do just that.
         </p>
       </div>
 
