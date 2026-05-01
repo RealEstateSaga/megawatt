@@ -24,7 +24,7 @@ export default function Services() {
     <SectionWrapper
       id="services"
       phase="mechanism"
-      padding="pt-0 pb-32 md:pb-48"
+      padding="pt-0 pb-0"
       className="px-0 bg-bg"
       fadeOnScroll={false}
     >
