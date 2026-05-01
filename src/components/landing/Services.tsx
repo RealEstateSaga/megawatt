@@ -108,11 +108,11 @@ function PillarModule({
 
       </div>
 
-      {/* Outcome — centered, appears below all content on hover */}
-      <div className="grid-rows-[0fr] grid group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
+      {/* Outcome — always visible on mobile, hover-revealed on desktop */}
+      <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
         <div className="overflow-hidden">
           <p
-            className="font-display text-accent tracking-tight text-center font-semibold leading-snug pb-8 md:pb-10 px-6 opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100"
+            className="font-display text-accent tracking-tight text-center font-semibold leading-snug pb-8 md:pb-10 px-6 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100"
             style={{ fontSize: "clamp(1.2rem, 1.9vw, 1.9rem)" }}
           >
             &rarr; {pillar.outcome}
