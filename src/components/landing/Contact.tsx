@@ -9,7 +9,7 @@ import SectionWrapper from "./SectionWrapper";
  * Matches the unified pillar design used throughout the page.
  */
 export default function Contact() {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLAnchorElement>(null);
   const hoverY = useSpring(0, SPRING.medium);
   const hoverScale = useSpring(1, SPRING.medium);
 
