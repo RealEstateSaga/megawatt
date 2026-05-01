@@ -13,13 +13,13 @@ export const copy = {
     h1: "Marketing & Advertising",
     // "1MW" is highlighted bright red in the component
     body:
-      "There is no mystery in what people want. The challenge is delivering it in a way that's sharper, smarter, and more compelling than anything they've seen before. That's what 1MW is built to do.",
+      "There is no mystery in what people want. The challenge is delivering it sharper, smarter, and more compellingly than ever before. That's what 1MW is built to do.",
   },
 
   pillars: [
     {
-      id: "expertise",
-      title: "Expertise",
+      id: "partners",
+      title: "Partners",
       body:
         "We partner with the best in the industry to ensure our clients are at the cutting edge of now and next.",
     },
@@ -27,73 +27,73 @@ export const copy = {
       id: "strategy",
       title: "Strategy",
       body:
-        "Every move is mapped to a clear objective, with the right channels, messaging, and timing to back it up. Strategy isn't a deliverable here, it's how we operate.",
+        "Every move is mapped to a clear objective. Strategy isn't a deliverable here—it's how we operate, building the foundation from insight to launch.",
     },
     {
       id: "audience",
       title: "Audience",
       body:
-        "Uncovering the who, what, and where with real-world audience models, compiling segmentations and target profiles, rooted in behaviors and context.",
+        "Uncovering the who, what, and where with real-world audience models. We compile segmentations and target profiles rooted in behaviors and context.",
     },
     {
       id: "creative",
       title: "Creative",
       body:
-        "We build ideas that break through, with powerful impact. Our work doesn't just look awesome or work great, it changes what's next. We combine insight, storytelling, and design to shape your vision and show up powerfully, wherever that may be.",
+        "We build ideas that break through. Our work combines insight, storytelling, and design to shape your vision and show up powerfully, wherever that may be.",
     },
     {
       id: "campaigns",
       title: "Campaigns",
       body:
-        "From insight to launch, we build the strategic foundation, opportunities, truths, and insights to inform and give creative its edge, giving the people what they want.",
+        "From insight to launch, we build the strategic foundation and truths that give creative its edge. We give the people what they want.",
     },
     {
       id: "omnichannel",
       title: "Omnichannel",
       body:
-        "Big ideas, everywhere they need to be. Our campaignable creative platforms stretch across brand, retail, social, and digital, with a clear story and strong spine.",
+        "Big ideas, everywhere they need to be. Our platforms stretch across brand, retail, social, and digital with a clear story and a strong spine.",
     },
     {
       id: "production",
       title: "Production",
       body:
-        "Fast, nimble, and on point, we handle high-volume, quick-turn creative with consistency and craft, delivering flawlessly at speed without cutting corners. What usually takes a week is done in a day.",
+        "What takes others weeks, we deliver in moments. Fast, sharp, and flawlessly executed creative content, ready right when you need it without cutting corners.",
     },
     {
       id: "reach",
       title: "Reach",
       body:
-        "Connecting people with what matters, our data and insight-driven social strategies are designed for scrolls, shares, saves, and success across the ever-shifting social landscape.",
+        "Connecting people with what matters. Our data-driven social strategies are designed for scrolls, shares, and success across the ever-shifting social landscape.",
     },
     {
       id: "network",
       title: "Network",
       body:
-        "A value-add we bring to any engagement is our private network. Should your vision demand targeted reach, we can connect you with the right people to tell your story in the right way, with relevance and results.",
+        "Our private network is a value-add for any engagement. If your vision demands targeted reach, we connect you with the right people to tell your story.",
     },
     {
-      id: "collaborations",
-      title: "Collaborations",
+      id: "collabs",
+      title: "Collabs",
       body:
-        "We build credibility and conversations at the same time, from press hits to thought leadership. We pair our clients with the right partners, from creators to companies, to amplify reach and bring values to life.",
+        "We build credibility and conversations simultaneously. We pair clients with the right partners, from creators to companies, to amplify reach.",
     },
     {
       id: "direct",
       title: "Direct",
       body:
-        "Deep roots in this industry give us something rare, direct access, and everything we do is built to show results.",
+        "Deep roots in this industry give us something rare: direct access. Everything we do is built to show immediate, tangible results.",
     },
     {
       id: "data",
       title: "Data",
       body:
-        "Our proprietary data sharing platform includes more than 75 million persona-backed contacts to ensure your message resonates with your target audience, while uncovering growth and ROI opportunities.",
+        "Our proprietary data platform includes more than 75 million persona-backed contacts to ensure your message resonates while uncovering growth opportunities.",
     },
     {
       id: "tracking",
       title: "Tracking",
       body:
-        "Focus on what matters by way of campaign dashboards and data storytelling to turn metrics into momentum and make your program, website, and campaigns reach around the corner or around the globe.",
+        "By way of campaign dashboards through Google Analytics and proprietary in-house software, we turn metrics into momentum, offering invaluable insight into what works.",
     },
     {
       id: "connect",
@@ -102,33 +102,33 @@ export const copy = {
         "We build relationships through CRM and email campaigns, using grounded segmentation and personalization to keep the conversation relevant.",
     },
     {
-      id: "optimization",
-      title: "Optimization",
+      id: "audit",
+      title: "Audit",
       body:
-        "We assess your current marketing infrastructure, channels, tools, and competitive position promptly. Before recommending anything, it's quite possible everything is operating perfectly, other than your coffee.",
+        "We assess your current infrastructure, channels, and tools promptly. It is quite possible everything is operating perfectly, other than your coffee.",
     },
     {
       id: "websites",
       title: "Websites",
       body:
-        "Digital designed for a human experience. We create digital experiences, websites, mobile apps, and ecommerce, to drive connection throughout the entire online journey.",
+        "Digital designed for a human experience. We create websites, mobile apps, and ecommerce to drive connection throughout the entire online journey.",
     },
     {
-      id: "infrastructure",
-      title: "Infrastructure",
+      id: "systems",
+      title: "Systems",
       body:
-        "Full transition to scalable cloud environments, with integration of Google Workspace, domain name acquisition, configuration, and unified storage built for security and operational clarity.",
+        "Full transition to scalable cloud environments, domain name acquisition, and unified storage built for security and operational clarity.",
     },
     {
-      id: "one-million-watts",
-      title: "One Million Watts",
+      id: "about",
+      title: "About",
       body:
-        "1MW is a universal measure of power, and the firm carries that same weight. 1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design, that's where it starts. Founded by Mike Wilen, we explore any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.",
+        "1MW is a universal measure of power. Founded by Mike Wilen, we move fast, take unconventional approaches, and make bold investments in unexpected places.",
     },
   ] as Pillar[],
 
   conversion: {
-    title: "Let's Connect",
+    title: "Contact",
     body: "One click to map your next move.",
     email: "hello@1mw.com",
   },
