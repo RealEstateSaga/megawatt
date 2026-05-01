@@ -2,174 +2,154 @@
  * Content Engine — single source of truth for all site messaging.
  */
 
+export type Pillar = {
+  id: string;
+  title: string;        // h1
+  definition: string;   // h2
+  outcome: string;      // h3 (hover-revealed body)
+};
+
 export const copy = {
-  // ─── STATE 1: ORIENTATION ───────────────────────────────────────────────────
   hero: {
-    system: "Marketing & Advertising",
-    headline: "1MW",
-    subtext: "Marketing systems built for growth.",
-    subtextFast: "Marketing systems built for growth.",
+    // h1 = 1MW wordmark (red logo)
+    title: "Marketing & Advertising", // h2
+    body:
+      "There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before. 1MW is our attempt to do just that.",
   },
 
-  // ─── STATE 2: REFRAMING ─────────────────────────────────────────────────────
-  reframing: {
-    label: "",
-    statement: "Not a vendor.",
-    clarification: "A marketing infrastructure.",
-    supporting:
-      "1MW is the marketing and advertising engine behind a connected portfolio of modern brands. Built to create momentum, clarity, and measurable growth.",
-    cta: "See what we build",
-  },
-
-  // ─── STATE 3: MECHANISM ─────────────────────────────────────────────────────
-  mechanism: {
-    label: "Services",
-    headline: "Six systems. One strategy.",
-    intro:
-      "Marketing designed for growth, and built for performance.",
-    pillars: [
-      {
-        id: "full-spectrum",
-        number: "01",
-        title: "Full-Spectrum Marketing",
-        definition:
-          "Aligns marketing, creative, and media execution into a single coordinated system built around your business objectives.",
-        outcome: "We uncover the best path forward. Our strategies are grounded in data and built from real research, so our clients know exactly who they're talking to, what resonates, and where the opportunity is. We bring our experts together to find what moves the needle and what moves with it.",
-        tags: ["Strategy", "Execution", "Impact"],
-        cta: "Learn more",
-      },
-      {
-        id: "cloud",
-        number: "02",
-        title: "Cloud & Digital Infrastructure",
-        definition:
-          "Full transition to scalable cloud environments. Microsoft 365, Google Workspace, domain configuration, and unified storage built for security and operational clarity.",
-        outcome: "Fast, stable, and fully integrated from day one.",
-        tags: ["Cloud", "Integration", "Stability"],
-        cta: "Learn more",
-      },
-      {
-        id: "web",
-        number: "03",
-        title: "Website Design & Digital Experience",
-        definition:
-          "Custom-built websites engineered for speed, usability, and conversion. Every build is a core business asset — strategically effective, not just visually strong.",
-        outcome: "Designed for clarity. Built to convert.",
-        tags: ["Design", "Websites", "Redesign"],
-        cta: "Learn more",
-      },
-      {
-        id: "performance",
-        number: "04",
-        title: "Performance Marketing & SEO",
-        definition:
-          "Data-led campaigns across search, paid media, and conversion strategy. Every initiative tracked and aligned with revenue outcomes — not vanity metrics.",
-        outcome: "Qualified traffic. Measurable growth.",
-        tags: ["Search", "Paid", "Conversion"],
-        cta: "Learn more",
-      },
-      {
-        id: "crm",
-        number: "05",
-        title: "CRM, Automation & Email",
-        definition:
-          "Intelligent customer communication systems that increase lifetime value. CRM platforms, automation workflows, and personalized email strategies that keep brands connected at every stage.",
-        outcome: "Convert. Retain. Re-engage.",
-        tags: ["Automation", "Email", "Intelligence"],
-        cta: "Learn more",
-      },
-      {
-        id: "integration",
-        number: "06",
-        title: "Integration & Ecosystems",
-        definition:
-          "CRM, analytics, advertising, and automation tools connected into a unified operational ecosystem. No fragmentation. No blind spots. Faster decisions.",
-        outcome: "All your systems. One source of truth.",
-        tags: ["Integration", "Data", "Efficiency"],
-        cta: "Learn more",
-      },
-    ],
-  },
-
-  // ─── STATE 4: VALIDATION ────────────────────────────────────────────────────
-  validation: {
-    label: "Built for Performance",
-    statements: [
-      "Built for brands that compete across every channel.",
-      "Designed to unify data, creativity, and media into one system.",
-      "Engineered for measurable growth — not vanity metrics.",
-      "Deployed across search, paid, email, web, and cloud infrastructure.",
-    ],
-    metrics: [
-      { value: "47+", label: "Systems Deployed" },
-      { value: "12", label: "Industry Awards" },
-      { value: "98%", label: "Client Retention" },
-      { value: "5×", label: "Avg. Performance Lift" },
-    ],
-    testimonials: [
-      {
-        quote:
-          "1MW didn't just redesign our website — they transformed how the entire industry perceives us. Three competitors have tried to copy our site in the months since launch.",
-        author: "Sarah Chen",
-        title: "CEO, Nexus Capital",
-        logo: "NC",
-        metric: "+280% qualified leads",
-      },
-      {
-        quote:
-          "The team's ability to translate complex data into intuitive interfaces is genuinely rare. Our user activation rate increased 340% in 90 days.",
-        author: "Marcus Webb",
-        title: "CTO, Lumina Health",
-        logo: "LH",
-        metric: "+340% user activation",
-      },
-      {
-        quote:
-          "Every other agency was selling us a website. 1MW sold us a competitive advantage. The difference is visible in our revenue.",
-        author: "Elena Vasquez",
-        title: "CMO, Arc Architecture",
-        logo: "AA",
-        metric: "FWA Site of the Day",
-      },
-    ],
-  },
-
-  // ─── STATE 5: CONVERSION ────────────────────────────────────────────────────
-  conversion: {
-    label: "Start the conversation.",
-    primary: "One conversation to map your next move.",
-    availability: "",
-    actions: [
-      {
-        label: "Start a Project",
-        href: "mailto:hello@1mw.com",
-        primary: true,
-      },
-      {
-        label: "View Services",
-        href: "#services",
-        primary: false,
-      },
-      {
-        label: "Request a Scope Breakdown",
-        href: "mailto:hello@1mw.com",
-        primary: false,
-      },
-    ],
-    depthLabels: {
-      intro: "See how it works",
-      framing: "Explore the system",
-      mechanism: "Start a project",
-      validation: "Request a breakdown",
-      conversion: "Start now",
+  pillars: [
+    {
+      id: "collective",
+      title: "Collective",
+      definition: "Expertise & Experience",
+      outcome:
+        "While there's much to learn from the past, we're more interested in shaping what's ahead. We've invested in unique capabilities across insight, data, and innovation, and partner with best-in-class data and intelligence experts, making us the leaders of powerful marketing and advertising.",
     },
-  },
+    {
+      id: "strategy",
+      title: "Strategy",
+      definition: "No Wasted Energy",
+      outcome:
+        "Every move is mapped to a clear objective, with the right channels, messaging, and timing to back it up. Strategy isn't a deliverable here, it's how we operate.",
+    },
+    {
+      id: "identification",
+      title: "Identification",
+      definition: "Audience & Personas",
+      outcome:
+        "Uncovering the who, what, and where. We build real-world audience models, compiling segmentations, personas, and target profiles, rooted in behaviors and context.",
+    },
+    {
+      id: "creative",
+      title: "Creative",
+      definition: "Unlocking The Ah-Ha",
+      outcome:
+        "We build ideas that break through, with powerful impact. Our work doesn't just look awesome or work great, it changes what's next. We combine insight, storytelling, and design to shape your vision to show up powerfully, wherever that may be.",
+    },
+    {
+      id: "campaigns",
+      title: "Campaigns",
+      definition: "Go-to-Market Strategies",
+      outcome:
+        "From insight to launch. We build the strategic foundation, opportunities, truths, and insights, to inform and give creative its edge, giving the people what they want.",
+    },
+    {
+      id: "omnichannel",
+      title: "Omnichannel",
+      definition: "Creative Concepts",
+      outcome:
+        "Big ideas, everywhere they need to be. Our campaignable creative platforms stretch across brand, retail, social, and digital, with a clear story and strong spine.",
+    },
+    {
+      id: "production",
+      title: "Production",
+      definition: "Design Studio",
+      outcome:
+        "Fast, nimble, and on point, we handle high-volume, quick-turn creative with consistency and craft, delivering flawlessly at speed without cutting corners. What usually takes a week is done in a day.",
+    },
+    {
+      id: "reach",
+      title: "Reach",
+      definition: "Social Media",
+      outcome:
+        "Connecting people with what matters, our data and insight-driven social strategies are designed for scrolls, shares, saves, and success across the ever-shifting social landscape.",
+    },
+    {
+      id: "network",
+      title: "Network",
+      definition: "Influencers & Creators",
+      outcome:
+        "A value-add we bring to any engagement is our private network. Should your vision demand targeted reach, we can connect you with the right people to tell your story in the right way, with relevance and results.",
+    },
+    {
+      id: "partnerships",
+      title: "Partnerships",
+      definition: "Public Relations & Collaborations",
+      outcome:
+        "We build credibility and conversations at the same time, from press hits to thought leadership. We pair our clients with the right partners, from creators to companies, to amplify reach and bring values to life.",
+    },
+    {
+      id: "access",
+      title: "Access",
+      definition: "We'll Hold the Door",
+      outcome:
+        "Deep roots in this industry give us something rare, direct access, and everything we do is built to show results.",
+    },
+    {
+      id: "data",
+      title: "Data",
+      definition: "Sharing is Caring",
+      outcome:
+        "Our proprietary data sharing platform includes more than 75 million persona-backed contacts to ensure your message resonates with your target audience, while uncovering growth and ROI opportunities.",
+    },
+    {
+      id: "tracking",
+      title: "Tracking",
+      definition: "Analytics & Performance",
+      outcome:
+        "Focus on what matters by way of campaign dashboards and data storytelling to turn metrics into momentum and make your program, website, and campaigns reach around the corner or around the globe.",
+    },
+    {
+      id: "connect",
+      title: "Connect",
+      definition: "CRM & Email Marketing",
+      outcome:
+        "We build relationships through CRM and email campaigns, using grounded segmentation and personalization to keep the conversation relevant.",
+    },
+    {
+      id: "optimization",
+      title: "Optimization",
+      definition: "One Size Never Fits All",
+      outcome:
+        "We assess your current marketing infrastructure, channels, tools, and competitive position promptly. Before recommending anything, it's quite possible everything is operating perfectly, other than your coffee.",
+    },
+    {
+      id: "websites",
+      title: "Websites",
+      definition: "Design & Development",
+      outcome:
+        "Digital designed for a human experience. We create digital experiences, websites, mobile apps, and ecommerce, to drive connection throughout the entire online journey.",
+    },
+    {
+      id: "infrastructure",
+      title: "Infrastructure",
+      definition: "Cloud & Digital",
+      outcome:
+        "Full transition to scalable cloud environments, with integration of Google Workspace, domain name acquisition, configuration, and unified storage built for security and operational clarity.",
+    },
+    {
+      id: "our-story",
+      title: "Our Story",
+      definition: "One Million Watts",
+      outcome:
+        "1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design, that's where it starts. 1Megawatt is a universal measure of power, and the firm carries that same weight. Founded by Mike Wilen, we bring experts together to explore any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.",
+    },
+  ] as Pillar[],
 
-  // ─── FOOTER ─────────────────────────────────────────────────────────────────
-  footer: {
-    tagline: "Marketing systems built for growth.",
-    sub: "Marketing systems built for growth.",
-    cta: "Tell us what you're building.",
-    ctaSub: "We'll map the system behind it.",
+  conversion: {
+    title: "One",
+    definition: "Click to Map Your Next Move",
+    outcome: "Hello@1mw.com",
+    email: "hello@1mw.com",
   },
 } as const;
