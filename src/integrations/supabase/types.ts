@@ -58,7 +58,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_leads_batch: { Args: { _ids: string[] }; Returns: number }
+      insert_leads_batch: {
+        Args: { _rows: Json }
+        Returns: {
+          address_key: string
+          id: string
+          mail_address: string
+          mail_city: string
+          mail_state: string
+          mail_zip: string
+          owner_last_name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
