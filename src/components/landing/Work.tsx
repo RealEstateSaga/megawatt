@@ -41,24 +41,6 @@ export default function Work() {
           </div>
         </motion.div>
 
-        {/* Contextual CTA */}
-        <motion.div
-          className="mt-16 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-12"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-        >
-          <p className="font-mono text-fluid-xs text-mid">
-            Every engagement starts with one conversation.
-          </p>
-          <a
-            href="#contact"
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-300 tracking-widest uppercase border-b border-black/40 hover:border-black pb-1 font-semibold"
-          >
-            Start yours &rarr;
-          </a>
-        </motion.div>
       </div>
     </section>
   );
