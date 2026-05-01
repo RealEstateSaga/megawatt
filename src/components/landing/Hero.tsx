@@ -44,7 +44,7 @@ export default function Hero() {
 
       {/* ── Primary content — compresses upward on scroll ────────────────── */}
       <motion.div
-        className="relative z-20 text-center px-6 max-w-5xl mx-auto"
+        className="relative z-20 text-center px-6 max-w-7xl mx-auto"
         style={{ y, opacity, scale }}
       >
         {/* 1MW wordmark — monumental, the only focal point */}
