@@ -98,7 +98,7 @@ function HeroPillar({
         </p>
 
         {/* h3 — always visible on Hero, "1MW" highlighted bright red */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
+        <p className="font-display text-foreground text-fluid-sm leading-relaxed text-left max-w-7xl">
           <span style={{ color: "#E11D2E" }}>1MW</span> {copy.hero.h3.replace(/^1MW\s*/, "")}
         </p>
       </div>
