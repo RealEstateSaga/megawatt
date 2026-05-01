@@ -83,22 +83,22 @@ function HeroPillar({
       viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-center text-center">
+      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-start text-left">
         {/* h1 — monumental title */}
         <h1
-          className="font-display font-extrabold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-center"
+          className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {copy.hero.h1}
         </h1>
 
         {/* h2 — definition */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
           {copy.hero.h2}
         </p>
 
         {/* h3 — always visible on Hero, "1MW" highlighted bright red */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
           <span style={{ color: "#E11D2E" }}>1MW</span> {copy.hero.h3.replace(/^1MW\s*/, "")}
         </p>
       </div>
