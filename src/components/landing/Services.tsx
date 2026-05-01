@@ -149,8 +149,8 @@ function ShowcasePillar({
       viewport={{ once: true }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12">
-        {/* Monumental header */}
+      <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12 items-center text-center">
+        {/* Title — h1 */}
         <h3
           className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
           style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
@@ -158,28 +158,18 @@ function ShowcasePillar({
           Strategy &amp; Intelligence
         </h3>
 
-        {/* Stepped animation boxes */}
-        <div className="flex flex-col gap-4 md:gap-6 max-w-5xl w-full mx-auto">
-          <StepBox delay={0}>
-            <p
-              className="font-display text-off leading-[1.0] tracking-tight text-center"
-              style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)" }}
-            >
-              Strategy &amp; Intelligence
-            </p>
-          </StepBox>
+        {/* Definition — h2 */}
+        <p className="font-display text-off text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
+          Turning data complexity into clarity.
+        </p>
+      </div>
 
-          <StepBox delay={0.1}>
-            <p className="font-display text-off text-fluid-xl leading-[1.05] tracking-tight text-center">
-              Turning data complexity into clarity.
-            </p>
-          </StepBox>
-
-          <StepBox delay={0.2}>
-            <p className="text-fluid-sm text-light leading-relaxed text-center w-full">
-              There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
-            </p>
-          </StepBox>
+      {/* Outcome — h3, hover-revealed on desktop */}
+      <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
+        <div className="overflow-hidden">
+          <p className="text-fluid-sm text-light leading-relaxed text-center pb-8 md:pb-10 px-6 md:px-12 max-w-5xl mx-auto opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
+            There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
+          </p>
         </div>
       </div>
 
