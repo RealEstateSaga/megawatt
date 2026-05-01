@@ -65,8 +65,8 @@ export default function Hero() {
         {/* Category subtext — large statement */}
         <motion.p
           key={scrollIntensity}
-          className="font-display text-off max-w-5xl mx-auto leading-[1.1] tracking-tight"
-          style={{ fontSize: "clamp(2rem, 5vw, 5rem)" }}
+          className="font-display text-off max-w-none mx-auto leading-[1.0] tracking-tight text-center"
+          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 0.85 }}
