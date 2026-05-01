@@ -130,3 +130,47 @@ function PillarModule({
     </motion.div>
   );
 }
+
+function ShowcasePillar({
+  enterDuration,
+  enterDistance,
+}: {
+  enterDuration: number;
+  enterDistance: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const hoverY = useSpring(0, SPRING.medium);
+  const hoverScale = useSpring(1, SPRING.medium);
+
+  return (
+    <motion.div
+      ref={ref}
+      className="group relative border-t border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
+      style={{ y: hoverY, scale: hoverScale }}
+      onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
+      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
+      initial={{ opacity: 0, y: enterDistance }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: enterDuration, ease: EASE.cinematic }}
+    >
+      <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12">
+        {/* Monumental header — matches hero "Marketing & Advertising" size */}
+        <h3
+          className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.05] tracking-tight text-center"
+          style={{ fontSize: "clamp(2rem, 5vw, 5rem)" }}
+        >
+          Strategy &amp; Intelligence
+        </h3>
+
+        {/* Full-width definition at standard pillar text size */}
+        <p className="text-fluid-sm text-light leading-relaxed w-full text-center max-w-none">
+          Aligns marketing, creative, and media execution into a single coordinated system built around your business objectives.
+        </p>
+      </div>
+
+      {/* Bottom separator */}
+      <div className="h-px bg-border/50 mx-0" />
+    </motion.div>
+  );
+}
