@@ -34,7 +34,7 @@ export const copy = {
         title: "Full-Spectrum Marketing",
         definition:
           "Aligns marketing, creative, and media execution into a single coordinated system built around your business objectives.",
-        outcome: "Strategy, execution, and impact as one continuous system.",
+        outcome: "We uncover the best path forward. Our strategies are grounded in data and built from real research, so our clients know exactly who they're talking to, what resonates, and where the opportunity is. We bring our experts together to find what moves the needle and what moves with it.",
         tags: ["Strategy", "Execution", "Impact"],
         cta: "Learn more",
       },
