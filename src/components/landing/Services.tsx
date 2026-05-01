@@ -63,7 +63,7 @@ function HeroPillar() {
   return (
     <section
       id="hero"
-      className="relative border-t border-border/50"
+      className="relative"
     >
       <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         <FadeIn>
@@ -99,7 +99,7 @@ function HeroPillar() {
 
 function PillarModule({ pillar }: { pillar: Pillar }) {
   return (
-    <section className="relative border-t border-border/50">
+    <section className="relative">
       <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         <FadeIn>
           <h2
@@ -129,7 +129,7 @@ function ContactPillar() {
   return (
     <section
       id="contact"
-      className="relative border-t border-b border-border/50"
+      className="relative"
     >
       <div className="relative py-32 md:py-56 px-8 md:px-16 lg:px-24 flex flex-col gap-4 md:gap-6 items-start text-left">
         <FadeIn>
