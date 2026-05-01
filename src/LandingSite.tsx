@@ -2,7 +2,6 @@ import BackgroundField from "./components/landing/BackgroundField";
 import Grain from "./components/landing/Grain";
 import Nav from "./components/landing/Nav";
 import Hero from "./components/landing/Hero";
-import Marquee from "./components/landing/Marquee";
 import About from "./components/landing/About";
 import Services from "./components/landing/Services";
 import Work from "./components/landing/Work";
@@ -29,9 +28,6 @@ export default function LandingSite() {
       <main>
         {/* STATE 1: ORIENTATION */}
         <Hero />
-
-        {/* Ambient divider between Orientation and Reframing */}
-        <Marquee />
 
         {/* STATE 2: REFRAMING */}
         <About />
