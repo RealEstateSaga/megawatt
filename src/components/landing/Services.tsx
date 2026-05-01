@@ -155,7 +155,7 @@ function ShowcasePillar({
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
       <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12">
-        {/* Monumental header — matches hero "Marketing & Advertising" size */}
+        {/* Monumental header */}
         <h3
           className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
           style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
@@ -163,24 +163,55 @@ function ShowcasePillar({
           Strategy &amp; Intelligence
         </h3>
 
-        {/* Body paragraph at standard pillar text size */}
-        <p className="text-fluid-sm text-light leading-relaxed w-full text-center max-w-none">
-          There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
-        </p>
+        {/* Stepped animation boxes */}
+        <div className="flex flex-col gap-4 md:gap-6 max-w-5xl w-full mx-auto">
+          <StepBox delay={0}>
+            <p
+              className="font-display text-off leading-[1.0] tracking-tight text-center"
+              style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)" }}
+            >
+              Strategy &amp; Intelligence
+            </p>
+          </StepBox>
 
-        {/* Subheader — matches pillar title size (Full-Spectrum Marketing) */}
-        <p className="font-display text-off text-fluid-xl leading-[1.05] tracking-tight text-center">
-          Turning data complexity into clarity.
-        </p>
+          <StepBox delay={0.1}>
+            <p className="font-display text-off text-fluid-xl leading-[1.05] tracking-tight text-center">
+              Turning data complexity into clarity.
+            </p>
+          </StepBox>
 
-        {/* Closing line at standard pillar text size */}
-        <p className="text-fluid-sm text-light leading-relaxed w-full text-center max-w-none">
-          1MW is our attempt to do just that.
-        </p>
+          <StepBox delay={0.2}>
+            <p className="text-fluid-sm text-light leading-relaxed text-center w-full">
+              There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
+            </p>
+          </StepBox>
+        </div>
       </div>
 
       {/* Bottom separator */}
       <div className="h-px bg-border/50 mx-0" />
+    </motion.div>
+  );
+}
+
+function StepBox({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const hoverY = useSpring(0, SPRING.medium);
+  const hoverScale = useSpring(1, SPRING.medium);
+
+  return (
+    <motion.div
+      className="group/step relative border border-border/50 rounded-lg bg-surface/30 backdrop-blur-sm overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] hover:border-accent/40"
+      style={{ y: hoverY, scale: hoverScale }}
+      onMouseEnter={() => { hoverY.set(-4); hoverScale.set(1.01); }}
+      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 0.8, delay, ease: EASE.cinematic }}
+    >
+      <div className="px-6 md:px-12 py-8 md:py-12 flex items-center justify-center">
+        {children}
+      </div>
     </motion.div>
   );
 }
