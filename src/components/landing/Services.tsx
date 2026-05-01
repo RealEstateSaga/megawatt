@@ -40,11 +40,16 @@ export default function Services() {
 
         {/* Three pillars */}
         <div className="flex flex-col gap-px">
+          {/* Showcase / experimental large pillar */}
+          <ShowcasePillar
+            enterDuration={enterDuration}
+            enterDistance={enterDistance}
+          />
           {copy.mechanism.pillars.map((pillar, i) => (
             <PillarModule
               key={pillar.id}
               pillar={pillar}
-              index={i}
+              index={i + 1}
               enterDuration={enterDuration}
               staggerDelay={staggerDelay}
               enterDistance={enterDistance}
