@@ -62,11 +62,10 @@ export default function Footer() {
             <div className="md:grid md:grid-cols-1 md:gap-8">
               <div>
                 <h3 className="text-sm/6 font-semibold text-foreground uppercase tracking-wide">
-                  About 1MW
+                  1MW
                 </h3>
                 <p className="mt-6 text-sm/6 text-muted-foreground">
-                  1MW is a marketing and advertising engine built for momentum
-                  and measurable growth.
+                  Marketing designed for growth, and built for performance.
                 </p>
               </div>
             </div>
