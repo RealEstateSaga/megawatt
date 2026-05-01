@@ -1,79 +1,81 @@
-import { motion } from "framer-motion";
-import { EASE, DUR } from "../../engine/motion";
 import wordmark from "../../assets/1mw-wordmark.svg";
 
-
-const navLinks: { label: string; href: string }[] = [
-  { label: "1MW", href: "#" },
-  { label: "Services", href: "#services" },
-  { label: "About", href: "#work" },
-  { label: "Process", href: "#process" },
-  { label: "Contact", href: "#contact" },
-];
+const navigation = {
+  explore: [
+    { name: "Services", href: "#services" },
+    { name: "About", href: "#work" },
+    { name: "Process", href: "#process" },
+    { name: "Contact", href: "#contact" },
+  ],
+  contact: [
+    { name: "hello@1mw.com", href: "mailto:hello@1mw.com" },
+  ],
+};
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border px-6 md:px-12 pt-20 pb-12 bg-bg">
-      <div className="max-w-7xl mx-auto">
-        {/* Mini CTA — final contextual conversion point */}
-        <motion.div
-          className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-16 mb-16 border-b border-border"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: DUR.slow, ease: EASE.cinematic }}
-        >
-          <div>
-            <p className="font-display text-fluid-xl text-off mb-1">
-              Tell us what you're building.
-            </p>
-            <p className="font-mono text-fluid-xs text-mid">
-              We'll map the system behind it.
-            </p>
-          </div>
-          <a
-            href="mailto:hello@1mw.com"
-            className="flex-shrink-0 text-fluid-xs bg-black text-white px-6 py-3 tracking-wide uppercase font-semibold hover:bg-mid transition-colors duration-300"
-          >
-            Get in touch &rarr;
-          </a>
-        </motion.div>
-
-        {/* Brand block */}
-        <div className="mb-20">
+    <footer className="bg-bg border-t border-border">
+      <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8 lg:py-32">
+        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <img
-            src={wordmark}
             alt="1MW"
-            className="block h-auto mb-8"
-            style={{ width: "clamp(8rem, 16vw, 16rem)" }}
+            src={wordmark}
+            className="h-9 w-auto"
           />
-          <nav className="flex flex-wrap items-center gap-x-10 gap-y-3 mb-4">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-[#111111] hover:text-black transition-colors duration-200 tracking-wide font-sans font-medium uppercase"
-                style={{ fontSize: "clamp(1rem, 1.2vw, 1.25rem)" }}
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <a
-            href="mailto:hello@1mw.com"
-            className="font-mono text-fluid-xs text-[#111111] hover:text-black transition-colors duration-200 font-medium"
-          >
-            hello@1mw.com
-          </a>
+          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+            <div className="md:grid md:grid-cols-2 md:gap-8">
+              <div>
+                <h3 className="text-sm/6 font-semibold text-foreground uppercase tracking-wide">
+                  Explore
+                </h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  {navigation.explore.map((item) => (
+                    <li key={item.name}>
+                      <a
+                        href={item.href}
+                        className="text-sm/6 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-10 md:mt-0">
+                <h3 className="text-sm/6 font-semibold text-foreground uppercase tracking-wide">
+                  Contact
+                </h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  {navigation.contact.map((item) => (
+                    <li key={item.name}>
+                      <a
+                        href={item.href}
+                        className="text-sm/6 text-muted-foreground hover:text-foreground transition-colors font-mono"
+                      >
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="md:grid md:grid-cols-1 md:gap-8">
+              <div>
+                <h3 className="text-sm/6 font-semibold text-foreground uppercase tracking-wide">
+                  About 1MW
+                </h3>
+                <p className="mt-6 text-sm/6 text-muted-foreground">
+                  1MW is a marketing and advertising engine built for momentum
+                  and measurable growth.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Bottom bar — stacked lines */}
-        <div className="border-t border-border pt-8 flex flex-col items-start gap-2">
-          <p className="font-mono text-fluid-xs text-mid">
+        <div className="mt-16 border-t border-border pt-8">
+          <p className="text-xs/6 text-muted-foreground font-mono">
             &copy; 2026 1MW
-          </p>
-          <p className="font-mono text-fluid-xs text-mid">
-            1MW is a marketing and advertising engine built for momentum and measurable growth.
           </p>
         </div>
       </div>
