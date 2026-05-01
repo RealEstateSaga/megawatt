@@ -1,18 +1,14 @@
-import { useRef, type ReactNode } from "react";
+import { useRef } from "react";
 import { motion, useSpring } from "framer-motion";
 import { EASE, DUR, SPRING } from "../../engine/motion";
-import { copy } from "../../content/copy";
+import { copy, type Pillar } from "../../content/copy";
 import { useMotionIntensity } from "../../hooks/useMotionIntensity";
 import SectionWrapper from "./SectionWrapper";
 
 /**
- * STATE 3: MECHANISM
- *
- * Objective: Explain system capability through structured fragments.
- * Experience: Three system pillars as interactive modules, not cards.
- * Hover: depth lift + directional lighting shift.
- * Scroll: spacing increases slightly, creating breathing effect.
- * No click dependency — hover to explore is sufficient.
+ * Unified pillar stack — all sections share the same animated box.
+ * h1 (monumental title) + h2 (definition) + h3 (hover-revealed body).
+ * On mobile the body is always visible so it pops as the user scrolls.
  */
 export default function Services() {
   const { enterDuration, staggerDelay, enterDistance } = useMotionIntensity();
@@ -26,18 +22,12 @@ export default function Services() {
       fadeOnScroll={false}
     >
       <div className="max-w-7xl mx-auto">
-        {/* Three pillars */}
         <div className="flex flex-col gap-px">
-          {/* Showcase / experimental large pillar */}
-          <ShowcasePillar
-            enterDuration={enterDuration}
-            enterDistance={enterDistance}
-          />
-          {copy.mechanism.pillars.map((pillar, i) => (
+          {copy.pillars.map((pillar, i) => (
             <PillarModule
               key={pillar.id}
               pillar={pillar}
-              index={i + 1}
+              index={i}
               enterDuration={enterDuration}
               staggerDelay={staggerDelay}
               enterDistance={enterDistance}
@@ -56,15 +46,13 @@ function PillarModule({
   staggerDelay,
   enterDistance,
 }: {
-  pillar: typeof copy.mechanism.pillars[number];
+  pillar: Pillar;
   index: number;
   enterDuration: number;
   staggerDelay: number;
   enterDistance: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-
-  // Hover micro-depth via spring (no cursor tracking)
   const hoverY = useSpring(0, SPRING.medium);
   const hoverScale = useSpring(1, SPRING.medium);
 
@@ -77,29 +65,29 @@ function PillarModule({
       onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
       initial={{ opacity: 0, y: enterDistance }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, margin: "-10%" }}
       transition={{
         duration: enterDuration,
-        delay: index * staggerDelay * 2,
+        delay: Math.min(index * staggerDelay, 0.3),
         ease: EASE.cinematic,
       }}
     >
       <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12 items-center text-center">
-        {/* Title — h1 monumental */}
-        <h3
+        {/* h1 — monumental title */}
+        <h2
           className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
           style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
         >
           {pillar.title}
-        </h3>
+        </h2>
 
-        {/* Definition — h2 */}
+        {/* h2 — definition */}
         <p className="font-display text-off text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
           {pillar.definition}
         </p>
       </div>
 
-      {/* Outcome — always visible on mobile, hover-revealed on desktop */}
+      {/* h3 — body, visible on mobile, hover-revealed on desktop */}
       <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
         <div className="overflow-hidden">
           <p className="text-fluid-sm text-light leading-relaxed text-center pb-8 md:pb-10 px-6 md:px-12 max-w-5xl mx-auto opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
@@ -108,83 +96,7 @@ function PillarModule({
         </div>
       </div>
 
-      {/* Bottom separator */}
       <div className="h-px bg-border/50 mx-0" />
-    </motion.div>
-  );
-}
-
-function ShowcasePillar({
-  enterDuration,
-  enterDistance,
-}: {
-  enterDuration: number;
-  enterDistance: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const hoverY = useSpring(0, SPRING.medium);
-  const hoverScale = useSpring(1, SPRING.medium);
-
-  return (
-    <motion.div
-      ref={ref}
-      className="group relative border-t border-border/50 overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]"
-      style={{ y: hoverY, scale: hoverScale }}
-      onMouseEnter={() => { hoverY.set(-3); hoverScale.set(1.005); }}
-      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
-      initial={{ opacity: 0, y: enterDistance }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: enterDuration, ease: EASE.cinematic }}
-    >
-      <div className="relative py-12 md:py-20 px-2 md:px-0 flex flex-col gap-8 md:gap-12 items-center text-center">
-        {/* Title — h1 */}
-        <h3
-          className="font-display text-off group-hover:text-accent transition-colors duration-400 leading-[1.0] tracking-tight text-center"
-          style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
-        >
-          Strategy &amp; Intelligence
-        </h3>
-
-        {/* Definition — h2 */}
-        <p className="font-display text-off text-fluid-xl leading-[1.15] tracking-tight text-center max-w-5xl mx-auto">
-          Turning data complexity into clarity.
-        </p>
-      </div>
-
-      {/* Outcome — h3, hover-revealed on desktop */}
-      <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
-        <div className="overflow-hidden">
-          <p className="text-fluid-sm text-light leading-relaxed text-center pb-8 md:pb-10 px-6 md:px-12 max-w-5xl mx-auto opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
-            There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
-          </p>
-        </div>
-      </div>
-
-      {/* Bottom separator */}
-      <div className="h-px bg-border/50 mx-0" />
-    </motion.div>
-  );
-}
-
-function StepBox({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const hoverY = useSpring(0, SPRING.medium);
-  const hoverScale = useSpring(1, SPRING.medium);
-
-  return (
-    <motion.div
-      className="group/step relative border border-border/50 rounded-lg bg-surface/30 backdrop-blur-sm overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] hover:border-accent/40"
-      style={{ y: hoverY, scale: hoverScale }}
-      onMouseEnter={() => { hoverY.set(-4); hoverScale.set(1.01); }}
-      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: 0.8, delay, ease: EASE.cinematic }}
-    >
-      <div className="px-6 md:px-12 py-8 md:py-12 flex items-center justify-center">
-        {children}
-      </div>
     </motion.div>
   );
 }
