@@ -1,80 +1,54 @@
-# Unify scroll, add breathing room, restructure Hero & pillars
+## Plan
 
-## 1. Connect Hero into the pillar stack (no more independent header)
+### 1. `src/content/copy.ts` — copy updates
 
-Right now `Hero` is a standalone full-screen `<section>` and `Services` renders the pillar list separately. That's why the Hero "acts independently" and there's a visual gap before the first pillar.
+**Hero** — drop the `h3` fragment and merge into `h2` so all three lines render together (h1 + h2 + h3-style sub):
+- `h1`: "Marketing & Advertising" (unchanged)
+- `h2`: "There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before."
+- `h3`: `"<RED>1MW</RED> is our attempt to do just that."` — render with "1MW" in bright red (`text-destructive` / inline `style={{color:'#E11D2E'}}`).
 
-- Make the Hero render as the **first item in the same pillar list** (same border-t, same hover lift, same group hover-reveal).
-- Remove Hero's `min-h-screen` full-viewport behavior so it sits flush against "Collective" exactly like every other pillar transition.
-- Move the 1MW red wordmark into the Hero pillar's body (above the H1), keep the subtle scroll cue.
+**Our Story pillar** — swap title/definition order and rewrite outcome:
+- `title`: "One Million Watts"
+- `definition`: "Story"
+- `outcome`: "1MW is a universal measure of power, and the firm carries that same weight. 1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design, that's where it starts. Founded by Mike Wilen, we explore any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places."
 
-Result: scrolling from the wordmark → "Marketing & Advertising" → "Expertise" → … → "Our Story" → "One" is one continuous, identical-looking stack.
+**Conversion (final pillar)**:
+- `title`: "Let's Connect"
+- `definition`: "One Click to Map Your Next Move"
+- `outcome`: "hello@1mw.com"
+- `email`: "hello@1mw.com"
 
-## 2. Connect "Our Story" → "One" (close the gap)
+### 2. `src/components/landing/Services.tsx` — visual fixes
 
-`Contact.tsx` is a separate `SectionWrapper` with its own padding, which causes the gap after "Our Story". Fix:
+- **Remove the red 1MW wordmark `<motion.img>`** from `HeroPillar`. Keep only h1 + h2 + h3.
+- **Always render h3 visible** on Hero (no hover gating) so "1MW is our attempt..." shows beneath h2 with "1MW" highlighted bright red.
+- **Tighten inner text spacing, expand outer box padding**:
+  - Container: `py-32 md:py-56` (more vertical breathing room around the box content)
+  - Inner flex gap between h1 → h2 → h3: `gap-4 md:gap-6` (tight, was `gap-10 md:gap-16`)
+- **Text color**: change `text-off` → `text-foreground` (true black under landing-root). Remove `text-light` on the outcome paragraph; use `text-foreground` so all body text is black. Keep group-hover accent color change on h1/h2.
+- Apply same spacing rules (`py-32 md:py-56`, `gap-4 md:gap-6`) to `PillarModule` and `ContactPillar`.
+- Outcome paragraph remains hover-reveal on desktop / always visible on mobile for non-Hero pillars; Hero's outcome is always visible.
 
-- Render the "One / Click to Map Your Next Move / hello@1mw.com" block as the **final item inside the same pillar list** in `Services.tsx` (still a mailto link), instead of a separate `Contact` section.
-- Remove the `<Contact />` import from `LandingSite.tsx`.
+### 3. `src/components/landing/Nav.tsx` — header links
 
-## 3. Restructure Hero copy
+Replace `links` with:
+```ts
+const links = [
+  { label: "ABOUT",        href: "#hero" },        // top of page
+  { label: "CONTACT",      href: "#contact" },     // bottom
+  { label: "HELLO@1MW.COM", href: "mailto:hello@1mw.com" },
+];
+```
+All caps, three links only.
 
-In `src/content/copy.ts` `copy.hero`:
+### 4. `src/components/landing/Footer.tsx` — footer updates
 
-- **H1:** `Marketing & Advertising` (was H2)
-- **H2:** `There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.`
-- **H3 (hover-reveal / mobile-visible):** `1MW is our attempt to do just that.`
+- **Explore links** → replace with: `ABOUT` (`#hero`), `CONTACT` (`#contact`). All caps.
+- **Contact links** → `HELLO@1MW.COM` (`mailto:hello@1mw.com`), then add `MIKEWILEN.COM` linking to `https://mikewilen.com` with `target="_blank"` `rel="noopener noreferrer"`.
+- **Tagline** under "1MW" heading: change "Marketing designed for growth, and built for performance." → "Marketing & Advertising".
 
-The 1MW red wordmark stays as the visual logo above the H1 (not as H1 itself anymore).
-
-## 4. Update two pillars
-
-In `src/content/copy.ts`:
-
-- Replace `collective` pillar with:
-  - title: `Expertise`
-  - definition: `Best of the Best`
-  - outcome: `We partner with the best in the industry to ensure our clients are at the cutting edge of now and next.`
-  - (rename id to `expertise`)
-
-- Replace `identification` pillar with:
-  - title: `Audience`
-  - definition: `Persona Modeling`
-  - outcome: `Uncovering the who, what, and where with real-world audience models, compiling segmentations and target profiles, rooted in behaviors and context.`
-  - (rename id to `audience`)
-
-## 5. Breathing room — much more vertical space
-
-Currently each pillar uses `py-12 md:py-20` (≈ 48–80px). Bump to:
-
-- Pillar inner padding: `py-24 md:py-40` (≈ 96–160px top & bottom)
-- Gap between H1 and H2: `gap-10 md:gap-16` (was `gap-8 md:gap-12`)
-- Hover-revealed body bottom padding: `pb-16 md:pb-24` (was `pb-8 md:pb-10`)
-- Section wrapper: `pt-0 pb-32 md:pb-48` for the bottom of the stack
-
-## 6. Wider container — boxes near page edges
-
-Today: `max-w-7xl` (1280px) wraps the pillar list, and inner text is `max-w-5xl` (1024px).
-
-Change to:
-
-- Pillar list outer wrapper: drop `max-w-7xl mx-auto`. Use full width with horizontal page padding `px-6 md:px-12 lg:px-16` so boxes stretch nearly to the page edges (leaving ~48–64px of breathing room on desktop so the hover shadow can be enjoyed).
-- Inner text (`H2` definition + `H3` body) keeps `max-w-5xl mx-auto` so reading width stays comfortable while the **boxes themselves go wide**.
-
-Confirming the answer to your question: yes, today the boxes are constrained to 1280px (max-w-7xl) and the inner text is 1024px (max-w-5xl). After this change, boxes will span almost the full viewport width while text stays readable.
-
-## Files to edit
-
-- `src/content/copy.ts` — Hero restructure (h1/h2/h3 fields), update Collective → Expertise, Identification → Audience.
-- `src/components/landing/Hero.tsx` — refactor into a pillar-shaped block (no min-h-screen), wordmark above H1.
-- `src/components/landing/Services.tsx` — render Hero pillar first and Contact pillar last in the same stack; widen container; bump padding.
-- `src/components/landing/Contact.tsx` — delete (logic merged into Services as final pillar).
-- `src/LandingSite.tsx` — remove `<Hero />` and `<Contact />` as separate sections; only `<Services />` renders the unified stack (or keep `<Hero />` as a thin wrapper if cleaner — final decision at implementation).
-
-## Technical notes
-
-- The Hero pillar will reuse the exact `PillarModule` component so hover-lift, shadow, border-t, and grid-rows H3 reveal are byte-identical to other pillars.
-- The 1MW wordmark image stays in the Hero pillar above the H1, keeping its existing slide-up entrance animation.
-- The scroll cue (animated vertical line) stays at the bottom of the first pillar.
-- `copy.hero` shape changes from `{ title, body }` to `{ h1, h2, h3 }` — Hero component updated accordingly.
-- Pillar `id` rename (`collective`→`expertise`, `identification`→`audience`) is safe because nothing else references those ids.
+### Files touched
+- `src/content/copy.ts`
+- `src/components/landing/Services.tsx`
+- `src/components/landing/Nav.tsx`
+- `src/components/landing/Footer.tsx`

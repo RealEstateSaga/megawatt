@@ -2,13 +2,12 @@ import wordmark from "../../assets/1mw-wordmark.svg";
 
 const navigation = {
   explore: [
-    { name: "Services", href: "#services" },
-    { name: "About", href: "#work" },
-    { name: "Process", href: "#process" },
-    { name: "Contact", href: "#contact" },
+    { name: "ABOUT", href: "#hero" },
+    { name: "CONTACT", href: "#contact" },
   ],
   contact: [
-    { name: "hello@1mw.com", href: "mailto:hello@1mw.com" },
+    { name: "HELLO@1MW.COM", href: "mailto:hello@1mw.com", external: false },
+    { name: "MIKEWILEN.COM", href: "https://mikewilen.com", external: true },
   ],
 };
 
@@ -50,6 +49,9 @@ export default function Footer() {
                     <li key={item.name}>
                       <a
                         href={item.href}
+                        {...(item.external
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
                         className="text-sm/6 text-muted-foreground hover:text-foreground transition-colors font-mono"
                       >
                         {item.name}
@@ -65,7 +67,7 @@ export default function Footer() {
                   1MW
                 </h3>
                 <p className="mt-6 text-sm/6 text-muted-foreground">
-                  Marketing designed for growth, and built for performance.
+                  Marketing & Advertising
                 </p>
               </div>
             </div>
