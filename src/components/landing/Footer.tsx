@@ -67,7 +67,7 @@ export default function Footer() {
                   1MW
                 </h3>
                 <p className="mt-6 text-sm/6 text-muted-foreground">
-                  Marketing designed for growth, and built for performance.
+                  Marketing & Advertising
                 </p>
               </div>
             </div>
