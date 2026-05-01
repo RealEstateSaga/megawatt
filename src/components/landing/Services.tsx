@@ -163,6 +163,11 @@ function ShowcasePillar({
           Strategy &amp; Intelligence
         </h3>
 
+        {/* Subheader — matches pillar title size (Full-Spectrum Marketing) */}
+        <p className="font-display text-off text-fluid-xl leading-[1.05] tracking-tight text-center">
+          Turning data complexity into clarity.
+        </p>
+
         {/* Full-width definition at standard pillar text size */}
         <p className="text-fluid-sm text-light leading-relaxed w-full text-center max-w-none">
           Aligns marketing, creative, and media execution into a single coordinated system built around your business objectives.
