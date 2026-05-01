@@ -5,7 +5,6 @@ import { EASE, DUR } from "../../engine/motion";
 import logo from "../../assets/1mw-wordmark.svg";
 
 const links: { label: string; href: string }[] = [
-  { label: "1MW", href: "#" },
   { label: "Services", href: "#services" },
   { label: "About", href: "#work" },
   { label: "Process", href: "#process" },
