@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { copy, type Pillar } from "../../content/copy";
 
 /**
@@ -89,17 +90,30 @@ function Panel({
   index: number;
   isLast: boolean;
 }) {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+
+  const sheetY = useTransform(
+    scrollYProgress,
+    isLast ? [0, 0.35, 1] : [0, 0.3, 0.65, 1],
+    ["100%", "0%", "0%", "0%"]
+  );
+
   return (
     <section
+      ref={ref}
       id={id}
       className="relative"
       style={{
         height: isLast ? "100vh" : "200vh",
       }}
     >
-      <div
+      <motion.div
         className="sticky top-0 h-screen w-full overflow-hidden bg-background"
-        style={{ zIndex: index + 1 }}
+        style={{ zIndex: index + 1, y: sheetY }}
       >
         <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
           <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
@@ -128,7 +142,7 @@ function Panel({
             </motion.p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
