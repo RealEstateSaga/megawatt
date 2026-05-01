@@ -25,19 +25,6 @@ export default function Services() {
       className="px-6 md:px-12 bg-surface/50"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Centered intro statement */}
-        <div className="mb-10 md:mb-14 max-w-5xl mx-auto text-center">
-          <motion.p
-            className="font-display text-fluid-2xl text-off leading-[1.1] tracking-tight"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: DUR.cinematic, ease: EASE.cinematic }}
-          >
-            {copy.mechanism.intro}
-          </motion.p>
-        </div>
-
         {/* Three pillars */}
         <div className="flex flex-col gap-px">
           {/* Showcase / experimental large pillar */}
