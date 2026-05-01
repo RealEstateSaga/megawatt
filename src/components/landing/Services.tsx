@@ -193,3 +193,25 @@ function ShowcasePillar({
     </motion.div>
   );
 }
+
+function StepBox({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const hoverY = useSpring(0, SPRING.medium);
+  const hoverScale = useSpring(1, SPRING.medium);
+
+  return (
+    <motion.div
+      className="group/step relative border border-border/50 rounded-lg bg-surface/30 backdrop-blur-sm overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] hover:border-accent/40"
+      style={{ y: hoverY, scale: hoverScale }}
+      onMouseEnter={() => { hoverY.set(-4); hoverScale.set(1.01); }}
+      onMouseLeave={() => { hoverY.set(0); hoverScale.set(1); }}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 0.8, delay, ease: EASE.cinematic }}
+    >
+      <div className="px-6 md:px-12 py-8 md:py-12 flex items-center justify-center">
+        {children}
+      </div>
+    </motion.div>
+  );
+}
