@@ -11,9 +11,9 @@ export type Pillar = {
 
 export const copy = {
   hero: {
-    // Visual: 1MW red wordmark sits above the H1
     h1: "Marketing & Advertising",
     h2: "There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.",
+    // Rendered with "1MW" highlighted bright red in the component
     h3: "1MW is our attempt to do just that.",
   },
 
@@ -139,17 +139,17 @@ export const copy = {
     },
     {
       id: "our-story",
-      title: "Our Story",
-      definition: "One Million Watts",
+      title: "One Million Watts",
+      definition: "Story",
       outcome:
-        "1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design, that's where it starts. 1Megawatt is a universal measure of power, and the firm carries that same weight. Founded by Mike Wilen, we bring experts together to explore any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.",
+        "1MW is a universal measure of power, and the firm carries that same weight. 1MW.com is a highly desirable three-character .com, rare by nature, deliberate by design, that's where it starts. Founded by Mike Wilen, we explore any territory in pursuit of a stronger idea, taking unconventional approaches and making big, bold investments in unexpected places.",
     },
   ] as Pillar[],
 
   conversion: {
-    title: "One",
-    definition: "Click to Map Your Next Move",
-    outcome: "Hello@1mw.com",
+    title: "Let's Connect",
+    definition: "One Click to Map Your Next Move",
+    outcome: "hello@1mw.com",
     email: "hello@1mw.com",
   },
 } as const;

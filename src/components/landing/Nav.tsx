@@ -5,11 +5,9 @@ import { EASE, DUR } from "../../engine/motion";
 import logo from "../../assets/1mw-wordmark.svg";
 
 const links: { label: string; href: string }[] = [
-  { label: "Services", href: "#services" },
-  { label: "About", href: "#work" },
-  { label: "Process", href: "#process" },
-  { label: "Contact", href: "#contact" },
-  { label: "hello@1mw.com", href: "mailto:hello@1mw.com" },
+  { label: "ABOUT", href: "#hero" },
+  { label: "CONTACT", href: "#contact" },
+  { label: "HELLO@1MW.COM", href: "mailto:hello@1mw.com" },
 ];
 
 // Five dots map to five narrative states

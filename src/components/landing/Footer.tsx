@@ -2,13 +2,12 @@ import wordmark from "../../assets/1mw-wordmark.svg";
 
 const navigation = {
   explore: [
-    { name: "Services", href: "#services" },
-    { name: "About", href: "#work" },
-    { name: "Process", href: "#process" },
-    { name: "Contact", href: "#contact" },
+    { name: "ABOUT", href: "#hero" },
+    { name: "CONTACT", href: "#contact" },
   ],
   contact: [
-    { name: "hello@1mw.com", href: "mailto:hello@1mw.com" },
+    { name: "HELLO@1MW.COM", href: "mailto:hello@1mw.com", external: false },
+    { name: "MIKEWILEN.COM", href: "https://mikewilen.com", external: true },
   ],
 };
 
