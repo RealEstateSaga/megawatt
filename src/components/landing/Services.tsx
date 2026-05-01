@@ -46,6 +46,33 @@ export default function Services() {
     },
   ];
 
+  if (typeof window !== "undefined") {
+    setTimeout(() => {
+      const s = document.getElementById("services");
+      if (!s) return;
+      // eslint-disable-next-line no-console
+      console.log("[parallax-debug] #services height:", s.getBoundingClientRect().height,
+        "body.scrollHeight:", document.body.scrollHeight,
+        "innerHeight:", window.innerHeight,
+        "children:", s.children.length);
+      [...s.children].forEach((c, i) => {
+        const r = (c as HTMLElement).getBoundingClientRect();
+        const cs = getComputedStyle(c as HTMLElement);
+        // eslint-disable-next-line no-console
+        console.log(`  child[${i}]`, c.tagName, "h:", r.height, "pos:", cs.position, "top:", cs.top, "z:", cs.zIndex);
+      });
+      let p: HTMLElement | null = s.parentElement;
+      while (p && p !== document.body) {
+        const cs = getComputedStyle(p);
+        if (cs.overflow !== "visible" || cs.transform !== "none" || cs.contain !== "none") {
+          // eslint-disable-next-line no-console
+          console.log("[parallax-debug] ancestor", p.tagName, p.className, "overflow:", cs.overflow, "transform:", cs.transform, "contain:", cs.contain);
+        }
+        p = p.parentElement;
+      }
+    }, 500);
+  }
+
   return (
     <div id="services" className="relative">
       {panels.map((panel, i) => (
