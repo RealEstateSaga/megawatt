@@ -38,7 +38,7 @@ export default function Services() {
   ];
 
   return (
-    <div id="services" className="relative">
+    <div id="services" className="relative bg-background">
       {panels.map((panel, i) => (
         <Panel
           key={panel.id}
@@ -90,19 +90,18 @@ function Panel({
   index: number;
   isLast: boolean;
 }) {
-  // Outer section is 200vh (100vh of "pinned" scroll + 100vh for the next
-  // panel to slide over). Last panel is just 100vh — nothing to cover it.
   return (
     <section
       id={id}
       className="relative"
       style={{
-        height: isLast ? "100vh" : "200vh",
+        height: isLast ? "100vh" : "140vh",
         zIndex: index + 1,
       }}
     >
-      <div className="sticky top-0 h-screen w-full bg-white overflow-hidden">
-        <div className="h-full w-full px-8 md:px-16 lg:px-24 flex flex-col justify-center gap-4 md:gap-6 items-start text-left">
+      <div className="sticky top-0 h-screen w-full overflow-hidden bg-background">
+        <div className="flex h-full w-full items-end px-8 pb-[14vh] pt-24 md:px-16 lg:px-24">
+          <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
           <motion.h2
             variants={fadeUp}
             initial="hidden"
@@ -121,11 +120,12 @@ function Panel({
             whileInView="visible"
             viewport={{ once: true, margin: "-15% 0px -10% 0px" }}
             transition={{ ...fadeTransition, delay: 0.15 }}
-            className="font-montserrat font-normal leading-[1.1] tracking-[0em] text-left max-w-7xl text-black"
+            className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em] text-foreground"
             style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
           >
             {body}
           </motion.p>
+          </div>
         </div>
       </div>
     </section>
