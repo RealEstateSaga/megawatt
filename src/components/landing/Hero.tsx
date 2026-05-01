@@ -73,6 +73,26 @@ export default function Hero() {
         >
           {copy.hero.system}
         </motion.p>
+
+        {/* h2 */}
+        <motion.p
+          className="font-display text-off text-fluid-xl leading-[1.05] tracking-tight text-center mt-10 md:mt-14 max-w-5xl mx-auto"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 1.05 }}
+        >
+          There is really no mystery as to what people want, the whole idea though, is to serve it up in a way that's unique and different, and better than before.
+        </motion.p>
+
+        {/* h3 */}
+        <motion.p
+          className="text-fluid-sm text-light leading-relaxed text-center mt-6 md:mt-8 max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: DUR.normal, ease: EASE.grounded, delay: 1.2 }}
+        >
+          1MW is our attempt to do just that.
+        </motion.p>
       </motion.div>
 
       {/* ── Subtle scroll cue — implied, not labeled ─────────────────────── */}
