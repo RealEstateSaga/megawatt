@@ -1,11 +1,15 @@
-import { motion } from "framer-motion";
 import { copy, type Pillar } from "../../content/copy";
 
 /**
- * Stacking parallax.
+ * Stacking parallax (jomor.design style).
  *
- * Each panel gets extra scroll runway so the next section can rise from the
- * bottom of the viewport and cover the current one.
+ * Every panel is a direct sibling with `position: sticky; top: 0; height: 100vh`
+ * inside ONE parent. As you scroll, panel N pins at the top. When panel N+1
+ * reaches the top of the viewport, it slides UP from the bottom and — because
+ * it has a higher z-index — covers panel N which is still pinned beneath it.
+ *
+ * Visual differentiation (alternating bg/text colors) is REQUIRED — without it
+ * the overlay effect is invisible because every sheet looks identical.
  */
 export default function Services() {
   const panels = [
@@ -37,7 +41,7 @@ export default function Services() {
   ];
 
   return (
-    <div id="services" className="relative bg-background">
+    <div id="services" className="relative">
       {panels.map((panel, i) => (
         <Panel
           key={panel.id}
@@ -45,7 +49,7 @@ export default function Services() {
           title={panel.title}
           body={panel.body}
           index={i}
-          isLast={i === panels.length - 1}
+          total={panels.length}
         />
       ))}
     </div>
@@ -66,66 +70,62 @@ function renderHeroBody(): React.ReactNode {
 
 /* ────────────────────────────────────────────────────────────────────── */
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const fadeTransition = {
-  duration: 0.9,
-  ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-};
+// Alternating sheet palette so each panel sliding up over the previous
+// is clearly visible. Keep brand red for the hero accent text.
+const palette: { bg: string; fg: string }[] = [
+  { bg: "#FFFFFF", fg: "#0A0A0A" }, // white / near-black
+  { bg: "#0A0A0A", fg: "#FFFFFF" }, // near-black / white
+  { bg: "#F2F2EE", fg: "#0A0A0A" }, // bone / near-black
+  { bg: "#E11D2E", fg: "#FFFFFF" }, // brand red / white
+];
 
 function Panel({
   id,
   title,
   body,
   index,
-  isLast,
 }: {
   id: string;
   title: string;
   body: React.ReactNode;
   index: number;
-  isLast: boolean;
+  total: number;
 }) {
+  const colors = palette[index % palette.length];
+
   return (
-    <motion.section
+    <section
       id={id}
-      className="sticky top-0 h-screen overflow-hidden bg-background"
-      style={{ zIndex: index + 1 }}
-      initial={{ opacity: 0.96, y: 48 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: false, amount: 0.35 }}
-      transition={fadeTransition}
+      className="sticky top-0 h-screen w-full overflow-hidden"
+      style={{
+        zIndex: index + 1,
+        backgroundColor: colors.bg,
+        color: colors.fg,
+      }}
     >
       <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
         <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
-          <motion.h2
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: false, amount: 0.45 }}
-            transition={fadeTransition}
-            className="font-display font-bold text-foreground leading-[0.95] tracking-[-0.03em] text-left"
-            style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
+          <h2
+            className="font-display font-bold leading-[0.95] tracking-[-0.03em] text-left"
+            style={{
+              fontSize: "clamp(4rem, 13vw, 14rem)",
+              color: "inherit",
+            }}
           >
             {title}
-          </motion.h2>
+          </h2>
 
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: false, amount: 0.45 }}
-            transition={{ ...fadeTransition, delay: 0.15 }}
-            className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em] text-foreground"
-            style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
+          <p
+            className="max-w-7xl font-montserrat text-left font-normal leading-[1.1] tracking-[0em]"
+            style={{
+              fontSize: "clamp(1.4rem, 3vw, 2.4rem)",
+              color: "inherit",
+            }}
           >
             {body}
-          </motion.p>
+          </p>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }
