@@ -83,22 +83,22 @@ function HeroPillar({
       viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-center text-center">
+      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-start text-left">
         {/* h1 — monumental title */}
         <h1
-          className="font-display font-extrabold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-center"
+          className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {copy.hero.h1}
         </h1>
 
         {/* h2 — definition */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
           {copy.hero.h2}
         </p>
 
         {/* h3 — always visible on Hero, "1MW" highlighted bright red */}
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
           <span style={{ color: "#E11D2E" }}>1MW</span> {copy.hero.h3.replace(/^1MW\s*/, "")}
         </p>
       </div>
@@ -141,15 +141,15 @@ function PillarModule({
         ease: EASE.cinematic,
       }}
     >
-      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-center text-center">
+      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-start text-left">
         <h2
-          className="font-display font-extrabold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-center"
+          className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {pillar.title}
         </h2>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
           {pillar.definition}
         </p>
 
@@ -157,7 +157,7 @@ function PillarModule({
             Lives inside the same flex column so spacing stays consistent. */}
         <div className="grid grid-rows-[1fr] md:grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out w-full">
           <div className="overflow-hidden">
-            <p className="text-fluid-sm text-foreground leading-relaxed text-center max-w-7xl mx-auto opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
+            <p className="text-fluid-sm text-foreground leading-relaxed text-left max-w-7xl opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-400 delay-100">
               {pillar.outcome}
             </p>
           </div>
@@ -192,21 +192,21 @@ function ContactPillar({
       viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: enterDuration, ease: EASE.cinematic }}
     >
-      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-center text-center">
+      <div className="relative py-32 md:py-56 px-4 md:px-8 lg:px-10 flex flex-col gap-4 md:gap-6 items-start text-left">
         <h2
-          className="font-display font-extrabold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-center"
+          className="font-display font-bold text-foreground group-hover:text-accent transition-colors duration-400 leading-[0.95] tracking-[-0.03em] text-left"
           style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
         >
           {copy.conversion.title}
         </h2>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-left max-w-7xl">
           {copy.conversion.definition}
         </p>
 
-        <p className="font-display text-foreground text-fluid-xl leading-[1.15] tracking-[-0.02em] text-center max-w-7xl mx-auto">
+        <h3 className="font-display font-bold text-foreground text-fluid-sm leading-relaxed text-left max-w-7xl">
           {copy.conversion.outcome}
-        </p>
+        </h3>
       </div>
     </motion.a>
   );

@@ -98,7 +98,7 @@ export const copy = {
     {
       id: "data",
       title: "Data",
-      definition: "Sharing is Caring",
+      definition: "Persona Backed Contacts",
       outcome:
         "Our proprietary data sharing platform includes more than 75 million persona-backed contacts to ensure your message resonates with your target audience, while uncovering growth and ROI opportunities.",
     },
