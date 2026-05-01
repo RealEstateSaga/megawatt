@@ -9,6 +9,7 @@ const links: { label: string; href: string }[] = [
   { label: "About", href: "#work" },
   { label: "Process", href: "#process" },
   { label: "Contact", href: "#contact" },
+  { label: "hello@1mw.com", href: "mailto:hello@1mw.com" },
 ];
 
 // Five dots map to five narrative states
@@ -46,23 +47,21 @@ export default function Nav() {
           <img src={logo} alt="1MW" className="h-6 w-auto" />
         </a>
 
-        {/* Desktop links — right aligned, generous spacing */}
-        <div className="hidden md:flex items-center gap-12 lg:gap-14 ml-auto mr-8">
+        {/* Desktop links — right aligned */}
+        <div className="hidden md:flex items-center gap-8 lg:gap-10 ml-auto mr-8">
           {links.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-[#111111] hover:text-black transition-colors duration-200 tracking-wide uppercase font-sans font-medium"
-              style={{ fontSize: "clamp(1rem, 1.2vw, 1.25rem)" }}
+              className="text-sm font-semibold text-[#111111] hover:text-black transition-colors duration-200"
             >
               {link.label}
             </a>
           ))}
         </div>
 
-        {/* Right side: narrative indicator + CTA */}
+        {/* Right side: narrative indicator */}
         <div className="hidden md:flex items-center gap-6">
-          {/* Narrative state dots — subtle progress signal */}
           <div className="flex items-center gap-1.5" aria-hidden="true">
             {NARRATIVE_ORDER.map((state) => (
               <motion.div
@@ -78,13 +77,6 @@ export default function Nav() {
               />
             ))}
           </div>
-
-          <a
-            href="#contact"
-            className="text-fluid-xs bg-black text-white px-5 py-2 tracking-wide uppercase font-semibold hover:bg-mid transition-colors duration-300"
-          >
-            Start a Project
-          </a>
         </div>
 
         {/* Mobile menu toggle */}
