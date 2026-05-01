@@ -25,7 +25,7 @@ export default function Services() {
       id="services"
       phase="mechanism"
       padding="pt-0 pb-32 md:pb-48"
-      className="px-6 md:px-12 lg:px-16 bg-bg"
+      className="px-0 bg-bg"
       fadeOnScroll={false}
     >
       <div className="w-full">
