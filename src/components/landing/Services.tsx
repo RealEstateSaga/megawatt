@@ -2,26 +2,23 @@ import { motion } from "framer-motion";
 import { copy, type Pillar } from "../../content/copy";
 
 /**
- * Stacking parallax — every pillar is a full-viewport sticky panel.
- * As the user scrolls, the next panel slides up and over the previous one
- * (jomor.design-style). Each panel has a solid background so it visually
- * occludes the one beneath it.
+ * Stacking parallax (jomor.design-style).
+ *
+ * Each panel is a tall scroll container (200vh). Inside, a sticky child pins
+ * for one full viewport, then the next panel scrolls up over the top of it.
+ * Solid white backgrounds occlude the panel beneath.
  */
 export default function Services() {
-  const panels: Array<{
-    id: string;
-    title: string;
-    body: React.ReactNode;
-  }> = [
+  const panels = [
     {
       id: "hero",
       title: copy.hero.h1,
-      body: <HeroBody />,
+      body: renderHeroBody(),
     },
     ...copy.pillars.map((p: Pillar) => ({
       id: p.id,
       title: p.title,
-      body: <>{p.body}</>,
+      body: <>{p.body}</> as React.ReactNode,
     })),
     {
       id: "contact",
@@ -49,7 +46,7 @@ export default function Services() {
           title={panel.title}
           body={panel.body}
           index={i}
-          total={panels.length}
+          isLast={i === panels.length - 1}
         />
       ))}
     </div>
@@ -58,20 +55,14 @@ export default function Services() {
 
 /* ────────────────────────────────────────────────────────────────────── */
 
-function HeroBody() {
+function renderHeroBody(): React.ReactNode {
   const parts = copy.hero.body.split("1MW");
-  return (
-    <>
-      {parts.map((part, i) => (
-        <span key={i}>
-          {part}
-          {i < parts.length - 1 && (
-            <span style={{ color: "#E11D2E" }}>1MW</span>
-          )}
-        </span>
-      ))}
-    </>
-  );
+  return parts.map((part, i) => (
+    <span key={i}>
+      {part}
+      {i < parts.length - 1 && <span style={{ color: "#E11D2E" }}>1MW</span>}
+    </span>
+  ));
 }
 
 /* ────────────────────────────────────────────────────────────────────── */
@@ -91,26 +82,26 @@ function Panel({
   title,
   body,
   index,
+  isLast,
 }: {
   id: string;
   title: string;
   body: React.ReactNode;
   index: number;
-  total: number;
+  isLast: boolean;
 }) {
-  // Each panel is a tall scroll container; an inner sticky element holds the
-  // visible viewport-sized card. As you scroll past the container, the next
-  // panel's sticky card slides up and covers this one.
+  // Outer section is 200vh (100vh of "pinned" scroll + 100vh for the next
+  // panel to slide over). Last panel is just 100vh — nothing to cover it.
   return (
     <section
       id={id}
       className="relative"
-      style={{ height: "100vh" }}
+      style={{
+        height: isLast ? "100vh" : "200vh",
+        zIndex: index + 1,
+      }}
     >
-      <div
-        className="sticky top-0 h-screen w-full bg-white overflow-hidden"
-        style={{ zIndex: index + 1 }}
-      >
+      <div className="sticky top-0 h-screen w-full bg-white overflow-hidden">
         <div className="h-full w-full px-8 md:px-16 lg:px-24 flex flex-col justify-center gap-4 md:gap-6 items-start text-left">
           <motion.h2
             variants={fadeUp}
