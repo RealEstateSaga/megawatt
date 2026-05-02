@@ -43,23 +43,32 @@ export default function LandingSite() {
     let raf = 0;
     const compute = () => {
       raf = 0;
-      const line = window.innerHeight * 0.4;
-      let bestId = elements[0].id;
-      let bestDelta = Number.POSITIVE_INFINITY;
+
+      // If we're truly at the top of the page, always show "Home".
+      if (window.scrollY < 8) {
+        setActiveId((prev) => (prev === "hero" ? prev : "hero"));
+        return;
+      }
+
+      // The active section is the LAST one whose top has crossed our
+      // reference line (a stable point near the top of the viewport).
+      // Iterating in document order and tracking the latest match avoids
+      // flicker and prevents falling back to "Home" mid-scroll.
+      const line = Math.max(1, window.innerHeight * 0.25);
+      let activeIdLocal = elements[0].id;
 
       for (const el of elements) {
         const rect = el.getBoundingClientRect();
-        // Distance of section top above the reference line; only consider
-        // sections whose top has crossed the line (top <= line).
-        const delta = line - rect.top;
-        if (delta >= 0 && delta < bestDelta) {
-          bestDelta = delta;
-          bestId = el.id;
+        if (rect.top - line <= 0) {
+          activeIdLocal = el.id;
+        } else {
+          break;
         }
       }
 
-      setActiveId((prev) => (prev === bestId ? prev : bestId));
+      setActiveId((prev) => (prev === activeIdLocal ? prev : activeIdLocal));
     };
+
 
     const schedule = () => {
       if (raf) return;
