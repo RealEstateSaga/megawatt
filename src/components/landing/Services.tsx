@@ -1,14 +1,16 @@
 import { copy, type Pillar } from "../../content/copy";
+import "./stack.css";
 
-const panelTones = [
-  "landing-panel-tone-1",
-  "landing-panel-tone-2",
-  "landing-panel-tone-3",
-  "landing-panel-tone-4",
-] as const;
+type PanelData = {
+  id: string;
+  title: string;
+  body: React.ReactNode;
+};
 
-export default function Services() {
-  const panels = [
+const toneClasses = ["panel-white", "panel-black", "panel-bone", "panel-red"];
+
+export default function StackScroll() {
+  const panels: PanelData[] = [
     {
       id: "hero",
       title: copy.hero.h1,
@@ -17,7 +19,7 @@ export default function Services() {
     ...copy.pillars.map((pillar: Pillar) => ({
       id: pillar.id,
       title: pillar.title,
-      body: <>{pillar.body}</> as React.ReactNode,
+      body: pillar.body,
     })),
     {
       id: "contact",
@@ -25,10 +27,7 @@ export default function Services() {
       body: (
         <>
           {copy.conversion.body}{" "}
-          <a
-            href={`mailto:${copy.conversion.email}`}
-            className="underline transition-opacity hover:opacity-70"
-          >
+          <a className="contact-link" href={`mailto:${copy.conversion.email}`}>
             {copy.conversion.email}
           </a>
         </>
@@ -37,71 +36,60 @@ export default function Services() {
   ];
 
   return (
-    <div id="services" className="relative">
+    <main className="stack-main">
       {panels.map((panel, index) => (
         <Panel
           key={panel.id}
           id={panel.id}
           title={panel.title}
           body={panel.body}
-          index={index}
+          tone={toneClasses[index % toneClasses.length]}
+          zIndex={index + 1}
+          isLast={index === panels.length - 1}
         />
       ))}
-    </div>
+    </main>
   );
-}
-
-function renderHeroBody(): React.ReactNode {
-  const parts = copy.hero.body.split("1MW");
-
-  return parts.map((part, index) => (
-    <span key={`${part}-${index}`}>
-      {part}
-      {index < parts.length - 1 && <span className="landing-brand-text">1MW</span>}
-    </span>
-  ));
 }
 
 function Panel({
   id,
   title,
   body,
-  index,
+  tone,
+  zIndex,
+  isLast,
 }: {
   id: string;
   title: string;
   body: React.ReactNode;
-  index: number;
+  tone: string;
+  zIndex: number;
+  isLast: boolean;
 }) {
-  const toneClass = panelTones[index % panelTones.length];
-
   return (
-    <article className="relative h-[200vh]">
-      <div
+    <>
+      <section
         id={id}
-        className="sticky top-0 h-screen overflow-hidden"
-        style={{ zIndex: index + 1 }}
+        className={`panel ${tone}`}
+        style={{ zIndex }}
       >
-        <section className={`relative flex h-screen w-full overflow-hidden ${toneClass}`}>
-          <div className="flex h-full w-full items-start px-8 pb-10 pt-24 md:px-16 md:pt-28 lg:px-24 lg:pt-32">
-            <div className="flex w-full flex-col items-start gap-4 text-left md:gap-6">
-              <h2
-                className="font-display text-left font-bold leading-[0.95] tracking-[-0.03em]"
-                style={{ fontSize: "clamp(4rem, 13vw, 14rem)" }}
-              >
-                {title}
-              </h2>
-
-              <p
-                className="max-w-7xl text-left font-montserrat font-normal leading-[1.1] tracking-[0em]"
-                style={{ fontSize: "clamp(1.4rem, 3vw, 2.4rem)" }}
-              >
-                {body}
-              </p>
-            </div>
-          </div>
-        </section>
-      </div>
-    </article>
+        <div className="panel-content">
+          <h2 className="panel-title">{title}</h2>
+          <p className="panel-body">{body}</p>
+        </div>
+      </section>
+      {!isLast && <div className="spacer" aria-hidden="true" />}
+    </>
   );
+}
+
+function renderHeroBody(): React.ReactNode {
+  const parts = copy.hero.body.split("1MW");
+  return parts.map((part, index) => (
+    <span key={index}>
+      {part}
+      {index < parts.length - 1 && <span className="brand-mark">1MW</span>}
+    </span>
+  ));
 }

@@ -1,0 +1,77 @@
+/* Native sticky-stack scroll panels — no JS, no transforms, no animations. */
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: #ffffff;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+.stack-main {
+  position: relative;
+  width: 100%;
+}
+
+.panel {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spacer {
+  height: 100vh;
+  width: 100%;
+}
+
+.panel-content {
+  width: 100%;
+  max-width: 1600px;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.5rem;
+}
+
+.panel-title {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(4rem, 13vw, 14rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.panel-body {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  line-height: 1.2;
+  max-width: 80rem;
+  margin: 0;
+}
+
+.panel-white { background: #ffffff; color: #0a0a0a; }
+.panel-black { background: #0a0a0a; color: #ffffff; }
+.panel-bone  { background: #f2f2ee; color: #0a0a0a; }
+.panel-red   { background: #e11d2e; color: #ffffff; }
+
+.brand-mark { color: #e11d2e; }
+
+.contact-link {
+  color: inherit;
+  text-decoration: underline;
+}
