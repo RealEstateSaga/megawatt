@@ -63,16 +63,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  scroll-margin-top: 6rem;
 }
 
 .spacer {
-  position: relative;
-  height: 100vh;
+  height: 0;
   width: 100%;
 }
 
 .panel:first-child .panel-content {
   padding-top: 4rem;
+}
+
+.panel:first-child .panel-title {
+  max-width: 12ch;
 }
 
 .panel-content {
@@ -81,9 +85,9 @@
   padding: 0 2rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  text-align: center;
+  text-align: left;
   gap: 1.5rem;
 }
 
@@ -101,8 +105,12 @@
   font-weight: 400;
   font-size: clamp(1.4rem, 3vw, 2.4rem);
   line-height: 1.2;
-  max-width: 80rem;
+  max-width: 48rem;
   margin: 0;
+}
+
+.panel-body span {
+  display: inline;
 }
 
 .panel-white { background: #ffffff; color: #0a0a0a; }
