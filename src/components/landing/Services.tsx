@@ -88,8 +88,8 @@ function Panel({
   showScrollHint: boolean;
 }) {
   return (
-    <>
-      <section id={id} className="panel panel-white" style={{ zIndex }}>
+    <div className="panel-track" style={{ zIndex }}>
+      <section id={id} className="panel panel-white">
         {showScrollHint && (
           <div className="scroll-hint" aria-hidden="true">
             <ChevronDown size={32} strokeWidth={2.5} />
@@ -100,8 +100,7 @@ function Panel({
           <p className="panel-body">{body}</p>
         </div>
       </section>
-      {!isLast && <div className="spacer" aria-hidden="true" />}
-    </>
+    </div>
   );
 }
 
