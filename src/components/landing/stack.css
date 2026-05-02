@@ -146,7 +146,18 @@
   display: inline;
 }
 
-.panel-white { background: #ffffff; color: #0a0a0a; }
+/* Panels are slightly translucent so the previous panel's text bleeds
+   through faintly during the sticky-stack transition (designer note: ~15-20%). */
+.panel-white {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0a0a0a;
+}
+
+/* The first panel sits on the page background — keep it fully opaque
+   so there is nothing visible behind it. */
+.panel:first-of-type.panel-white {
+  background: #ffffff;
+}
 
 .brand-mark { color: #e11d2e; }
 
