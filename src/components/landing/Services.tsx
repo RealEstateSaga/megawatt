@@ -68,19 +68,15 @@ function Panel({
   isLast: boolean;
 }) {
   return (
-    <>
-      <section
-        id={id}
-        className={`panel ${tone}`}
-        style={{ zIndex }}
-      >
+    <div className="panel-wrap" style={{ zIndex }}>
+      <section id={id} className={`panel ${tone}`}>
         <div className="panel-content">
           <h2 className="panel-title">{title}</h2>
           <p className="panel-body">{body}</p>
         </div>
       </section>
       {!isLast && <div className="spacer" aria-hidden="true" />}
-    </>
+    </div>
   );
 }
 
