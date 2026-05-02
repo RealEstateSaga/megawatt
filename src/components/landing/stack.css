@@ -88,16 +88,8 @@
   width: 100%;
 }
 
-/* Each panel lives inside a tall track. The track provides scroll
-   distance; the panel inside is sticky for the duration of its track,
-   then scrolls up out of view naturally — so the previous panel keeps
-   moving up beneath the next one (visible through the ~15% transparency). */
-.panel-track {
-  position: relative;
-  width: 100%;
-  height: 200vh;
-}
-
+/* Panels are sticky and full-height — each new panel slides over
+   the previous one as the user scrolls. */
 .panel {
   position: sticky;
   top: 0;
@@ -109,16 +101,11 @@
   scroll-margin-top: 6rem;
 }
 
-/* Last track only needs one viewport — nothing follows it. */
-.panel-track:last-of-type {
-  height: 100vh;
-}
-
-.panel-track:first-of-type .panel-content {
+.panel:first-of-type .panel-content {
   padding-top: 4rem;
 }
 
-.panel-track:first-of-type .panel-title {
+.panel:first-of-type .panel-title {
   max-width: 12ch;
 }
 
@@ -156,17 +143,9 @@
   display: inline;
 }
 
-/* Panels are slightly translucent so the previous panel's text bleeds
-   through faintly during the sticky-stack transition (designer note: ~15-20%). */
 .panel-white {
-  background: rgba(255, 255, 255, 0.85);
-  color: #0a0a0a;
-}
-
-/* The first panel sits on the page background — keep it fully opaque
-   so there is nothing visible behind it. */
-.panel:first-of-type.panel-white {
   background: #ffffff;
+  color: #0a0a0a;
 }
 
 .brand-mark { color: #e11d2e; }
