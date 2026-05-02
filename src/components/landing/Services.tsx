@@ -35,7 +35,8 @@ export default function StackScroll() {
       title: copy.conversion.title,
       body: (
         <>
-          {copy.conversion.body}{" "}
+          {copy.conversion.body}
+          <br />
           <a className="contact-link" href={`mailto:${copy.conversion.email}`}>
             {copy.conversion.email}
           </a>
