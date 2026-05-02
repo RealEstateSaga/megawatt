@@ -62,7 +62,8 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  scroll-margin-top: 6rem;
 }
 
 .spacer {
@@ -77,13 +78,13 @@
 
 .panel-content {
   width: 100%;
-  max-width: 1600px;
+  max-width: 100%;
   padding: 0 2rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  text-align: center;
+  text-align: left;
   gap: 1.5rem;
 }
 
@@ -101,8 +102,12 @@
   font-weight: 400;
   font-size: clamp(1.4rem, 3vw, 2.4rem);
   line-height: 1.2;
-  max-width: 80rem;
+  max-width: 48rem;
   margin: 0;
+}
+
+.panel-body span {
+  display: inline;
 }
 
 .panel-white { background: #ffffff; color: #0a0a0a; }
