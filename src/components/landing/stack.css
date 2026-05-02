@@ -7,12 +7,9 @@ body,
   padding: 0;
   width: 100%;
   background: #ffffff;
+  overflow: visible;
 }
 
-html,
-body {
-  overflow-x: hidden;
-}
 
 .stack-main {
   position: relative;
