@@ -45,7 +45,6 @@ export default function Services() {
           title={panel.title}
           body={panel.body}
           index={index}
-          isLast={index === panels.length - 1}
         />
       ))}
     </div>
@@ -68,18 +67,16 @@ function Panel({
   title,
   body,
   index,
-  isLast,
 }: {
   id: string;
   title: string;
   body: React.ReactNode;
   index: number;
-  isLast: boolean;
 }) {
   const toneClass = panelTones[index % panelTones.length];
 
   return (
-    <article className={isLast ? "relative h-[120vh]" : "relative h-[185vh]"}>
+    <article className="relative h-[200vh]">
       <div
         id={id}
         className="sticky top-0 h-screen overflow-hidden"
