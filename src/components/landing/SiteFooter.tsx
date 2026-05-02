@@ -1,30 +1,61 @@
 import logo from "@/assets/1mw-logo.svg";
 
 const navigation = {
-  solutions: [
-    { name: "Marketing", href: "#" },
-    { name: "Analytics", href: "#" },
-    { name: "Automation", href: "#" },
-    { name: "Commerce", href: "#" },
-    { name: "Insights", href: "#" },
+  nav: [
+    { name: "Home", href: "#hero" },
+    { name: "Contact", href: "#contact" },
   ],
-  support: [
-    { name: "Submit ticket", href: "#" },
-    { name: "Documentation", href: "#" },
-    { name: "Guides", href: "#" },
+  network: [
+    { name: "MikeWilen.com", href: "https://MikeWilen.com" },
+    { name: "MinnesotaTeam.com", href: "https://MinnesotaTeam.com" },
+    { name: "NONMLS.com", href: "https://NONMLS.com" },
+    { name: "RealEstateHedge.com", href: "https://RealEstateHedge.com" },
   ],
-  company: [
-    { name: "About", href: "#" },
-    { name: "Blog", href: "#" },
-    { name: "Jobs", href: "#" },
-    { name: "Press", href: "#" },
+  connect: [
+    { name: "hello@1mw.com", href: "mailto:hello@1mw.com" },
   ],
-  legal: [
-    { name: "Terms of service", href: "#" },
-    { name: "Privacy policy", href: "#" },
-    { name: "License", href: "#" },
+  oneMW: [
+    { name: "Marketing & Advertising", href: "#hero" },
   ],
 };
+
+const handleAnchor = (href: string) => (e: React.MouseEvent) => {
+  if (!href.startsWith("#")) return;
+  e.preventDefault();
+  if (href === "#hero") {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (href === "#contact") {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  } else {
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+  }
+};
+
+function Column({ heading, items }: { heading: string; items: { name: string; href: string }[] }) {
+  return (
+    <div>
+      <h3 className="text-sm/6 font-semibold text-gray-900">{heading}</h3>
+      <ul role="list" className="mt-6 space-y-4">
+        {items.map((item) => {
+          const isExternal = /^https?:/.test(item.href);
+          const isAnchor = item.href.startsWith("#");
+          return (
+            <li key={item.name}>
+              <a
+                href={item.href}
+                onClick={isAnchor ? handleAnchor(item.href) : undefined}
+                {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className="text-sm/6 text-gray-600 hover:text-gray-900"
+              >
+                {item.name}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 export default function SiteFooter() {
   return (
@@ -34,55 +65,15 @@ export default function SiteFooter() {
           <img alt="1MW Marketing" src={logo} className="h-9" />
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900">Solutions</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.solutions.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <Column heading="Navigation" items={navigation.nav} />
               <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900">Support</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.support.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <Column heading="Network" items={navigation.network} />
               </div>
             </div>
             <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900">Company</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.company.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <Column heading="Connect" items={navigation.connect} />
               <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900">Legal</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.legal.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <Column heading="1MW" items={navigation.oneMW} />
               </div>
             </div>
           </div>

@@ -50,21 +50,14 @@ export default function LandingSite() {
         return;
       }
 
-      // The active section is the LAST one whose top has crossed our
-      // reference line (a stable point near the top of the viewport).
-      // Iterating in document order and tracking the latest match avoids
-      // flicker and prevents falling back to "Home" mid-scroll.
-      const line = Math.max(1, window.innerHeight * 0.25);
-      let activeIdLocal = elements[0].id;
-
-      for (const el of elements) {
-        const rect = el.getBoundingClientRect();
-        if (rect.top - line <= 0) {
-          activeIdLocal = el.id;
-        } else {
-          break;
-        }
-      }
+      // Each panel is sticky and 100vh tall, stacking in document order.
+      // The active panel index = floor(scrollY / viewportHeight), clamped.
+      const vh = window.innerHeight;
+      const idx = Math.min(
+        elements.length - 1,
+        Math.max(0, Math.floor((window.scrollY + vh * 0.25) / vh)),
+      );
+      const activeIdLocal = elements[idx].id;
 
       setActiveId((prev) => (prev === activeIdLocal ? prev : activeIdLocal));
     };
