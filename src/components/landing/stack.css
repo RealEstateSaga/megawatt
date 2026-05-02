@@ -1,15 +1,54 @@
 /* Native sticky-stack scroll panels — no JS, no transforms, no animations. */
 
-html,
-body,
-#root {
-  margin: 0;
-  padding: 0;
+.landing-stack-page {
   width: 100%;
   background: #ffffff;
-  overflow: visible;
+  color: #0a0a0a;
 }
 
+.site-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.5rem 2rem;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.site-logo-link,
+.site-nav-link,
+.site-footer-link,
+.site-footer-email {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-logo {
+  display: block;
+  width: auto;
+  height: 1.5rem;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.site-nav-link,
+.site-footer-link,
+.site-footer-email {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
 .stack-main {
   position: relative;
@@ -30,6 +69,10 @@ body,
   position: relative;
   height: 100vh;
   width: 100%;
+}
+
+.panel:first-child .panel-content {
+  padding-top: 4rem;
 }
 
 .panel-content {
@@ -72,4 +115,41 @@ body,
 .contact-link {
   color: inherit;
   text-decoration: underline;
+}
+
+.site-footer {
+  background: #ffffff;
+  padding: 4rem 2rem 3rem;
+}
+
+.site-footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.site-footer-logo {
+  display: block;
+  width: auto;
+  height: 1.5rem;
+}
+
+.site-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+
+.site-footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.site-footer-meta p {
+  margin: 0;
 }
