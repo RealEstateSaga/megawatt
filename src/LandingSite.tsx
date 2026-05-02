@@ -1,27 +1,45 @@
+import { useEffect, useState } from "react";
 import StackScroll from "./components/landing/Services";
+import SiteFooter from "./components/landing/SiteFooter";
 import logo from "@/assets/1mw-logo.svg";
 
 export default function LandingSite() {
-  const navLinks = [
-    { label: "Services", href: "#partners" },
-    { label: "Work", href: "#campaigns" },
-    { label: "Process", href: "#systems" },
-    { label: "About", href: "#about" },
-  ];
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleContact = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  const handleHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="landing-stack-page">
-      <header className="site-header" aria-label="Primary">
-        <a className="site-logo-link" href="#hero" aria-label="1MW Marketing home">
+      <header
+        className={`site-header${scrolled ? " site-header--scrolled" : ""}`}
+        aria-label="Primary"
+      >
+        <a className="site-logo-link" href="#hero" onClick={handleHome} aria-label="1MW Marketing home">
           <img src={logo} alt="1MW Marketing" className="site-logo" />
         </a>
 
         <nav className="site-nav">
-          {navLinks.map((link) => (
-            <a key={link.label} href={link.href} className="site-nav-link">
-              {link.label}
-            </a>
-          ))}
+          <a href="#hero" onClick={handleHome} className="site-nav-link">
+            HOME
+          </a>
+          <a href="#contact" onClick={handleContact} className="site-nav-link">
+            CONTACT
+          </a>
           <a href="mailto:hello@1mw.com" className="site-nav-link">
             HELLO@1MW.COM
           </a>
@@ -30,25 +48,7 @@ export default function LandingSite() {
 
       <StackScroll />
 
-      <footer className="site-footer">
-        <div className="site-footer-inner">
-          <img src={logo} alt="1MW Marketing" className="site-footer-logo" />
-          <nav className="site-footer-nav" aria-label="Footer">
-            {navLinks.map((link) => (
-              <a key={link.label} href={link.href} className="site-footer-link">
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <a href="mailto:hello@1mw.com" className="site-footer-email">
-            hello@1mw.com
-          </a>
-          <div className="site-footer-meta">
-            <p>© 2026 1MW</p>
-            <p>Marketing designed for growth, and built for performance.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -15,13 +15,18 @@
   justify-content: space-between;
   gap: 2rem;
   padding: 1.5rem 2rem;
-  background: rgba(255, 255, 255, 0.94);
+  background: #ffffff;
+  transition: background-color 200ms ease;
+}
+
+.site-header--scrolled {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .site-logo-link,
-.site-nav-link,
-.site-footer-link,
-.site-footer-email {
+.site-nav-link {
   color: inherit;
   text-decoration: none;
 }
@@ -40,14 +45,13 @@
   justify-content: flex-end;
 }
 
-.site-nav-link,
-.site-footer-link,
-.site-footer-email {
+.site-nav-link {
   font-family: 'Montserrat', system-ui, sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  cursor: pointer;
 }
 
 .stack-main {
@@ -114,9 +118,6 @@
 }
 
 .panel-white { background: #ffffff; color: #0a0a0a; }
-.panel-black { background: #0a0a0a; color: #ffffff; }
-.panel-bone  { background: #f2f2ee; color: #0a0a0a; }
-.panel-red   { background: #e11d2e; color: #ffffff; }
 
 .brand-mark { color: #e11d2e; }
 
@@ -125,39 +126,44 @@
   text-decoration: underline;
 }
 
-.site-footer {
-  background: #ffffff;
-  padding: 4rem 2rem 3rem;
+/* Bouncing scroll-down chevron at top of each panel */
+.scroll-hint {
+  position: absolute;
+  top: 6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #0a0a0a;
+  opacity: 0.7;
+  animation: scroll-hint-bounce 1.6s ease-in-out infinite;
+  pointer-events: none;
 }
 
-.site-footer-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1rem;
+@keyframes scroll-hint-bounce {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 12px); }
 }
 
-.site-footer-logo {
-  display: block;
-  width: auto;
-  height: 1.5rem;
+/* Back-to-top button, fixed bottom-right */
+.back-to-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 200;
+  width: 3rem;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #0a0a0a;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 150ms ease, background-color 150ms ease;
 }
 
-.site-footer-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-}
-
-.site-footer-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-family: 'Montserrat', system-ui, sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.site-footer-meta p {
-  margin: 0;
+.back-to-top:hover {
+  background: #1a1a1a;
+  transform: translateY(-2px);
 }

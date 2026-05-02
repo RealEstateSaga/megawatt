@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { copy, type Pillar } from "../../content/copy";
 import "./stack.css";
 
@@ -7,9 +9,16 @@ type PanelData = {
   body: React.ReactNode;
 };
 
-const toneClasses = ["panel-white", "panel-black", "panel-bone", "panel-red"];
-
 export default function StackScroll() {
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > window.innerHeight * 0.6);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const panels: PanelData[] = [
     {
       id: "hero",
@@ -43,11 +52,22 @@ export default function StackScroll() {
           id={panel.id}
           title={panel.title}
           body={panel.body}
-          tone={toneClasses[index % toneClasses.length]}
           zIndex={index + 1}
           isLast={index === panels.length - 1}
+          showScrollHint={index === 0}
         />
       ))}
+
+      {showTop && (
+        <button
+          type="button"
+          className="back-to-top"
+          aria-label="Back to top"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          <ChevronUp size={28} strokeWidth={2.5} />
+        </button>
+      )}
     </main>
   );
 }
@@ -56,20 +76,25 @@ function Panel({
   id,
   title,
   body,
-  tone,
   zIndex,
   isLast,
+  showScrollHint,
 }: {
   id: string;
   title: string;
   body: React.ReactNode;
-  tone: string;
   zIndex: number;
   isLast: boolean;
+  showScrollHint: boolean;
 }) {
   return (
     <>
-      <section id={id} className={`panel ${tone}`} style={{ zIndex }}>
+      <section id={id} className="panel panel-white" style={{ zIndex }}>
+        {showScrollHint && (
+          <div className="scroll-hint" aria-hidden="true">
+            <ChevronDown size={32} strokeWidth={2.5} />
+          </div>
+        )}
         <div className="panel-content">
           <h2 className="panel-title">{title}</h2>
           <p className="panel-body">{body}</p>
