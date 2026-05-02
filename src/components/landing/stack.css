@@ -88,6 +88,16 @@
   width: 100%;
 }
 
+/* Each panel lives inside a tall track. The track provides scroll
+   distance; the panel inside is sticky for the duration of its track,
+   then scrolls up out of view naturally — so the previous panel keeps
+   moving up beneath the next one (visible through the ~15% transparency). */
+.panel-track {
+  position: relative;
+  width: 100%;
+  height: 200vh;
+}
+
 .panel {
   position: sticky;
   top: 0;
@@ -99,16 +109,16 @@
   scroll-margin-top: 6rem;
 }
 
-.spacer {
-  height: 0;
-  width: 100%;
+/* Last track only needs one viewport — nothing follows it. */
+.panel-track:last-of-type {
+  height: 100vh;
 }
 
-.panel:first-child .panel-content {
+.panel-track:first-of-type .panel-content {
   padding-top: 4rem;
 }
 
-.panel:first-child .panel-title {
+.panel-track:first-of-type .panel-title {
   max-width: 12ch;
 }
 
