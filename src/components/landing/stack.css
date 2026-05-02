@@ -76,6 +76,10 @@
   padding-top: 4rem;
 }
 
+.panel:first-child .panel-title {
+  max-width: 12ch;
+}
+
 .panel-content {
   width: 100%;
   max-width: 100%;
