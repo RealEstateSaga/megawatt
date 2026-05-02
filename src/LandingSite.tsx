@@ -50,19 +50,23 @@ export default function LandingSite() {
         return;
       }
 
-      // The active section is the LAST one whose top has crossed our
-      // reference line (a stable point near the top of the viewport).
-      // Iterating in document order and tracking the latest match avoids
-      // flicker and prevents falling back to "Home" mid-scroll.
+      // Panels are sticky/full-height. The active panel is the LAST one
+      // whose top has crossed our reference line. Because sticky panels
+      // pin at top:0 while their parent section still occupies later
+      // scroll space, we sort by document position (getBoundingClientRect
+      // top) rather than relying on array order alone.
       const line = Math.max(1, window.innerHeight * 0.25);
       let activeIdLocal = elements[0].id;
+      let bestTop = -Infinity;
 
       for (const el of elements) {
         const rect = el.getBoundingClientRect();
-        if (rect.top - line <= 0) {
+        const top = rect.top - line;
+        // Section has crossed the line and is the closest one to it
+        // from above (largest top value that is still <= 0).
+        if (top <= 0 && top > bestTop) {
+          bestTop = top;
           activeIdLocal = el.id;
-        } else {
-          break;
         }
       }
 
