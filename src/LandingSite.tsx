@@ -44,20 +44,24 @@ export default function LandingSite() {
     const compute = () => {
       raf = 0;
 
-      // If we're truly at the top of the page, always show "Home".
-      if (window.scrollY < 8) {
+      if (window.scrollY <= 8) {
         setActiveId((prev) => (prev === "hero" ? prev : "hero"));
         return;
       }
 
-      // Each panel is sticky and 100vh tall, stacking in document order.
-      // The active panel index = floor(scrollY / viewportHeight), clamped.
-      const vh = window.innerHeight;
-      const idx = Math.min(
-        elements.length - 1,
-        Math.max(0, Math.floor((window.scrollY + vh * 0.25) / vh)),
-      );
-      const activeIdLocal = elements[idx].id;
+      const viewportLine = window.scrollY + window.innerHeight * 0.4;
+      const nonHeroElements = elements.filter((element) => element.id !== "hero");
+
+      let activeIdLocal = nonHeroElements[0]?.id ?? "hero";
+
+      for (const element of nonHeroElements) {
+        if (viewportLine >= element.offsetTop) {
+          activeIdLocal = element.id;
+          continue;
+        }
+
+        break;
+      }
 
       setActiveId((prev) => (prev === activeIdLocal ? prev : activeIdLocal));
     };
