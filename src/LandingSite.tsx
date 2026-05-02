@@ -1,10 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StackScroll from "./components/landing/Services";
 import SiteFooter from "./components/landing/SiteFooter";
+import { copy } from "./content/copy";
 import logo from "@/assets/1mw-logo.svg";
 
 export default function LandingSite() {
   const [scrolled, setScrolled] = useState(false);
+
+  // Build id -> label map from the same source the panels render from.
+  const sectionLabels = useMemo<Record<string, string>>(() => {
+    const map: Record<string, string> = {
+      hero: "Home",
+      contact: copy.conversion.title,
+    };
+    for (const p of copy.pillars) map[p.id] = p.title;
+    return map;
+  }, []);
+
+  const sectionIds = useMemo(
+    () => ["hero", ...copy.pillars.map((p) => p.id), "contact"],
+    [],
+  );
+
+  const [activeId, setActiveId] = useState<string>("hero");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -12,6 +30,53 @@ export default function LandingSite() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Detect the section that is most clearly dominant in the viewport.
+  // Panels are sticky/full-height, so we pick the one whose top is closest
+  // to (but not past) a stable line ~40% down the viewport.
+  useEffect(() => {
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (elements.length === 0) return;
+
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      const line = window.innerHeight * 0.4;
+      let bestId = elements[0].id;
+      let bestDelta = Number.POSITIVE_INFINITY;
+
+      for (const el of elements) {
+        const rect = el.getBoundingClientRect();
+        // Distance of section top above the reference line; only consider
+        // sections whose top has crossed the line (top <= line).
+        const delta = line - rect.top;
+        if (delta >= 0 && delta < bestDelta) {
+          bestDelta = delta;
+          bestId = el.id;
+        }
+      }
+
+      setActiveId((prev) => (prev === bestId ? prev : bestId));
+    };
+
+    const schedule = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(compute);
+    };
+
+    compute();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [sectionIds]);
+
+  const activeLabel = sectionLabels[activeId] ?? "Home";
 
   const handleContact = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,6 +97,16 @@ export default function LandingSite() {
         <a className="site-logo-link" href="#hero" onClick={handleHome} aria-label="1MW Marketing home">
           <img src={logo} alt="1MW Marketing" className="site-logo" />
         </a>
+
+        <div
+          className="section-pill"
+          role="status"
+          aria-live="polite"
+          aria-label={`Current section: ${activeLabel}`}
+          key={activeId}
+        >
+          {activeLabel}
+        </div>
 
         <nav className="site-nav">
           <a href="#hero" onClick={handleHome} className="site-nav-link">
