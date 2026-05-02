@@ -62,13 +62,12 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   scroll-margin-top: 6rem;
 }
 
 .spacer {
-  position: relative;
-  height: 100vh;
+  height: 0;
   width: 100%;
 }
 
@@ -82,7 +81,7 @@
 
 .panel-content {
   width: 100%;
-  max-width: 100%;
+  max-width: 1600px;
   padding: 0 2rem;
   display: flex;
   flex-direction: column;
